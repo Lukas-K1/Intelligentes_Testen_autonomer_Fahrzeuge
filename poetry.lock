@@ -5,3 +5,44 @@ package = []
 lock-version = "2.1"
 python-versions = ">=3.12"
 content-hash = "75265641fd1a3f2a4d608312a3879427b7141ac2a51d0873da5711cbc8ead28e"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0.1"
+isort = "^5.10.1"
+black = "^22.3.0"
+wemake-python-styleguide = "^0.16.1"
+
+[tool.poe.tasks]
+bot = { cmd = "test.py", envfile = ".env" }
+flake8 = "flake8 . --count --statistics --show-source"
+isort = "isort ."
+black = "black ."
+format = ["isort", "black"]
+mypy = "mypy ."
+lint = ["format", "flake8"]
+pre-commit = ["lint"]
+
+[tool.poe.tasks.setup]
+shell = """
+set -ex
+poetry install --no-root
+if ! [[ -e .env ]]; then cp intelligentes_testen_autonomer_fahrzeuge.env .env; fi
+./pre-commit.sh install
+unset VIRTUAL_ENV
+git submodule update --init
+git submodule foreach 'poe setup'
+"""
+interpreter = "bash"
+
+[tool.black]
+target-version = ["py310"]
+line-length = 120
+skip-magic-trailing-comma = true
+
+[tool.isort]
+profile = "black"
+py_version = 310
+line_length = 120
+lines_after_imports = 2
+reverse_relative = true
+sections = ["FUTURE", "STDLIB", "FIRSTPARTY", "THIRDPARTY", "PYDROCSID", "LOCALFOLDER"]
