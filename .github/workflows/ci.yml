@@ -32,13 +32,13 @@ jobs:
         with:
           path: |
             ~/.cache/pip
-            ~/.cache/pypoetry
-          key: ${{ runner.os }}-venv-${{ hashFiles('poetry.lock') }}
+#            ~/.cache/pypoetry
+#          key: ${{ runner.os }}-venv-${{ hashFiles('poetry.lock') }}
 
-      - name: Setup poetry
-        run: |
-          pip install poetry poethepoet
-          poetry install -n --no-root
+#      - name: Setup poetry
+#        run: |
+#          pip install poetry poethepoet
+#          poetry install -n --no-root
 
       - name: Check code formatting with black and isort
         run: poe black --diff --check && poe isort --diff --check
