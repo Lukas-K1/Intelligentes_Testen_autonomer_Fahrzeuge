@@ -56,3 +56,7 @@ line_length = 120
 lines_after_imports = 2
 reverse_relative = true
 sections = ["FUTURE", "STDLIB", "FIRSTPARTY", "THIRDPARTY", "PYDROCSID", "LOCALFOLDER"]
+
+[build-system]
+requires = ["setuptools", "poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
