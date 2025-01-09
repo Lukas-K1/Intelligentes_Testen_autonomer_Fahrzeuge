@@ -6,6 +6,16 @@ lock-version = "2.1"
 python-versions = ">=3.12"
 content-hash = "75265641fd1a3f2a4d608312a3879427b7141ac2a51d0873da5711cbc8ead28e"
 
+[tool.poetry]
+name = "Intelligentes_Testen_autonomer_Fahrzeuge"
+version = "0"
+description = ""
+authors = ["Lukas-K1 <lukas.koepsel@freenet.de>"]
+readme = "README.md"
+license = "None"
+homepage = "https://github.com/Lukas-K1/Intelligentes_Testen_autonomer_Fahrzeuge"
+repository = "https://github.com/Lukas-K1/Intelligentes_Testen_autonomer_Fahrzeuge"
+
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
 isort = "^5.10.1"
