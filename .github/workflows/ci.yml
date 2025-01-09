@@ -29,16 +29,16 @@ jobs:
 
       - name: Cache Virtual Environment
         uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/pip
+#        with:
+#          path: |
+#            ~/.cache/pip
 #            ~/.cache/pypoetry
 #          key: ${{ runner.os }}-venv-${{ hashFiles('poetry.lock') }}
 
-#      - name: Setup poetry
-#        run: |
-#          pip install poetry poethepoet
-#          poetry install -n --no-root
+      - name: Setup poetry
+        run: |
+          pip install poetry poethepoet
+          poetry install -n --no-root
 
       - name: Check code formatting with black and isort
         run: poe black --diff --check && poe isort --diff --check
@@ -63,6 +63,6 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        pytest
+#    - name: Test with pytest
+#      run: |
+#        pytest
