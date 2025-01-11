@@ -34,7 +34,7 @@ jobs:
       - name: Check import order with isort    
         uses: isort/isort-action@v1
         with:
-          options: "--check --diff"
+          configuration: "--check --diff"
   
   # poetry:
   #   name: Poetry (install, check, build, publish)
