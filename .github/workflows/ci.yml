@@ -11,30 +11,30 @@ env:
   PYTHON_VERSION: "3.10"
 
 jobs:
-  codestyle:
-    name: Codestyle (black+isort)
+  # codestyle:
+  #   name: Codestyle (black+isort)
     
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
         
-      - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+  #     - name: Set up Python ${{ env.PYTHON_VERSION }}
+  #       uses: actions/setup-python@v3
+  #       with:
+  #         python-version: ${{ env.PYTHON_VERSION }}
 
 
-      - name: Check code formatting with black
-        uses: rickstaa/action-black@v1
-        id: action_black
-        with:
-          black_args: ". --diff"
-      - name: Check import order with isort    
-        uses: isort/isort-action@v1
-        with:
-          configuration: "--diff"
+  #     - name: Check code formatting with black
+  #       uses: rickstaa/action-black@v1
+  #       id: action_black
+  #       with:
+  #         black_args: ". --diff"
+  #     - name: Check import order with isort    
+  #       uses: isort/isort-action@v1
+  #       with:
+  #         configuration: "--diff"
   
   # poetry:
   #   name: Poetry (install, check, build, publish)
@@ -104,9 +104,16 @@ jobs:
       run: |
         isort .
     - name: Commit changes made by black and isort
-      run: |
-        git add .
-        git diff-index --quiet HEAD || git commit -m "Apply black and isort formatting"
-#    - name: Test with pytest
-#      run: |
-#        pytest
+      if: steps.action_black.outputs.is_formatted == 'true'
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        title: "Format Python code with psf/black push"
+        commit-message: ":art: Format Python code with psf/black"
+        body: |
+          There appear to be some python formatting errors in ${{ github.sha }}. This pull request
+          uses the [psf/black](https://github.com/psf/black) formatter to fix these issues.
+        base: ${{ github.head_ref }}
+    # - name: Test with pytest
+    #   run: |
+    #     pytest
