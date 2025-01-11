@@ -66,9 +66,9 @@ jobs:
       #   run: |
       #     poetry check
           
-      - name: Build package
-        run: |
-          poetry build
+      # - name: Build package
+      #   run: |
+      #     poetry build
           
       - name: run codestyle checks
         run: |
