@@ -35,7 +35,44 @@ jobs:
         uses: isort/isort-action@v1
         with:
           options: "--check --diff"
+  
+  poetry:
+    name: Poetry (install, check, build, publish)
+    
+    runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install Poetry
+        run: |
+          pip install poetry
+          pip install poethepoet
+          
+      - name: Install dependencies
+        run: |
+          poetry install
+          
+      - name: Check for security vulnerabilities
+        run: |
+          poetry check
+          
+      - name: Build package
+        run: |
+          poetry build
+          
+      - name: run codestyle checks
+        run: |
+          poe black --check --diff && poe isort --check --diff
+      - name: Publish package
+        run: |
+          poetry publish
   
   build:
 
