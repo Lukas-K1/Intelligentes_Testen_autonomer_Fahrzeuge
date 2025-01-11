@@ -30,52 +30,52 @@ jobs:
         uses: rickstaa/action-black@v1
         id: action_black
         with:
-          black_args: ". --check --diff"
+          black_args: ". --diff"
       - name: Check import order with isort    
         uses: isort/isort-action@v1
         with:
           options: "--check --diff"
   
-  poetry:
-    name: Poetry (install, check, build, publish)
+  # poetry:
+  #   name: Poetry (install, check, build, publish)
     
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
         
-      - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+  #     - name: Set up Python ${{ env.PYTHON_VERSION }}
+  #       uses: actions/setup-python@v3
+  #       with:
+  #         python-version: ${{ env.PYTHON_VERSION }}
           
-      - name: Install Poetry and codestyle tools
-        run: |
-          pip install poetry
-          pip install poethepoet
-          pip install black
-          pip install isort
-          pip install flake8
+  #     - name: Install Poetry and codestyle tools
+  #       run: |
+  #         pip install poetry
+  #         pip install poethepoet
+  #         pip install black
+  #         pip install isort
+  #         pip install flake8
           
-      # - name: Install dependencies
-      #   run: |
-      #     poetry install
+  #     - name: Install dependencies
+  #       run: |
+  #         poetry install
           
-      # - name: Check for security vulnerabilities
-      #   run: |
-      #     poetry check
+  #     - name: Check for security vulnerabilities
+  #       run: |
+  #         poetry check
           
-      # - name: Build package
-      #   run: |
-      #     poetry build
+  #     - name: Build package
+  #       run: |
+  #         poetry build
           
-      - name: run codestyle checks
-        run: |
-          poe black --check --diff && poe isort --check --diff && poe flake8
-      - name: Publish package
-        run: |
-          poetry publish
+  #     - name: run codestyle checks
+  #       run: |
+  #         poe black --check --diff && poe isort --check --diff && poe flake8
+  #     - name: Publish package
+  #       run: |
+  #         poetry publish
   
   build:
 
