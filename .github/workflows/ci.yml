@@ -50,14 +50,17 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           
-      - name: Install Poetry
+      - name: Install Poetry and codestyle tools
         run: |
           pip install poetry
           pip install poethepoet
+          pip install black
+          pip install isort
+          pip install flake8
           
-      - name: Install dependencies
-        run: |
-          poetry install
+      # - name: Install dependencies
+      #   run: |
+      #     poetry install
           
       - name: Check for security vulnerabilities
         run: |
@@ -69,7 +72,7 @@ jobs:
           
       - name: run codestyle checks
         run: |
-          poe black --check --diff && poe isort --check --diff
+          poe black --check --diff && poe isort --check --diff && poe flake8
       - name: Publish package
         run: |
           poetry publish
