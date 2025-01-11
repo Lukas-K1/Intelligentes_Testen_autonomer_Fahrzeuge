@@ -100,15 +100,14 @@ jobs:
     - name: Check code formatting with black
       id: action_black
       run: |
-        black .
+        black . --diff
     - name: Check import order with isort
       run: |
-        isort .
+        isort . --diff
     - name: Commit changes made by black and isort
       if: steps.action_black.outputs.is_formatted == 'true'
       uses: peter-evans/create-pull-request@v6
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
         title: "Format Python code with psf/black push"
         commit-message: ":art: Format Python code with psf/black"
         body: |
