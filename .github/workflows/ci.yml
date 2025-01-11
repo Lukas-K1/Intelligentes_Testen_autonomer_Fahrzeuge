@@ -11,73 +11,8 @@ env:
   PYTHON_VERSION: "3.10"
 
 jobs:
-  # codestyle:
-  #   name: Codestyle (black+isort)
-    
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-        
-  #     - name: Set up Python ${{ env.PYTHON_VERSION }}
-  #       uses: actions/setup-python@v3
-  #       with:
-  #         python-version: ${{ env.PYTHON_VERSION }}
-
-
-  #     - name: Check code formatting with black
-  #       uses: rickstaa/action-black@v1
-  #       id: action_black
-  #       with:
-  #         black_args: ". --diff"
-  #     - name: Check import order with isort    
-  #       uses: isort/isort-action@v1
-  #       with:
-  #         configuration: "--diff"
   
-  # poetry:
-  #   name: Poetry (install, check, build, publish)
-    
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-        
-  #     - name: Set up Python ${{ env.PYTHON_VERSION }}
-  #       uses: actions/setup-python@v3
-  #       with:
-  #         python-version: ${{ env.PYTHON_VERSION }}
-          
-  #     - name: Install Poetry and codestyle tools
-  #       run: |
-  #         pip install poetry
-  #         pip install poethepoet
-  #         pip install black
-  #         pip install isort
-  #         pip install flake8
-          
-  #     - name: Install dependencies
-  #       run: |
-  #         poetry install
-          
-  #     - name: Check for security vulnerabilities
-  #       run: |
-  #         poetry check
-          
-  #     - name: Build package
-  #       run: |
-  #         poetry build
-          
-  #     - name: run codestyle checks
-  #       run: |
-  #         poe black --check --diff && poe isort --check --diff && poe flake8
-  #     - name: Publish package
-  #       run: |
-  #         poetry publish
-  
-  build:
+  codestyle-check:
 
     runs-on: ubuntu-latest
 
@@ -101,21 +36,22 @@ jobs:
       uses: rickstaa/action-black@v1
       id: action_black
       with:
-        black_args: ". --diff"
+        black_args: ". --diff --check"
     - name: Check import order with isort    
       uses: isort/isort-action@v1
       with:
-        configuration: "--diff"
-    - name: Commit changes made by black and isort
-      if: steps.action_black.outputs.is_formatted == 'true'
-      uses: peter-evans/create-pull-request@v6
-      with:
-        title: "Format Python code with psf/black push"
-        commit-message: ":art: Format Python code with psf/black"
-        body: |
-          There appear to be some python formatting errors in ${{ github.sha }}. This pull request
-          uses the [psf/black](https://github.com/psf/black) formatter to fix these issues.
-        base: ${{ github.head_ref }}
+        configuration: "--diff --check"
+    # - name: Commit changes made by black and isort
+    #   if: steps.action_black.outputs.is_formatted == 'true'
+    #   uses: peter-evans/create-pull-request@v7
+    #   with:
+    #     token: ${{ secrets.GITHUB_TOKEN }}
+    #     title: "Format Python code with psf/black push"
+    #     commit-message: ":art: Format Python code with psf/black"
+    #     body: |
+    #       There appear to be some python formatting errors in ${{ github.sha }}. This pull request
+    #       uses the [psf/black](https://github.com/psf/black) formatter to fix these issues.
+    #     base: ${{ github.head_ref }}
     # - name: Test with pytest
     #   run: |
     #     pytest
