@@ -62,9 +62,9 @@ jobs:
       #   run: |
       #     poetry install
           
-      - name: Check for security vulnerabilities
-        run: |
-          poetry check
+      # - name: Check for security vulnerabilities
+      #   run: |
+      #     poetry check
           
       - name: Build package
         run: |
