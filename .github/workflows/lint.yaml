@@ -41,7 +41,7 @@ jobs:
       - name: Run flake8
         run: |
           flake8 .
-        continue-on-error: true
+        
 
       # Apply Black and isort if necessary and commit changes
       - name: Apply formatting if needed
