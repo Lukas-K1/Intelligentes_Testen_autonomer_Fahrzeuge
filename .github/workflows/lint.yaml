@@ -26,29 +26,22 @@ jobs:
           pip install black isort flake8
 
       # Run Black
-      - name: Run Black
+      - name: Run Linting Check
         run: |
           black --check --diff .
-        continue-on-error: true
-
-      # Run isort
-      - name: Run isort
-        run: |
           isort --check --diff .
-        continue-on-error: true
-
-      # Run flake8
-      - name: Run flake8
-        run: |
           flake8 .
-        
-
-      # Apply Black and isort if necessary and commit changes
-      - name: Apply formatting if needed
-        if: failure()
+      
+      - name: Format code when needed
         run: |
           black .
           isort .
+        id : format_code
+
+      # Apply Black and isort if necessary and commit changes
+      - name: Apply formatting if needed
+        if: ${{ steps.format_code.outcome == 'success' }}
+        run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git commit -a -m "Apply code formatting with Black and isort" || echo "No changes to commit"
