@@ -33,14 +33,14 @@ jobs:
           flake8 .
         continue-on-error: true
       
-      - name: Format code when needed
+      - name: Format code if needed
         run: |
           black .
           isort .
         id : format_code
 
       # Apply Black and isort if necessary and commit changes
-      - name: Apply formatting if needed
+      - name: Create commit if needed
         if: ${{ steps.format_code.outcome == 'success' }}
         run: |
           git config --global user.name "GitHub Actions"
