@@ -28,13 +28,13 @@ jobs:
       # Run Black
       - name: Run Black
         run: |
-          black --check .
+          black --check --diff .
         continue-on-error: true
 
       # Run isort
       - name: Run isort
         run: |
-          isort --check-only .
+          isort --check --diff .
         continue-on-error: true
 
       # Run flake8
