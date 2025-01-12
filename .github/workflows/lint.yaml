@@ -51,7 +51,7 @@ jobs:
           isort .
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git commit -m "Apply code formatting with Black and isort" || echo "No changes to commit"
+          git commit -a -m "Apply code formatting with Black and isort" || echo "No changes to commit"
       - name: Push changes
         if: failure()
         uses: ad-m/github-push-action@v0.6.0
