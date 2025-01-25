@@ -12,40 +12,85 @@ obs = env.reset()
 
 CHANGE_LEFT = Bool("left")
 CHANGE_RIGHT = Bool("right")
-IDLE = Bool("idle")
-KEEP_LANE = Bool("current_lane")
-BLOCK = Bool("block")
+KEEP_LANE = Bool("keep")
+#IDLE = Bool("idling")
 
 
 @thread
 def change_lane_left():
-    while True:
-        #yield sync(request=CHANGE_LEFT)
-        yield sync(waitFor=KEEP_LANE, request=CHANGE_LEFT)
-        #time.sleep(0.25)
+    for i in range(10):
+        yield sync(request=CHANGE_LEFT)
+        action = map_action_to_highwayenv(CHANGE_LEFT)  # left
+        obs, reward, done, truncated, info = env.step(action)
+        env.render()
+        time.sleep(0.1)
+
+        if done or truncated:
+            print("Simulation abgeschlossen.")
+            obs = env.reset()
 
 
 @thread
-def idle():
+def keep_lane_after_left():
     while True:
-        yield sync(request=IDLE)
-        #time.sleep(0.25)
+        yield sync(waitFor=CHANGE_LEFT)
+        yield sync(block=Or(CHANGE_LEFT, CHANGE_RIGHT),waitFor=KEEP_LANE)
+
+
+@thread
+def idle_lane():
+    while True:
+        yield sync(request=KEEP_LANE)
 
 
 @thread
 def keep_current_lane():
-    while True:
-        yield sync(waitFor=CHANGE_LEFT | CHANGE_RIGHT, request=KEEP_LANE)
-        #yield sync(request=KEEP_LANE)
-        #time.sleep(0.1)
+    for i in range(10):
+        yield sync(request=KEEP_LANE)
+        action = map_action_to_highwayenv(KEEP_LANE)  # left
+        obs, reward, done, truncated, info = env.step(action)
+        env.render()
+        time.sleep(0.1)
+
+        if done or truncated:
+            print("Simulation abgeschlossen.")
+            obs = env.reset()
 
 
 @thread
 def change_lane_right():
+    for i in range(10):
+        yield sync(request=CHANGE_RIGHT)
+        action = map_action_to_highwayenv(CHANGE_RIGHT)  # left
+        obs, reward, done, truncated, info = env.step(action)
+        env.render()
+        time.sleep(0.1)
+
+        if done or truncated:
+            print("Simulation abgeschlossen.")
+            obs = env.reset()
+
+
+@thread
+def keep_lane_after_right():
     while True:
-        #yield sync(request=CHANGE_RIGHT)
-        yield sync(waitFor=KEEP_LANE, request=CHANGE_RIGHT)
-        #time.sleep(0.25)
+        yield sync(waitFor=CHANGE_RIGHT)
+        yield sync(block=Or(CHANGE_LEFT, CHANGE_RIGHT),waitFor=KEEP_LANE)
+
+
+@thread
+def change_lane_after_keep():
+    while True:
+        yield sync(waitFor=KEEP_LANE)
+        yield sync(waitfor=Or(CHANGE_LEFT, CHANGE_RIGHT),block=KEEP_LANE)
+
+
+@thread
+def change_right_after_keep():
+    while True:
+        yield sync(waitFor=KEEP_LANE)
+        yield sync(block=Or(KEEP_LANE, CHANGE_LEFT),waitFor=CHANGE_RIGHT)
+
 
 
 @thread
@@ -55,23 +100,27 @@ def regulator():
         if e.eval(CHANGE_LEFT):
             e = yield sync(block=CHANGE_LEFT, waitFor=true)
             #action = 0 # left
+            print("Change left")
             action = map_action_to_highwayenv(CHANGE_LEFT) # left
         elif e.eval(CHANGE_RIGHT):
             e = yield sync(block=CHANGE_RIGHT, waitFor=true)
+            print("Change right")
             #action = 2 # right
             action = map_action_to_highwayenv(CHANGE_RIGHT) # right
         elif e.eval(KEEP_LANE):# TODO WIP does not get executed
             #action = 1 # idle
             e = yield sync(block=KEEP_LANE, waitFor=true)
+            print("Keep lane")
             action = map_action_to_highwayenv(KEEP_LANE) # idle
         else:
-            e = yield sync(request= KEEP_LANE)
-            action = map_action_to_highwayenv(IDLE) # idle
+            e = yield sync(request=KEEP_LANE)
+            print("Idle")
+            action = map_action_to_highwayenv(KEEP_LANE) # idle
 
         obs, reward, done, truncated, info = env.step(action)
         env.render()
-        #time.sleep(0.25)
-        # Überprüfe, ob die Simulation zu Ende ist
+        time.sleep(0.1)
+
         if done or truncated:
             print("Simulation abgeschlossen.")
             obs = env.reset()
@@ -97,7 +146,7 @@ def map_action_to_highwayenv(event):
 
 
 if __name__ == '__main__':
-    program = BProgram(bthreads=[change_lane_left(), change_lane_right(), keep_current_lane(), regulator()],
+    program = BProgram(bthreads=[change_lane_left(), change_lane_right(), keep_current_lane(), keep_lane_after_left(),keep_lane_after_right(),change_lane_after_keep()],
                        event_selection_strategy=SMTEventSelectionStrategy(), listener=PrintBProgramRunnerListener())
 
     done = False
@@ -117,12 +166,11 @@ if __name__ == '__main__':
 
             if done or truncated:
                 print("Simulation abgeschlossen. Reset der Umgebung.")
-                obs = env.reset()  # Umgebung zurücksetzen
+                obs = env.reset()
 
         except Exception as e:
             print(f"Fehler während der Programmausführung: {e}")
             break
 
-    # Zeige die finale Visualisierung der Simulation
     plt.imshow(env.render())
     plt.show()
