@@ -14,13 +14,17 @@ CHANGE_LEFT = Bool("left")
 CHANGE_RIGHT = Bool("right")
 KEEP_LANE = Bool("keep")
 #IDLE = Bool("idling")
-
+was_right = False
+was_left = False
 
 @thread
 def change_lane_left():
     for i in range(10):
         yield sync(request=CHANGE_LEFT)
         action = map_action_to_highwayenv(CHANGE_LEFT)  # left
+        was_left = True
+        was_right = False
+        print(was_left, was_right)
         obs, reward, done, truncated, info = env.step(action)
         env.render()
         time.sleep(0.1)
@@ -62,6 +66,9 @@ def change_lane_right():
     for i in range(10):
         yield sync(request=CHANGE_RIGHT)
         action = map_action_to_highwayenv(CHANGE_RIGHT)  # left
+        was_right = True
+        was_left = False
+        print(was_left, was_right)
         obs, reward, done, truncated, info = env.step(action)
         env.render()
         time.sleep(0.1)
@@ -83,6 +90,26 @@ def change_lane_after_keep():
     while True:
         yield sync(waitFor=KEEP_LANE)
         yield sync(waitfor=Or(CHANGE_LEFT, CHANGE_RIGHT),block=KEEP_LANE)
+
+
+@thread
+def change_left_after_keep():
+    while True:
+        yield sync(waitFor=KEEP_LANE)
+        if was_right:
+            yield sync(block=KEEP_LANE, waitFor=CHANGE_LEFT)
+        else:
+            yield sync(block=KEEP_LANE, waitFor=CHANGE_RIGHT)
+
+
+@thread
+def change_right_after_keep():
+    while True:
+        yield sync(waitFor=KEEP_LANE)
+        if was_left:
+            yield sync(block=KEEP_LANE, waitFor=CHANGE_RIGHT)
+        else:
+            yield sync(block=KEEP_LANE, waitFor=CHANGE_LEFT)
 
 
 @thread
@@ -146,7 +173,7 @@ def map_action_to_highwayenv(event):
 
 
 if __name__ == '__main__':
-    program = BProgram(bthreads=[change_lane_left(), change_lane_right(), keep_current_lane(), keep_lane_after_left(),keep_lane_after_right(),change_lane_after_keep()],
+    program = BProgram(bthreads=[change_lane_left(), change_lane_right(), keep_current_lane(), keep_lane_after_left(),keep_lane_after_right(),change_lane_after_keep(), change_left_after_keep(), change_right_after_keep()],
                        event_selection_strategy=SMTEventSelectionStrategy(), listener=PrintBProgramRunnerListener())
 
     done = False
