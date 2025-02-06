@@ -1,8 +1,7 @@
 import gymnasium as gym
-
 import highway_env as highway
-
 import numpy as np
+
 
 def kinematics_observation():
     return {
@@ -87,7 +86,7 @@ The first agent overtakes the second agent.
 Returns:
     int: The action value for the first agent
 """
-def calc_Action_1(step):
+def calc_action_1(step):
     if step == 1:
         return 0
     elif step == 2:
@@ -102,13 +101,13 @@ def calc_Action_1(step):
 """
 Returns the action for vehicle 2, which only idles
 """
-def calc_Action_2(step):
+def calc_action_2():
     return 1
 
 """
 The third agent changes his lane to the right and then speeds up, so that he is not the last one.
 """
-def calc_Action_3(step):
+def calc_action_3(step):
     if step == 0:
         return 2
     if step == 1:
@@ -132,9 +131,9 @@ def action_name(action) -> str:
 
 if __name__ == '__main__':
     for i in range(15):
-        action1 = calc_Action_1(i)
-        action2 = calc_Action_2(i)
-        action3 = calc_Action_3(i)
+        action1 = calc_action_1(i)
+        action2 = calc_action_2()
+        action3 = calc_action_3(i)
         print("Action 1: ", action_name(action1))
         print("Action 2: ", action_name(action2))
         print("Action 3: ", action_name(action3))
@@ -148,7 +147,7 @@ if __name__ == '__main__':
                 controlled_vehicle_count += 1
                 print(obs_i)
 
-        # for grayscale observation example for the first vehicle in a multi agent setting with 3 vehicles
+        # for grayscale observation example for the first vehicle in a multiagent setting with 3 vehicles
         """
         fig, axes = plt.subplots(ncols=4, figsize=(12, 5))
         for i, ax in enumerate(axes.flat):

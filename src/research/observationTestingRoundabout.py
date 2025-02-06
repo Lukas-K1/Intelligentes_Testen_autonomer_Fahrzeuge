@@ -1,6 +1,6 @@
 import gymnasium as gym
-
 import highway_env as highway
+
 
 def kinematics_observation():
     return {
@@ -66,7 +66,7 @@ env = gym.make('roundabout-v0', render_mode='rgb_array', config={
 
 obs = env.reset()
 
-def action_name(action) -> String:
+def action_name(action) -> str:
     if action == 0:
         return "LANE_LEFT"
     elif action == 1:
@@ -80,10 +80,10 @@ def action_name(action) -> String:
 
 if __name__ == '__main__':
     for i in range(15):
-        obs, reward, done, truncated, info = env.step((1))
+        obs, reward, done, truncated, info = env.step(1)
         print(obs)
 
-        # for grayscale observation example for the first vehicle in a multi agent setting with 3 vehicles
+        # for grayscale observation example for the first vehicle in a multiagent setting with 3 vehicles
         """
         fig, axes = plt.subplots(ncols=4, figsize=(12, 5))
         for i, ax in enumerate(axes.flat):
