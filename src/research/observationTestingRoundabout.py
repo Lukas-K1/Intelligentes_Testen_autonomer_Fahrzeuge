@@ -1,6 +1,6 @@
 import gymnasium as gym
-import highway_env
-from bppy import *
+
+import highway_env as highway
 
 def kinematics_observation():
     return {

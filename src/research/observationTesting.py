@@ -1,7 +1,8 @@
 import gymnasium as gym
+
+import highway_env as highway
+
 import numpy as np
-import highway_env
-from bppy import *
 
 def kinematics_observation():
     return {
@@ -117,7 +118,7 @@ def calc_Action_3(step):
     else:
         return 1
 
-def action_name(action) -> String:
+def action_name(action) -> str:
     if action == 0:
         return "LANE_LEFT"
     elif action == 1:
