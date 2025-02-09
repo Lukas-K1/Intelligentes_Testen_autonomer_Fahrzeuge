@@ -86,6 +86,24 @@ class ObservationWrapper:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be zero.")
             return 0
 
+    """
+    Ermittelt die Gesamtgeschwindigkeit des übergebenen Fahrzeugs.
+    
+    Die Berechnung basiert auf den beiden unabhängigen Geschwindigkeiten vx und vy und werden mittels
+    des Satzes von Pythagoras genutzt, um die Gesamtgeschwindigkeit des Fahrzeuges zu berechnen.
+    """
+    def get_velocity(self, vehicle_id) -> float:
+        try:
+            values = self.__get_values_for_vehicle(vehicle_id)
+            vx =  values[0][self.__features.index("vx")]
+            print(vx)
+            vy = values[0][self.__features.index("vy")]
+            print(vy)
+            return np.sqrt(vx**2 + vy**2)
+        except VehicleNotFoundExcpetion:
+            warnings.warn("The Vehicle was not found in the observation. The return value will always be zero.")
+            return 0
+
     def __get_values_for_vehicle(self, vehicle_id):
         try:
          return self.observation[vehicle_id]
