@@ -46,6 +46,9 @@ class ObservationWrapper:
         except VehicleNotFoundExcpetion:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be False")
             return False
+        except ValueError as e:
+            warnings.warn("The following feature is not observed, which is necessary for the calculation. The return value will always be False. Missing feature:" + str(e))
+            return False
 
 
     """
@@ -62,6 +65,9 @@ class ObservationWrapper:
             return True
         except VehicleNotFoundExcpetion:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be False")
+            return False
+        except ValueError as e:
+            warnings.warn("The following feature is not observed, which is necessary for the calculation. The return value will always be False. Missing feature:" + str(e))
             return False
 
     """
@@ -85,6 +91,9 @@ class ObservationWrapper:
         except VehicleNotFoundExcpetion:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be zero.")
             return 0
+        except ValueError as e:
+            warnings.warn("The following feature is not observed, which is necessary for the calculation. The return value will always be False. Missing feature:" + str(e))
+            return False
 
     """
     Ermittelt die Gesamtgeschwindigkeit des übergebenen Fahrzeugs.
@@ -102,6 +111,9 @@ class ObservationWrapper:
         except VehicleNotFoundExcpetion:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be zero.")
             return 0
+        except ValueError as e:
+            warnings.warn("The following feature is not observed, which is necessary for the calculation. The return value will always be False. Missing feature:" + str(e))
+            return False
 
     def __get_values_for_vehicle(self, vehicle_id):
         try:
