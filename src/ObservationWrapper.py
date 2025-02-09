@@ -96,9 +96,7 @@ class ObservationWrapper:
         try:
             values = self.__get_values_for_vehicle(vehicle_id)
             vx =  values[0][self.__features.index("vx")]
-            print(vx)
             vy = values[0][self.__features.index("vy")]
-            print(vy)
             return np.sqrt(vx**2 + vy**2)
         except VehicleNotFoundExcpetion:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be zero.")
