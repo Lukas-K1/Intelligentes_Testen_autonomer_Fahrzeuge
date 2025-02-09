@@ -67,7 +67,7 @@ class ObservationWrapper:
     """
     Ermittelt die Distanz zu einem auf der gleichen Spur vorausfahrenden Fahrzeug.
     """
-    def get_distance_to_front_vehicle(self, vehicle_id) -> float:
+    def get_distance_to_leading_vehicle(self, vehicle_id) -> float:
         try:
             shortest_distance: float = None
             values = self.__get_values_for_vehicle(vehicle_id)
@@ -91,6 +91,7 @@ class ObservationWrapper:
     
     Die Berechnung basiert auf den beiden unabhängigen Geschwindigkeiten vx und vy und werden mittels
     des Satzes von Pythagoras genutzt, um die Gesamtgeschwindigkeit des Fahrzeuges zu berechnen.
+    Note: Aktuell wird hier der normalisierte Wert der Geschwindigkeit ermittelt.
     """
     def get_velocity(self, vehicle_id) -> float:
         try:
