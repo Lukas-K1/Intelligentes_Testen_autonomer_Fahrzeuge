@@ -16,6 +16,8 @@ class ObservationWrapper:
     Der default-Wert von 0.025 hat sich als ausreichend erwiesen.
 
     Important: In dieser ersten Umsetzung wird davon ausgegangen, dass die Observation vom Typ Kinematics ist.
+    Zudem ist es auf Basis der HighwayEnv entwickelt, d.h. es in dieser frühen Phase ist er in anderen Environments
+    mit vorsicht zu nutzen.
     """
     def __init__(self, observation, features: list[str], minium_distance: float = 0.025):
         # nur die erste Position, damit der Datentyp nicht mehr angezeigt wird
