@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 
 
-class VehicleNotFoundExcpetion(Exception):
+class VehicleNotFoundError(Exception):
     pass
 
 class ObservationWrapper:
@@ -17,7 +17,7 @@ class ObservationWrapper:
 
     Important: In dieser ersten Umsetzung wird davon ausgegangen, dass die Observation vom Typ Kinematics ist.
     Zudem ist es auf Basis der HighwayEnv entwickelt, d.h. es in dieser frühen Phase ist er in anderen Environments
-    mit vorsicht zu nutzen.
+    mit Vorsicht zu nutzen.
     """
     def __init__(self, observation, features: list[str], minium_distance: float = 0.025):
         # nur die erste Position, damit der Datentyp nicht mehr angezeigt wird
@@ -31,6 +31,9 @@ class ObservationWrapper:
 
     """
     Check, ob die vom übergebenen Fahrzeug rechte Spur frei ist.
+    :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
+    
+    Important: Die Fahrzeug-ID ist die Position des Fahrzeugs in der Observation.
     """
     def is_right_lane_clear(self, vehicle_id) -> bool:
         try:
@@ -43,7 +46,7 @@ class ObservationWrapper:
                     if -self.minimum_distance <= x_of_vehicle_i <= self.minimum_distance:
                         return False
             return True
-        except VehicleNotFoundExcpetion:
+        except VehicleNotFoundError:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be False")
             return False
         except ValueError as e:
@@ -63,7 +66,7 @@ class ObservationWrapper:
                     if -self.minimum_distance <= x_of_vehicle_i <= self.minimum_distance:
                         return False
             return True
-        except VehicleNotFoundExcpetion:
+        except VehicleNotFoundError:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be False")
             return False
         except ValueError as e:
@@ -88,7 +91,7 @@ class ObservationWrapper:
                             shortest_distance = vehicle_i_distance
 
             return shortest_distance if shortest_distance is not None else 0
-        except VehicleNotFoundExcpetion:
+        except VehicleNotFoundError:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be zero.")
             return 0
         except ValueError as e:
@@ -108,7 +111,7 @@ class ObservationWrapper:
             vx =  values[0][self.__features.index("vx")]
             vy = values[0][self.__features.index("vy")]
             return np.sqrt(vx**2 + vy**2)
-        except VehicleNotFoundExcpetion:
+        except VehicleNotFoundError:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be zero.")
             return 0
         except ValueError as e:
@@ -119,7 +122,7 @@ class ObservationWrapper:
         try:
          return self.observation[vehicle_id]
         except IndexError:
-           raise VehicleNotFoundExcpetion("Vehicle not found in observation.")
+           raise VehicleNotFoundError("Vehicle not found in observation.")
 
 if __name__ == '__main__':
     wrapper = ObservationWrapper("Test", ["presence", "x", "y", "vx", "vy", "heading", "cos_h", "sin_h", "cos_d", "sin_d", "long_off", "lat_off", "ang_off"])
