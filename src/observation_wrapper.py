@@ -7,20 +7,21 @@ class VehicleNotFoundError(Exception):
     pass
 
 class ObservationWrapper:
-    """
-    Konstruktor
-    :param observation: Die von der Environment zurückgegebene Observation.
-    :param features: Ein Dictionary, das die features, welches die observation in der korrekten Reihenfolge als
-    Dictionary enthält.
-    :param minimum_distance: Der minimale Abstand, der zu anderen Fahrzeugen eingehalten werden muss/ sollte.
-    Der default-Wert von 0.025 hat sich als ausreichend erwiesen.
 
-    Important: In dieser ersten Umsetzung wird davon ausgegangen, dass die Observation vom Typ Kinematics ist.
-    Zudem ist es auf Basis der HighwayEnv entwickelt, d.h. es in dieser frühen Phase ist er in anderen Environments
-    mit Vorsicht zu nutzen.
-    """
     def __init__(self, observation, features: list[str], minium_distance: float = 0.025):
-        # nur die erste Position, damit der Datentyp nicht mehr angezeigt wird
+        """
+        Konstruktor
+        :param observation: Die von der Environment zurückgegebene Observation.
+        :param features: Ein Dictionary, das die features, welches die observation in der korrekten Reihenfolge als
+        Dictionary enthält.
+        :param minimum_distance: Der minimale Abstand, der zu anderen Fahrzeugen eingehalten werden muss/ sollte.
+        Der default-Wert von 0.025 hat sich als ausreichend erwiesen. Hängt wahrscheinlich mit der default-Länge eines
+        Fahrzeuges von 5 Metern zusammen.
+
+        Important: In dieser ersten Umsetzung wird davon ausgegangen, dass die Observation vom Typ Kinematics ist.
+        Zudem ist es auf Basis der HighwayEnv entwickelt, d.h. es in dieser frühen Phase ist er in anderen Environments
+        mit Vorsicht zu nutzen.
+        """
         self.observation = observation
         # features sind unveränderbar nach der Initialisierung
         self.__features: list[str] = features if features is not None else []
@@ -29,13 +30,13 @@ class ObservationWrapper:
     def set_observation(self, observation):
         self.observation = observation
 
-    """
-    Check, ob die vom übergebenen Fahrzeug rechte Spur frei ist.
-    :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
-    
-    Important: Die Fahrzeug-ID ist die Position des Fahrzeugs in der Observation.
-    """
     def is_right_lane_clear(self, vehicle_id) -> bool:
+        """
+        Check, ob die vom übergebenen Fahrzeug rechte Spur frei ist.
+        :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
+
+        Important: Die Fahrzeug-ID ist die Position des Fahrzeugs in der Observation.
+        """
         try:
             values = self.__get_values_for_vehicle(vehicle_id)
             for i in range(1, (values.shape[0] - 1)):
@@ -53,11 +54,11 @@ class ObservationWrapper:
             warnings.warn("The following feature is not observed, which is necessary for the calculation. The return value will always be False. Missing feature:" + str(e))
             return False
 
-
-    """
-    Check, ob die vom übergebenen Fahrzeug linke Spur frei ist.
-    """
     def is_left_lane_clear(self, vehicle_id) -> bool:
+        """
+        Check, ob die vom übergebenen Fahrzeug linke Spur frei ist.
+        :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
+        """
         try:
             values = self.__get_values_for_vehicle(vehicle_id)
             for i in range(1, (values.shape[0] - 1)):
@@ -73,10 +74,11 @@ class ObservationWrapper:
             warnings.warn("The following feature is not observed, which is necessary for the calculation. The return value will always be False. Missing feature:" + str(e))
             return False
 
-    """
-    Ermittelt die Distanz zu einem auf der gleichen Spur vorausfahrenden Fahrzeug.
-    """
     def get_distance_to_leading_vehicle(self, vehicle_id) -> float:
+        """
+        Ermittelt die Distanz zu einem auf der gleichen Spur vorausfahrenden Fahrzeug.
+        :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
+        """
         try:
             shortest_distance: float = None
             values = self.__get_values_for_vehicle(vehicle_id)
@@ -98,14 +100,15 @@ class ObservationWrapper:
             warnings.warn("The following feature is not observed, which is necessary for the calculation. The return value will always be False. Missing feature:" + str(e))
             return False
 
-    """
-    Ermittelt die Gesamtgeschwindigkeit des übergebenen Fahrzeugs.
-    
-    Die Berechnung basiert auf den beiden unabhängigen Geschwindigkeiten vx und vy und werden mittels
-    des Satzes von Pythagoras genutzt, um die Gesamtgeschwindigkeit des Fahrzeuges zu berechnen.
-    Note: Aktuell wird hier der normalisierte Wert der Geschwindigkeit ermittelt.
-    """
     def get_velocity(self, vehicle_id) -> float:
+        """
+        Ermittelt die Gesamtgeschwindigkeit des übergebenen Fahrzeugs.
+        :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
+
+        Die Berechnung basiert auf den beiden unabhängigen Geschwindigkeiten vx und vy und werden mittels
+        des Satzes von Pythagoras genutzt, um die Gesamtgeschwindigkeit des Fahrzeuges zu berechnen.
+        Note: Aktuell wird hier der normalisierte Wert der Geschwindigkeit ermittelt.
+        """
         try:
             values = self.__get_values_for_vehicle(vehicle_id)
             vx =  values[0][self.__features.index("vx")]
