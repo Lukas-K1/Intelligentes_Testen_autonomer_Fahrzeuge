@@ -56,6 +56,8 @@ def check_action_for_vehicle(current_vehicle: List[float], ego_vehicle: List[flo
 
     same_lane = other_lane == ego_lane
     other_is_in_front = other_position > ego_position
+    ego_in_front = ego_position > other_position
+    overtake_completed = ego_in_front and same_lane
     distance_between_vehicles = abs(other_position - ego_position)
     ego_is_faster = other_speed - ego_speed < 0
 
@@ -69,6 +71,8 @@ def check_action_for_vehicle(current_vehicle: List[float], ego_vehicle: List[flo
             return 4
         elif same_lane and distance_between_vehicles > 75:
             return 3
+    elif overtake_completed:
+        return 4
     elif same_lane and not other_is_in_front:
         return 1
     elif distance_between_vehicles > 5 and ego_is_faster and same_lane:
