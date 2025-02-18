@@ -18,7 +18,7 @@ def create_env(config: Dict[str, Any]) -> gym.Env:
 
 
 def process_observation(obs: Any) -> List[List[float]]:
-    return obs #if isinstance(obs, list) #else obs.tolist()
+    return obs
 
 
 def decide_action(vehicles: List[List[float]], lane_width: float = 4.0) -> int:
@@ -76,15 +76,15 @@ def decide_passiv(vehicles: List[List[float]], lane_width: float = 4.0) -> int:
     if same_lane and other_is_in_front and distance_between_vehicles < 25 and ego_is_faster:
         return 4
     elif not other_is_in_front and distance_between_vehicles > 35 and other_position > 0:
-        return 4  # Speed up to maintain position
-    elif not other_is_in_front and distance_between_vehicles > 35 and not other_position > 0:
-        return 1  # Speed up to maintain position
+        return 4
+    elif not other_is_in_front and distance_between_vehicles > 35:
+        return 1
     elif not other_is_in_front and 35 > distance_between_vehicles > 10:
-        return 1  # Speed up to maintain position
+        return 1
     elif other_is_in_front and 35 > distance_between_vehicles > 10:
-        return 1  # Speed up to maintain position
+        return 1
     elif other_is_in_front and distance_between_vehicles > 10 and ego_position < other_position:
-        return 3  # Speed up to maintain position
+        return 3
     return 4
 
 
@@ -135,7 +135,7 @@ def main():
         "initial_positions": [
             [15, 1, 20],  # (x_position, lane_index, speed)
             [45, 1, 10]   # Another vehicle in a different lane
-        ],  # Fixed start positions
+        ],  # Fixed start positions WIP
         "observation": {
             "type": "MultiAgentObservation",
             "observation_config": {
