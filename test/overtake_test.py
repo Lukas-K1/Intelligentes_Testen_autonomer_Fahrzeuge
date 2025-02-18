@@ -1,7 +1,7 @@
 import unittest
 from typing import List, Tuple
 
-from demo_overtaking import check_action_for_vehicle
+from demo.demo_overtaking import check_action_for_vehicle
 
 
 class TestOvertaking(unittest.TestCase):

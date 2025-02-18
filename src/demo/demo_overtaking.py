@@ -4,6 +4,8 @@ import time
 from bppy import *
 from typing import Dict, Any, List
 
+
+# TODO DO NOT USE OBSOLETE DEMO
 # BPpy Events
 CHECK_CLEARANCE = BEvent("CheckClearance")
 START_OVERTAKE = BEvent("StartOvertake")
@@ -26,9 +28,6 @@ def decide_overtake_action(vehicles: List[List[float]], lane_width: float = 4.0)
 
     if len(vehicles) == 1:
         return 1
-    action_v1 = check_action_for_vehicle(vehicles[1], ego_vehicle)
-    action_v2 = check_action_for_vehicle(vehicles[2], ego_vehicle)
-    action_v3 = check_action_for_vehicle(vehicles[3], ego_vehicle)
     for i in range(1, len(vehicles)):
         current_vehicle = vehicles[i]
         action = check_action_for_vehicle(current_vehicle, ego_vehicle)
@@ -122,9 +121,6 @@ def perform_overtake(env):
         yield sync(waitFor=START_OVERTAKE)
         env.render()
         yield sync(request=PERFORM_OVERTAKE)
-        # for _ in range(10):
-        #     env.step(1)
-        #     env.render()
         yield sync(request=COMPLETE_OVERTAKE)
 
 
@@ -174,7 +170,6 @@ def main():
     for _ in range(100):
         env.render()
         env.step(1)
-        #time.sleep(0.1)
 
     env.close()
 

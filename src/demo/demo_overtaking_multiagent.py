@@ -132,6 +132,10 @@ def main():
         "vehicles_count": 0,
         "controlled_vehicles": 2,
         "lanes_count": 3,
+        "initial_positions": [
+            [15, 1, 20],  # (x_position, lane_index, speed)
+            [45, 1, 10]   # Another vehicle in a different lane
+        ],  # Fixed start positions
         "observation": {
             "type": "MultiAgentObservation",
             "observation_config": {
@@ -159,8 +163,7 @@ def main():
                 "target_speeds": [0, 5, 10, 15, 20, 25, 30]
             },
         },
-        "simulation_frequency": 100,
-        "initial_positions": [[15, 1, 20], [45, 1, 2]]  # Fixed start positions
+        "simulation_frequency": 100
     }
 
     env = create_env(config)
