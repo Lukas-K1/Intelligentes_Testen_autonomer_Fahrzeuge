@@ -15,11 +15,17 @@ def set_config():
     config = {
         "centering_position": [0.5, 0.5],
         "vehicles_count": 0,
-        "controlled_vehicles": 2,
-        "lanes_count": 3,
+        "controlled_vehicles": 8,
+        "lanes_count": 4,
         "initial_positions": [
-            [15, 2, 20],  # (x_position, lane_index, speed)
-            [45, 1, 20]  # Another vehicle in a different lane
+            [15, 2, 32],  # (x_position, lane_index, speed)
+            [45, 1, 20],
+            [65, 2, 27],
+            [105, 0, 15],
+            [135, 3, 35],
+            [165, 1, 17],
+            [195, 3, 23],
+            [225, 0, 29],
         ],  # Fixed start positions WIP
         "observation": {
             "type": "MultiAgentObservation",
@@ -64,8 +70,8 @@ def main():
 
     for _ in range(100):
         #bp.run()
-        env.render()
         env.step((1, 1))
+        env.render()
 
     env.close()
 
