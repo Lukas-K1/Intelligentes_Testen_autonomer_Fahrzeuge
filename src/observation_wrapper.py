@@ -7,19 +7,21 @@ class VehicleNotFoundError(Exception):
     pass
 
 class ObservationWrapper:
+    """
+    Diese Klasse dient dazu eine Observation aus HighwayEnv fachlich zu interpretieren.
+
+    :attribute observation: Die von der Environment zurückgegebene Observation. Dabei müssen die features
+    ["x", "y", "vx", "vy"] in genau dieser Reihenfolge, am Anfang der Observation stehen! Sonst kann die Korrektheit
+    der Ergebnisse nicht gewährleistet werden.
+
+    Note: In dieser ersten Umsetzung wird davon ausgegangen, dass die Observation vom Typ Kinematics ist.
+    Zudem ist es auf Basis der HighwayEnv entwickelt, d.h. es in dieser frühen Phase ist er in anderen Environments
+    mit Vorsicht zu nutzen. Zudem wird empfohlen, die Konfiguration der Obseration mit dem Parameter
+    "normalize": False zu verwenden. Dann können die Distanzen fachlich in Metern interpretiert und die
+    Gecshwindigkeiten in m/s werden. Ansonsten basieren die Berechnungen auf den normalisierten Werten der Observation.
+    """
 
     def __init__(self, observation):
-        """
-        Konstruktor
-        :param observation: Die von der Environment zurückgegebene Observation. Dabei müssen die features
-        ["x", "y", "vx", "vy"] in dieser Reihenfolge, die ersten der Observation sein.
-
-        Important: In dieser ersten Umsetzung wird davon ausgegangen, dass die Observation vom Typ Kinematics ist.
-        Zudem ist es auf Basis der HighwayEnv entwickelt, d.h. es in dieser frühen Phase ist er in anderen Environments
-        mit Vorsicht zu nutzen. Zudem wird empfohlen, die Konfiguration der Obseration mit dem Parameter
-        "normalize": False zu verwenden. Dann können die Distanzen fachlich in Metern interpretiert und die
-        Gecshwindigkeiten in m/s werden. Ansonsten basieren die Berechnungen auf den normalisierten Werten der Observation.
-        """
         self.observation = observation
 
     def set_observation(self, observation):
@@ -30,19 +32,22 @@ class ObservationWrapper:
         """
         Check, ob die vom übergebenen Fahrzeug rechte Spur frei ist.
         :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
-        :param minimal_distance_to_front: Der minimale Abstand, der nach vorne eingehalten werden soll.
-        :param minimal_distance_to_back: Der minimale Abstand, der nach hinten eingehalten werden soll.
-        :returns: True, wenn die rechte Spur im Bereich des übergebenen Abstandes nach vorne und hinten frei ist.
+        :param minimal_distance_to_front: Der minimale Abstand (als positiver Wert), der nach vorne eingehalten werden soll.
+        :param minimal_distance_to_back: Der minimale Abstand (als positiver Wert), der nach hinten eingehalten werden soll.
+        :returns: True, wenn die rechte Spur im Bereich des übergebenen Abstandes nach vorne und hinten frei ist. Sollten
+        minimal_distance_to_front und minimal_distance_to_back beide 0 sein, wird False zurückgegeben.
 
         Important: Die Fahrzeug-ID ist die Position des Fahrzeugs in der Observation.
         """
+        if minimal_distance_to_front == 0 and minimal_distance_to_back == 0:
+            return False
         try:
             values = self.__get_values_for_vehicle(vehicle_id)
-            for i in range(1, (values.shape[0] - 1)):
+            for vehicle_i in range(1, (values.shape[0])):
                 # check, if y für die Werte aus Sicht der ego-vehicles größer 0 ist (dann rechts vom ego-vehicle)
                 # theoretisch, um nur die nächstgelegene Spur zu nehmen, muss y noch eingeschränkt werden + lane_size
-                if values[i][1] > 0:
-                    x_of_vehicle_i = values[i][0]
+                if values[vehicle_i][1] > 0:
+                    x_of_vehicle_i = values[vehicle_i][0]
                     if -minimal_distance_to_back <= x_of_vehicle_i <= minimal_distance_to_front:
                         return False
             return True
@@ -55,17 +60,20 @@ class ObservationWrapper:
         """
         Check, ob die vom übergebenen Fahrzeug linke Spur frei ist.
         :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
-        :param minimal_distance_to_front: Der minimale Abstand, der nach vorne eingehalten werden soll.
-        :param minimal_distance_to_back: Der minimale Abstand, der nach hinten eingehalten werden soll.
-        :returns: True, wenn die linke Spur im Bereich des übergebenen Abstandes nach vorne und hinten frei ist.
+        :param minimal_distance_to_front: Der minimale Abstand (als positiver Wert), der nach vorne eingehalten werden soll.
+        :param minimal_distance_to_back: Der minimale Abstand (als positiver Wert), der nach hinten eingehalten werden soll.
+        :returns: True, wenn die linke Spur im Bereich des übergebenen Abstandes nach vorne und hinten frei ist. Sollten
+        minimal_distance_to_front und minimal_distance_to_back 0 sein, wird False zurückgegeben.
 
         Important: Die Fahrzeug-ID ist die Position des Fahrzeugs in der Observation.
         """
+        if minimal_distance_to_front == 0 and minimal_distance_to_back == 0:
+            return False
         try:
             values = self.__get_values_for_vehicle(vehicle_id)
-            for i in range(1, (values.shape[0] - 1)):
-                if values[i][1] < 0:
-                    x_of_vehicle_i = values[i][0]
+            for vehicle_i in range(1, (values.shape[0])):
+                if values[vehicle_i][1] < 0:
+                    x_of_vehicle_i = values[vehicle_i][0]
                     if -minimal_distance_to_back <= x_of_vehicle_i <= minimal_distance_to_front:
                         return False
             return True
@@ -84,11 +92,11 @@ class ObservationWrapper:
         try:
             shortest_distance: float = None
             values = self.__get_values_for_vehicle(vehicle_id)
-            for i in range(1, (values.shape[0] - 1)):
+            for vehicle_i in range(1, (values.shape[0])):
                 # hier wird auf eine Stelle gerundet, da sonst dieser Vergleich zu ungenau wird und nie eintritt.
-                if not round(values[i][1], 1) == 0:
+                if not round(values[vehicle_i][1], 1) == 0:
                     continue
-                vehicle_i_distance = values[i][0]
+                vehicle_i_distance = values[vehicle_i][0]
                 if vehicle_i_distance > 0:
                     if shortest_distance is None:
                         shortest_distance = vehicle_i_distance
@@ -105,6 +113,8 @@ class ObservationWrapper:
         Ermittelt die Gesamtgeschwindigkeit des übergebenen Fahrzeugs.
         :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
         :returns: Die Geschwindigkeit des Fahrzeugs. Sollte die Geschwindigkeit nicht ermittelt werden können, ist es 0.
+
+        Important: Die Fahrzeug-ID ist die Position des Fahrzeugs in der Observation.
         """
         try:
             values = self.__get_values_for_vehicle(vehicle_id)
