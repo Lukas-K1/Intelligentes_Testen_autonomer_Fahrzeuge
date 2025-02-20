@@ -25,7 +25,7 @@ def set_config():
             [135, 3, 35],
             [165, 1, 17],
             [195, 3, 23],
-            [225, 0, 29],
+            [225, 0, 29]
         ],  # Fixed start positions WIP
         "observation": {
             "type": "MultiAgentObservation",
@@ -70,7 +70,8 @@ def main():
 
     for _ in range(100):
         #bp.run()
-        env.step((1, 1))
+        obs = env.step((1, 1, 2, 4,0,4,4,4))
+        print(obs)
         env.render()
 
     env.close()
