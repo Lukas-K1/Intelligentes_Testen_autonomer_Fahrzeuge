@@ -1,7 +1,7 @@
-from bppy import *
+from typing import Any, Dict, List
 import gymnasium as gym
 import highway_env as highway
-from typing import Dict, Any, List
+from bppy import *
 
 # BPpy Events
 
