@@ -32,6 +32,8 @@ def set_config():
             "type": "MultiAgentObservation",
             "observation_config": {
                 "type": "Kinematics",
+                "vehicles_count": 1,
+                "features": ["x", "y", "vx", "vy"],
                 "normalize": False,
                 "absolute": False,
                 "see_behind": True,
