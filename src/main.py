@@ -4,6 +4,7 @@ import gymnasium as gym
 import highway_env as highway
 from bppy import *
 
+
 # BPpy Events
 
 def create_env(config: Dict[str, Any]) -> gym.Env:
@@ -15,8 +16,8 @@ def create_env(config: Dict[str, Any]) -> gym.Env:
 def set_config():
     config = {
         "centering_position": [0.5, 0.5],
-        "vehicles_count": 0,
-        "controlled_vehicles": 8,
+        "vehicles_count": 1,
+        "controlled_vehicles": 7,
         "lanes_count": 4,
         "initial_positions": [
             [15, 2, 32],  # (x_position, lane_index, speed)
@@ -32,16 +33,8 @@ def set_config():
             "type": "MultiAgentObservation",
             "observation_config": {
                 "type": "Kinematics",
-                "vehicles_count": 1,
-                "features": ["presence", "x", "y", "vx", "vy"],
-                "features_range": {
-                    "x": [-100, 100],
-                    "y": [-100, 100],
-                    "vx": [-20, 20],
-                    "vy": [-20, 20]
-                },
                 "normalize": False,
-                "absolute": True,
+                "absolute": False,
                 "see_behind": True,
                 "order": "sorted"
             },
@@ -61,7 +54,6 @@ def set_config():
 
 
 def main():
-
     config = set_config()
     env = create_env(config)
     obs, _ = env.reset()
@@ -71,7 +63,7 @@ def main():
 
     for _ in range(100):
         #bp.run()
-        obs = env.step((1, 1, 2, 4,0,4,4,4))
+        obs = env.step((1, 1, 2, 4, 0, 4, 4))
         print(obs)
         env.render()
 
