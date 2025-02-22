@@ -14,6 +14,9 @@ class ObservationWrapper:
     ["x", "y", "vx", "vy"] in genau dieser Reihenfolge, am Anfang der Observation stehen! Sonst kann die Korrektheit
     der Ergebnisse nicht gewährleistet werden.
 
+    Die folgenden Werte der Observation-Config müssen wie folgt gesetzt sein:
+    "absolute" = False -> Damit die Werte der anderen Fahrzeuge relativ zum betrachteten Fahrzeug angegeben werden.
+
     Note: In dieser ersten Umsetzung wird davon ausgegangen, dass die Observation vom Typ Kinematics ist.
     Zudem ist es auf Basis der HighwayEnv entwickelt, d.h. es in dieser frühen Phase ist er in anderen Environments
     mit Vorsicht zu nutzen. Zudem wird empfohlen, die Konfiguration der Obseration mit dem Parameter
