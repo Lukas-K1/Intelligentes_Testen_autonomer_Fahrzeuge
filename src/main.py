@@ -4,7 +4,6 @@ import gymnasium as gym
 import highway_env as highway
 from bppy import *
 
-
 # BPpy Events
 
 def create_env(config: Dict[str, Any]) -> gym.Env:
