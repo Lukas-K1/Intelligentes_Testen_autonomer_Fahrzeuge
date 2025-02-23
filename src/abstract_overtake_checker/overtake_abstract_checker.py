@@ -20,7 +20,7 @@ from overtake_constraints import (
     MAX_SIM_STEPS, START_RELATIVE_POS, END_RELATIVE_POS, MIN_ACTION_INTERVAL_STEPS, MAX_ACTION_INTERVAL_STEPS,
     MIN_SPEED, MAX_SPEED, MIN_SIM_STEPS
 )
-
+from src.abstract_overtake_checker import demo_scenarios
 
 # Logging konfigurieren
 logging.basicConfig(format='[%(asctime)s --- %(levelname)s] %(message)s', level=logging.INFO, datefmt='%m/%d/%Y %H:%M:%S')
@@ -160,43 +160,13 @@ def speed_limit_constraint():
     else:
         logger.error("Speed Limit Constraint verletzt: {} Geschwindigkeitsverstöße.".format(violation_count))
 
-@thread
-def valid_demo_simulation():
-    """
-    Simuliert exemplarisch Events für das Szenario:
-      - Initiale POSITION_UPDATE mit START_RELATIVE_POS.
-      - STEP-Events zur Zeitzählung.
-      - Funktionale Aktionen (LANE_CHANGE bei Step 2, SPEED_UP bei Step 15) mit Payload "step".
-      - SPEED_UPDATE-Events mit zulässiger Geschwindigkeit.
-      - Abschließende POSITION_UPDATE mit END_RELATIVE_POS.
-      - Am Ende wird ein END-Event gesendet, das alle Constraints final evaluieren lässt.
-    """
-    step = 0
-    yield sync(request=make_event("POSITION_UPDATE", {"agent_relative_position": START_RELATIVE_POS}))
-    while True:
-        step += 1
-        yield sync(request=make_event("STEP"))
-        if step == MAX_SIM_STEPS:
-            yield sync(request=make_event("POSITION_UPDATE", {"agent_relative_position": END_RELATIVE_POS}))
-        else:
-            yield sync(request=make_event("POSITION_UPDATE", {"agent_relative_position": 0}))
-        if step == 2:
-            yield sync(request=make_event("LANE_CHANGE", {"step": step}))
-        if step == 15:
-            yield sync(request=make_event("SPEED_UP", {"step": step}))
-        yield sync(request=make_event("SPEED_UPDATE", {"speed": 20.0}))
-        if step >= MAX_SIM_STEPS:
-            break
-    # Sende das END-Event, damit alle Constraints final ausgewertet werden
-    yield sync(request=make_event("END"))
-
 def main():
     bthreads = [
         position_constraint(),
         duration_constraint(),
         functional_action_order(),
         speed_limit_constraint(),
-        valid_demo_simulation()
+        demo_scenarios.valid_demo_simulation(),
     ]
     bp = BProgram(
         bthreads=bthreads,
