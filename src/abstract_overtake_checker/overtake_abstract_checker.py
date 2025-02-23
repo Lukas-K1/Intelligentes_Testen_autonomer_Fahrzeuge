@@ -12,14 +12,14 @@ Hinweis: Zum Vergleich von Events verwenden wir ausschließlich Matcher-Funktion
 """
 
 import logging
-from bppy import (
-    BProgram, BEvent, thread, sync,
-    SimpleEventSelectionStrategy, All
-)
-from overtake_constraints import (
-    MAX_SIM_STEPS, START_RELATIVE_POS, END_RELATIVE_POS, MIN_ACTION_INTERVAL_STEPS, MAX_ACTION_INTERVAL_STEPS,
-    MIN_SPEED, MAX_SPEED, MIN_SIM_STEPS
-)
+
+from bppy import (All, BEvent, BProgram, SimpleEventSelectionStrategy, sync,
+                  thread)
+from overtake_constraints import (END_RELATIVE_POS, MAX_ACTION_INTERVAL_STEPS,
+                                  MAX_SIM_STEPS, MAX_SPEED,
+                                  MIN_ACTION_INTERVAL_STEPS, MIN_SIM_STEPS,
+                                  MIN_SPEED, START_RELATIVE_POS)
+
 from src.abstract_overtake_checker import demo_scenarios
 
 # Logging konfigurieren

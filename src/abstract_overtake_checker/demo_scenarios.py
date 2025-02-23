@@ -13,9 +13,9 @@ Folgende Simulationen sind enthalten:
   - invalid_speed_simulation: Verletzung der Speed Limit Constraint (Geschwindigkeit außerhalb des zulässigen Bereichs).
 """
 
-from bppy import BEvent, thread, sync
-from overtake_constraints import MAX_SIM_STEPS, START_RELATIVE_POS, END_RELATIVE_POS
-
+from bppy import BEvent, sync, thread
+from overtake_constraints import (END_RELATIVE_POS, MAX_SIM_STEPS,
+                                  START_RELATIVE_POS)
 
 
 def __make_event(name, data=None):
