@@ -14,7 +14,8 @@ Folgende Simulationen sind enthalten:
 """
 
 from bppy import BEvent, sync, thread
-from overtake_constraints import END_RELATIVE_POS, MAX_SIM_STEPS, START_RELATIVE_POS
+from overtake_constraints import (END_RELATIVE_POS, MAX_SIM_STEPS,
+                                  START_RELATIVE_POS)
 
 
 def __make_event(name, data=None):
