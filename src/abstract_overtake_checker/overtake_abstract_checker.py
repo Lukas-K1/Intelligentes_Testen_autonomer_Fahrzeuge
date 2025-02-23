@@ -1,14 +1,30 @@
 """
-Abstraktes Szenario für Überhol-Testfall in bpPy.
-Constraints (als Konstanten definiert):
+Abstraktes Szenario für Überhol-Testfall von einem Agenten, welcher ein VUT überholt.
+Constraints:
   - Start: Agent 50m hinter VUT, Ende: Agent 50m vor VUT.
   - Dauer: 10–40 Steps (5–20 Sekunden, 1s = 2 Steps).
-  - Funktionale Aktionen: Mindestens 1 LANE_CHANGE und 1 SPEED_UP in genau dieser Reihenfolge.
-  - Intervalle zwischen den funktionalen Aktionen: 10–30 Steps (5–15 Sekunden).
+  - Fachliche Aktionen: Mindestens 1 LANE_CHANGE und 1 SPEED_UP in genau dieser Reihenfolge.
+  - Intervalle zwischen den funktionalen Aktionen: 10–30 Steps (5–15 Sekunden) zwischen fachliche Aktionen.
   - Geschwindigkeitsbegrenzung: 13.9 m/s ≤ speed ≤ 27.8 m/s.
 
 Alle Constraints warten abschließend auf ein END-Event, das am Ende der Simulation ausgelöst wird.
 Hinweis: Zum Vergleich von Events verwenden wir ausschließlich Matcher-Funktionen, die den Event-Namen prüfen.
+
+
+Vorgaben zur Nutzung:
+In der Schleife, die die Simulation steuert (also env.step() aufruft), muss in unmittelbarer Nähe folgendes passieren:
+In jeder Iteration müssen gesendet werden:
+-- Ein Event mit dem Namen "POSITION_UPDATE" und dem Payload-Feld "agent_relative_position" wird gesendet.
+   Dabei ist der Wert von "agent_relative_position" die relative Position des Agenten zum VUT.
+-- Ein Event mit dem Namen "STEP" wird gesendet, um die Simulationsschritte zu zählen.
+-- Ein Event mit dem Namen "SPEED_UPDATE" und dem Payload-Feld "speed" wird gesendet, um die Geschwindigkeit des Agenten zu aktualisieren.
+
+Optional können folgende Events gesendet werden:
+-- Ein Event mit dem Namen "LANE_CHANGE" wird gesendet, wenn der Agent die Spur wechselt.
+-- Ein Event mit dem Namen "SPEED_UP" wird gesendet, wenn der Agent positiv beschleunigt.
+
+Am Ende der Simulation muss ein Event mit dem Namen "END" gesendet werden, damit die Constraints abschließend
+ausgewertet werden können.
 """
 
 import logging
@@ -196,6 +212,7 @@ def main():
         duration_constraint(),
         functional_action_order(),
         speed_limit_constraint(),
+        # Unter dieser Zeile können beispielsweise die verschiedenen Demo-Szenarien aus demo_scenarios.py eingefügt werden.
         demo_scenarios.valid_demo_simulation(),
     ]
     bp = BProgram(
