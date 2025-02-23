@@ -23,16 +23,16 @@ def create_env(config: Dict[str, Any]) -> gym.Env:
 def decide_action(vehicles: List[List[float]], obs_wrapper: ObservationWrapper) -> int:
     if obs_wrapper.get_distance_to_leading_vehicle(0) > 35:
         return 3
-    if (obs_wrapper.is_right_lane_clear(0, 0.025, 0.025) and obs_wrapper.get_distance_to_leading_vehicle(0) > 10
-            and not obs_wrapper.is_left_lane_clear(0, 0.025, 0.025)):
+    if (obs_wrapper.is_right_lane_clear(0, 5, 5) and obs_wrapper.get_distance_to_leading_vehicle(0) < 10 and not obs_wrapper.is_left_lane_clear(0, 5, 5)):
         return 2
-    if not obs_wrapper.is_right_lane_clear(0, 0.025, 0.025) and obs_wrapper.get_distance_to_leading_vehicle(0) > 10 and not obs_wrapper.is_left_lane_clear(0, 0.025, 0.025):
+    if (not obs_wrapper.is_right_lane_clear(0, 5, 5) and obs_wrapper.get_distance_to_leading_vehicle(0) < 10 and not obs_wrapper.is_left_lane_clear(0, 5, 5)):
         return 4
-    if not obs_wrapper.is_right_lane_clear(0, 0.025, 0.025) and obs_wrapper.get_distance_to_leading_vehicle(0) > 10 and obs_wrapper.is_left_lane_clear(0, 0.025, 0.025):
+    if (not obs_wrapper.is_right_lane_clear(0, 5, 5) and obs_wrapper.get_distance_to_leading_vehicle(0) < 10 and obs_wrapper.is_left_lane_clear(0, 5, 5)):
         return 0
-    if 35 > obs_wrapper.get_distance_to_leading_vehicle(0) > 10:
+    if 35 > obs_wrapper.get_distance_to_leading_vehicle(0) > 5:
         return 1
     return 1
+    # TODO rework if information about lane placement is available
 
 
 @thread
@@ -94,7 +94,7 @@ def set_config():
         "lanes_count": 4,
         "initial_positions": [
             [15, 2, 32],  # (x_position, lane_index, speed)
-            [45, 1, 20],
+            [45, 2, 20],
             [65, 3, 27],
             #[105, 0, 15],
             #[135, 3, 35],
