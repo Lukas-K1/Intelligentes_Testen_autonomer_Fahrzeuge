@@ -44,9 +44,6 @@ def is_speed_up(e):
 def is_speed_update(e):
     return e.name == "SPEED_UPDATE"
 
-def is_idle(e):
-    return e.name == "IDLE"
-
 @thread
 def position_constraint():
     """
@@ -96,7 +93,6 @@ def functional_action_order():
         evt = yield sync(waitFor=All())
         if not is_lane_change(evt) and not is_speed_up(evt):
             continue
-        print("Functional Action Constraint: {}".format(evt.name))
         if evt.name == "LANE_CHANGE":
             if lane_change_step is None:
                 lane_change_step = evt.data.get("step", 0)
@@ -146,13 +142,12 @@ def demo_simulation():
             yield sync(request=make_event("POSITION_UPDATE", {"agent_relative_position": END_RELATIVE_POS}))
         else:
             yield sync(request=make_event("POSITION_UPDATE", {"agent_relative_position": 0}))
-        if step == 16:
-            yield sync(request=make_event("LANE_CHANGE", {"step": step}))
         if step == 2:
+            yield sync(request=make_event("LANE_CHANGE", {"step": step}))
+        if step == 15:
             yield sync(request=make_event("SPEED_UP", {"step": step}))
         yield sync(request=make_event("SPEED_UPDATE", {"speed": 20.0}))
-        yield sync(request=make_event("IDLE"))
-        if step >= MAX_SIM_STEPS + 5:
+        if step >= MAX_SIM_STEPS + 1:
             break
 
 def main():
@@ -166,7 +161,7 @@ def main():
     bp = BProgram(
         bthreads=bthreads,
         event_selection_strategy=SimpleEventSelectionStrategy(),
-        listener=PrintBProgramRunnerListener()
+        #listener=PrintBProgramRunnerListener()
     )
     bp.run()
 
