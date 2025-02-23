@@ -14,22 +14,17 @@ Hinweis: Zum Vergleich von Events verwenden wir ausschließlich Matcher-Funktion
 import logging
 from bppy import (
     BProgram, BEvent, thread, sync,
-    SimpleEventSelectionStrategy, PrintBProgramRunnerListener, All
+    SimpleEventSelectionStrategy, All
 )
+from overtake_constraints import (
+    MAX_SIM_STEPS, START_RELATIVE_POS, END_RELATIVE_POS, MIN_ACTION_INTERVAL_STEPS, MAX_ACTION_INTERVAL_STEPS,
+    MIN_SPEED, MAX_SPEED, MIN_SIM_STEPS
+)
+
 
 # Logging konfigurieren
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Konstanten
-MIN_SIM_STEPS = 10
-MAX_SIM_STEPS = 40
-START_RELATIVE_POS = -50
-END_RELATIVE_POS = 50
-MIN_ACTION_INTERVAL_STEPS = 10
-MAX_ACTION_INTERVAL_STEPS = 30
-MIN_SPEED = 13.9
-MAX_SPEED = 27.8
 
 def make_event(name, data=None):
     """
