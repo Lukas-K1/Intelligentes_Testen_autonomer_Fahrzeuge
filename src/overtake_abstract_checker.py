@@ -57,11 +57,9 @@ def position_constraint():
     while True:
         evt = yield sync(waitFor=All())
         if not is_position_update(evt):
-            yield sync()
             continue
         pos = evt.data.get("agent_relative_position")
         if pos is None:
-            yield sync()  # Falls keine Positionsangabe vorhanden, überspringen
             continue
         if start_valid is None:
             start_valid = (pos == START_RELATIVE_POS)
@@ -70,7 +68,6 @@ def position_constraint():
                 print("Position Constraint erfüllt.")
             else:
                 print("Position Constraint verletzt: Startbedingung nicht erfüllt.")
-        yield sync()
 
 @thread
 def duration_constraint():
@@ -82,12 +79,10 @@ def duration_constraint():
     while True:
         evt = yield sync(waitFor=All())
         if not is_step(evt):
-            yield sync()
             continue
         step_count += 1
         if step_count > MAX_SIM_STEPS:
             print("Duration Constraint verletzt: Mehr als {} Steps.".format(MAX_SIM_STEPS))
-        yield sync()
 
 @thread
 def functional_action_order():
@@ -100,8 +95,8 @@ def functional_action_order():
         # Warten auf ein LANE_CHANGE- oder SPEED_UP-Event
         evt = yield sync(waitFor=All())
         if not is_lane_change(evt) and not is_speed_up(evt):
-            yield sync()
             continue
+        print("Functional Action Constraint: {}".format(evt.name))
         if evt.name == "LANE_CHANGE":
             if lane_change_step is None:
                 lane_change_step = evt.data.get("step", 0)
@@ -117,7 +112,6 @@ def functional_action_order():
                 else:
                     print("Functional Action Constraint erfüllt.")
                 lane_change_step = None
-        yield sync()
 
 @thread
 def speed_limit_constraint():
@@ -127,12 +121,10 @@ def speed_limit_constraint():
     while True:
         evt = yield sync(waitFor=All())
         if not is_speed_update(evt):
-            yield sync()
             continue
         speed = evt.data.get("speed")
         if speed is not None and (speed < MIN_SPEED or speed > MAX_SPEED):
             print("Speed Limit Constraint verletzt: speed = {} m/s.".format(speed))
-        yield sync()
 
 @thread
 def demo_simulation():
@@ -154,9 +146,9 @@ def demo_simulation():
             yield sync(request=make_event("POSITION_UPDATE", {"agent_relative_position": END_RELATIVE_POS}))
         else:
             yield sync(request=make_event("POSITION_UPDATE", {"agent_relative_position": 0}))
-        if step == 2:
+        if step == 16:
             yield sync(request=make_event("LANE_CHANGE", {"step": step}))
-        if step == 15:
+        if step == 2:
             yield sync(request=make_event("SPEED_UP", {"step": step}))
         yield sync(request=make_event("SPEED_UPDATE", {"speed": 20.0}))
         yield sync(request=make_event("IDLE"))
