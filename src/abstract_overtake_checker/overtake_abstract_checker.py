@@ -23,7 +23,7 @@ from overtake_constraints import (
 
 
 # Logging konfigurieren
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format='[%(asctime)s --- %(levelname)s] %(message)s', level=logging.INFO, datefmt='%m/%d/%Y %H:%M:%S')
 logger = logging.getLogger(__name__)
 
 def make_event(name, data=None):
