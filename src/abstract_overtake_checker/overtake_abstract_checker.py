@@ -13,18 +13,28 @@ Hinweis: Zum Vergleich von Events verwenden wir ausschließlich Matcher-Funktion
 
 import logging
 
-from bppy import (All, BEvent, BProgram, SimpleEventSelectionStrategy, sync,
-                  thread)
-from overtake_constraints import (END_RELATIVE_POS, MAX_ACTION_INTERVAL_STEPS,
-                                  MAX_SIM_STEPS, MAX_SPEED,
-                                  MIN_ACTION_INTERVAL_STEPS, MIN_SIM_STEPS,
-                                  MIN_SPEED, START_RELATIVE_POS)
+from bppy import All, BEvent, BProgram, SimpleEventSelectionStrategy, sync, thread
+from overtake_constraints import (
+    END_RELATIVE_POS,
+    MAX_ACTION_INTERVAL_STEPS,
+    MAX_SIM_STEPS,
+    MAX_SPEED,
+    MIN_ACTION_INTERVAL_STEPS,
+    MIN_SIM_STEPS,
+    MIN_SPEED,
+    START_RELATIVE_POS,
+)
 
 from src.abstract_overtake_checker import demo_scenarios
 
 # Logging konfigurieren
-logging.basicConfig(format='[%(asctime)s --- %(levelname)s] %(message)s', level=logging.INFO, datefmt='%m/%d/%Y %H:%M:%S')
+logging.basicConfig(
+    format="[%(asctime)s --- %(levelname)s] %(message)s",
+    level=logging.INFO,
+    datefmt="%m/%d/%Y %H:%M:%S",
+)
 logger = logging.getLogger(__name__)
+
 
 def make_event(name, data=None):
     """
@@ -32,23 +42,30 @@ def make_event(name, data=None):
     """
     return BEvent(name, data=data or {})
 
+
 def is_position_update(e):
     return e.name == "POSITION_UPDATE"
+
 
 def is_step(e):
     return e.name == "STEP"
 
+
 def is_lane_change(e):
     return e.name == "LANE_CHANGE"
+
 
 def is_speed_up(e):
     return e.name == "SPEED_UP"
 
+
 def is_speed_update(e):
     return e.name == "SPEED_UPDATE"
 
+
 def is_end(e):
     return e.name == "END"
+
 
 @thread
 def position_constraint():
@@ -68,14 +85,17 @@ def position_constraint():
         if pos is None:
             continue
         if start_valid is None:
-            start_valid = (pos == START_RELATIVE_POS)
+            start_valid = pos == START_RELATIVE_POS
         if pos == END_RELATIVE_POS:
             end_valid = True
     # Finales Reporting auf Basis des END-Events
     if start_valid is True and end_valid:
         logger.info("Position Constraint erfüllt.")
     else:
-        logger.error("Position Constraint verletzt: Startbedingung und/oder Endbedingung nicht erfüllt.")
+        logger.error(
+            "Position Constraint verletzt: Startbedingung und/oder Endbedingung nicht erfüllt."
+        )
+
 
 @thread
 def duration_constraint():
@@ -99,6 +119,7 @@ def duration_constraint():
                 step_count, MIN_SIM_STEPS, MAX_SIM_STEPS
             )
         )
+
 
 @thread
 def functional_action_order():
@@ -131,14 +152,23 @@ def functional_action_order():
                     order_violation = True
                 speed_up_count += 1
                 lane_change_step = None
-    if lane_change_count >= 1 and speed_up_count >= 1 and valid_time_between_actions and not order_violation:
+    if (
+        lane_change_count >= 1
+        and speed_up_count >= 1
+        and valid_time_between_actions
+        and not order_violation
+    ):
         logger.info("Functional Action Constraint erfüllt.")
     else:
         logger.error(
             "Functional Action Constraint verletzt: lane_change_count={}, speed_up_count={}, valid_time_between_actions={}, order_violation={}".format(
-                lane_change_count, speed_up_count, valid_time_between_actions, order_violation
+                lane_change_count,
+                speed_up_count,
+                valid_time_between_actions,
+                order_violation,
             )
         )
+
 
 @thread
 def speed_limit_constraint():
@@ -158,7 +188,12 @@ def speed_limit_constraint():
     if violation_count == 0:
         logger.info("Speed Limit Constraint erfüllt.")
     else:
-        logger.error("Speed Limit Constraint verletzt: {} Geschwindigkeitsverstöße.".format(violation_count))
+        logger.error(
+            "Speed Limit Constraint verletzt: {} Geschwindigkeitsverstöße.".format(
+                violation_count
+            )
+        )
+
 
 def main():
     bthreads = [
@@ -173,6 +208,7 @@ def main():
         event_selection_strategy=SimpleEventSelectionStrategy(),
     )
     bp.run()
+
 
 if __name__ == "__main__":
     main()
