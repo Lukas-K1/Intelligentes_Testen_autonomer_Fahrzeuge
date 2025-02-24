@@ -44,3 +44,7 @@ jobs:
       with:
         configuration: "--diff --check"
       continue-on-error: true
+    - name: Run unit tests
+      run: |
+        pytest
+      continue-on-error: true
