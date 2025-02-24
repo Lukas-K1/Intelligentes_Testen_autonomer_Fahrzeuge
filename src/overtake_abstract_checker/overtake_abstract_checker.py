@@ -126,7 +126,7 @@ def __duration_constraint():
 @thread
 def __functional_action_order():
     """
-    Erzwingt: Zuerst LANE_CHANGE, dann SPEED_UP.
+    Prüft, dass zuerst LANE_CHANGE, dann SPEED_UP auftritt.
     Prüft, dass das Intervall (Payload "step") zwischen den Aktionen in [MIN_ACTION_INTERVAL_STEPS, MAX_ACTION_INTERVAL_STEPS] liegt.
     Zusätzlich müssen mindestens ein LANE_CHANGE und ein SPEED_UP erfolgt sein.
     """
