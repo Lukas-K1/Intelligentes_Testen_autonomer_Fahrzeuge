@@ -132,6 +132,24 @@ class ObservationWrapper:
             warnings.warn("The Vehicle was not found in the observation. The return value will always be zero.")
             return 0
 
+    def is_in_same_lane(self, vehicle1_id, vehicle2_id):
+        """
+        Überprüft, ob sich zwei Fahrzeuge auf der gleichen Spur befinden.
+        :param vehicle1_id: die Position im Observation-Array des ersten Fahrzeugs
+        :param vehicle2_id: die Position im Observation-Array des zweiten Fahrzeugs
+        :return: True, wenn sich beide Fahrzeuge auf der gleichen Spur befinden, ansonsten False. Sollte mindestens ein
+        Fahrzeug nicht in der observation gefunden werden, wird False zurückgegeben
+
+        Important: Die vehicle_ids sind die Position des Fahrzeugs in der Observation.
+        """
+        try:
+            values_vehicle1 = self.__get_values_for_vehicle(vehicle1_id)
+            values_vehicle2 = self.__get_values_for_vehicle(vehicle2_id)
+            return round(values_vehicle1[0][1]) == round(values_vehicle2[0][1])
+        except VehicleNotFoundError:
+            warnings.warn("At least one vehicle was not found in the observation. The return value will always be False.")
+            return False
+
     def __get_values_for_vehicle(self, vehicle_id):
         try:
          return self.observation[vehicle_id]
