@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+from gymnasium import Env
 
 
 class VehicleNotFoundError(Exception):
@@ -149,6 +150,35 @@ class ObservationWrapper:
         except VehicleNotFoundError:
             warnings.warn("At least one vehicle was not found in the observation. The return value will always be False.")
             return False
+
+    def is_in_lane(self, vehicle_id, lane_id, env: Env) -> bool:
+        """
+        Prüft, ob sich ein gegebenes Fahrzeug auf einer bestimmten Lane befindet
+        :param vehicle_id: Id des Fahrzeugs, für das die Lane geprüft werden soll.    :param lane_id: Id der Lane, auf der sich das Fahrzeug befinden soll. Beginnend mit der rechten Spur    :param env: Environment, mit dem getestet wird    :return: True, wenn sich das Fahrzeug auf der Lane befindet. Sonst False
+        """
+        # False, wenn das Fahrzeug nicht exisistiert
+        try:
+            vehicle_y = self.__get_values_for_vehicle(vehicle_id)[0][1]
+        except VehicleNotFoundError:
+            warnings.warn("The Vehicle was not found in the observation. The return value will always be false.")
+            return False
+
+            # False, wenn aus Env nicht alle nötigen Daten gelesen werden können
+        try:
+            abstract_env = getattr(env, 'env')
+            highway = getattr(abstract_env, 'env')
+            road = getattr(highway, 'road')
+            network = getattr(road, 'network')
+        except AttributeError:
+            warnings.warn("The Environment was not set up properly. The return value will always be false.")
+            return False
+
+            # False, wenn Lane nicht existiert
+        if (len(network.lanes_list()) - 1) < lane_id:
+            return False
+
+        index = network.get_closest_lane_index(np.array([0, vehicle_y]), 0.0)
+        return index[2] == lane_id
 
     def __get_values_for_vehicle(self, vehicle_id):
         try:
