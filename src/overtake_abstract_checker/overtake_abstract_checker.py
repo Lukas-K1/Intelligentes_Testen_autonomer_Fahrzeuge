@@ -29,14 +29,14 @@ ausgewertet werden können.
 
 import logging
 
-from bppy import (All, BEvent, BProgram, SimpleEventSelectionStrategy, sync,
+from bppy import (All, BProgram, SimpleEventSelectionStrategy, sync,
                   thread)
 from overtake_constraints import (END_RELATIVE_POS, MAX_ACTION_INTERVAL_STEPS,
                                   MAX_SIM_STEPS, MAX_SPEED,
                                   MIN_ACTION_INTERVAL_STEPS, MIN_SIM_STEPS,
                                   MIN_SPEED, START_RELATIVE_POS)
 
-from src.abstract_overtake_checker import demo_scenarios
+import demo_scenarios
 
 # Logging konfigurieren
 logging.basicConfig(
