@@ -45,6 +45,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 def __is_position_update(e):
     return e.name == "POSITION_UPDATE"
 
@@ -70,7 +71,7 @@ def __is_end(e):
 
 
 @thread
-def __position_constraint():
+def position_constraint():
     """
     Prüft, ob der Agent zu Beginn am START und am Ende am END ist.
     Erwartet POSITION_UPDATE-Events mit dem Payload-Feld "distance_to_vut" (Angabe der Distanz zwischen Agent und VUT).
@@ -100,7 +101,7 @@ def __position_constraint():
 
 
 @thread
-def __duration_constraint():
+def duration_constraint():
     """
     Überwacht die Simulationsdauer anhand von STEP-Events.
     Final: Es muss eine Anzahl von Steps zwischen MIN_SIM_STEPS und MAX_SIM_STEPS liegen.
@@ -124,7 +125,7 @@ def __duration_constraint():
 
 
 @thread
-def __functional_action_order():
+def functional_action_order():
     """
     Prüft, dass zuerst LANE_CHANGE, dann SPEED_UP auftritt.
     Prüft, dass das Intervall (Payload "step") zwischen den Aktionen in [MIN_ACTION_INTERVAL_STEPS, MAX_ACTION_INTERVAL_STEPS] liegt.
@@ -173,7 +174,7 @@ def __functional_action_order():
 
 
 @thread
-def __speed_limit_constraint():
+def speed_limit_constraint():
     """
     Stellt sicher, dass alle SPEED_UPDATE-Events (Payload: "speed") innerhalb der zulässigen Grenzen liegen.
     """
@@ -196,13 +197,15 @@ def __speed_limit_constraint():
             )
         )
 
+
 def get_checker_threads():
     return [
-        __position_constraint(),
-        __duration_constraint(),
-        __functional_action_order(),
-        __speed_limit_constraint(),
+        position_constraint(),
+        duration_constraint(),
+        functional_action_order(),
+        speed_limit_constraint(),
     ]
+
 
 def main():
     bthreads = [

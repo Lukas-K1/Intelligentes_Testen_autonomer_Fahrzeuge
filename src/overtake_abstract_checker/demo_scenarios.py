@@ -23,17 +23,22 @@ from overtake_constraints import (END_RELATIVE_POS, MAX_SIM_STEPS,
 def make_position_update(distance: float) -> BEvent:
     return BEvent("POSITION_UPDATE", data={"distance_to_vut": distance})
 
+
 def make_step() -> BEvent:
     return BEvent("STEP")
+
 
 def make_lane_change(step: int) -> BEvent:
     return BEvent("LANE_CHANGE", data={"step": step})
 
+
 def make_speed_up(step: int) -> BEvent:
     return BEvent("SPEED_UP", data={"step": step})
 
+
 def make_speed_update(speed: float) -> BEvent:
     return BEvent("SPEED_UPDATE", data={"speed": speed})
+
 
 def make_end() -> BEvent:
     return BEvent("END")
