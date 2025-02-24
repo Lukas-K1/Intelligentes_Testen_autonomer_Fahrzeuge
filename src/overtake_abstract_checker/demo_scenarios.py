@@ -14,15 +14,34 @@ Folgende Simulationen sind enthalten:
 """
 
 from bppy import BEvent, sync, thread
+
 from overtake_constraints import (END_RELATIVE_POS, MAX_SIM_STEPS,
                                   START_RELATIVE_POS)
 
 
-def __make_event(name, data=None):
-    """
-    Erzeugt ein neues Event mit dem angegebenen Namen und Payload.
-    """
-    return BEvent(name, data=data or {})
+# Neue, spezifische Factory-Methoden für Events:
+def make_position_update(distance: float) -> BEvent:
+    return BEvent("POSITION_UPDATE", data={"distance_to_vut": distance})
+
+
+def make_step() -> BEvent:
+    return BEvent("STEP")
+
+
+def make_lane_change(step: int) -> BEvent:
+    return BEvent("LANE_CHANGE", data={"step": step})
+
+
+def make_speed_up(step: int) -> BEvent:
+    return BEvent("SPEED_UP", data={"step": step})
+
+
+def make_speed_update(speed: float) -> BEvent:
+    return BEvent("SPEED_UPDATE", data={"speed": speed})
+
+
+def make_end() -> BEvent:
+    return BEvent("END")
 
 
 @thread
@@ -37,32 +56,28 @@ def valid_demo_simulation():
       - Am Ende wird ein END-Event gesendet.
     """
     step = 0
-    yield sync(
-        request=__make_event(
-            "POSITION_UPDATE", {"agent_relative_position": START_RELATIVE_POS}
-        )
-    )
+    # Startposition
+    yield sync(request=make_position_update(START_RELATIVE_POS))
     while True:
         step += 1
-        yield sync(request=__make_event("STEP"))
+        yield sync(request=make_step())
+
         if step == MAX_SIM_STEPS:
-            yield sync(
-                request=__make_event(
-                    "POSITION_UPDATE", {"agent_relative_position": END_RELATIVE_POS}
-                )
-            )
+            yield sync(request=make_position_update(END_RELATIVE_POS))
         else:
-            yield sync(
-                request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
-            )
+            yield sync(request=make_position_update(0))
+
         if step == 2:
-            yield sync(request=__make_event("LANE_CHANGE", {"step": step}))
+            yield sync(request=make_lane_change(step))
         if step == 15:
-            yield sync(request=__make_event("SPEED_UP", {"step": step}))
-        yield sync(request=__make_event("SPEED_UPDATE", {"speed": 20.0}))
+            yield sync(request=make_speed_up(step))
+
+        yield sync(request=make_speed_update(20.0))
+
         if step >= MAX_SIM_STEPS:
             break
-    yield sync(request=__make_event("END"))
+
+    yield sync(request=make_end())
 
 
 @thread
@@ -73,26 +88,26 @@ def invalid_position_simulation():
     """
     step = 0
     # Falsche Startposition: statt -50 wird 0 gesendet.
-    yield sync(request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0}))
+    yield sync(request=make_position_update(0))
     while True:
         step += 1
-        yield sync(request=__make_event("STEP"))
+        yield sync(request=make_step())
+
         # Immer falsche Positionsupdates
-        yield sync(
-            request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
-        )
+        yield sync(request=make_position_update(0))
+
         if step == MAX_SIM_STEPS:
             # Falsche Endposition: statt 50 wird 0 gesendet.
-            yield sync(
-                request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
-            )
+            yield sync(request=make_position_update(0))
             break
+
         if step == 2:
-            yield sync(request=__make_event("LANE_CHANGE", {"step": step}))
+            yield sync(request=make_lane_change(step))
         if step == 15:
-            yield sync(request=__make_event("SPEED_UP", {"step": step}))
-        yield sync(request=__make_event("SPEED_UPDATE", {"speed": 20.0}))
-    yield sync(request=__make_event("END"))
+            yield sync(request=make_speed_up(step))
+
+        yield sync(request=make_speed_update(20.0))
+    yield sync(request=make_end())
 
 
 @thread
@@ -102,25 +117,21 @@ def invalid_duration_simulation():
     Hier wird die Simulation bereits nach 5 Steps beendet (5 < MIN_SIM_STEPS).
     """
     step = 0
-    yield sync(
-        request=__make_event(
-            "POSITION_UPDATE", {"agent_relative_position": START_RELATIVE_POS}
-        )
-    )
+    yield sync(request=make_position_update(START_RELATIVE_POS))
     while True:
         step += 1
-        yield sync(request=__make_event("STEP"))
-        yield sync(
-            request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
-        )
+        yield sync(request=make_step())
+        yield sync(request=make_position_update(0))
+
         if step == 2:
-            yield sync(request=__make_event("LANE_CHANGE", {"step": step}))
+            yield sync(request=make_lane_change(step))
         if step == 3:
-            yield sync(request=__make_event("SPEED_UP", {"step": step}))
-        yield sync(request=__make_event("SPEED_UPDATE", {"speed": 20.0}))
+            yield sync(request=make_speed_up(step))
+
+        yield sync(request=make_speed_update(20.0))
         if step >= 5:
             break
-    yield sync(request=__make_event("END"))
+    yield sync(request=make_end())
 
 
 @thread
@@ -131,32 +142,26 @@ def invalid_functional_action_simulation():
     Hier wird LANE_CHANGE bei Step 2 und SPEED_UP bereits bei Step 5 gesendet (Intervall = 3, zu kurz).
     """
     step = 0
-    yield sync(
-        request=__make_event(
-            "POSITION_UPDATE", {"agent_relative_position": START_RELATIVE_POS}
-        )
-    )
+    yield sync(request=make_position_update(START_RELATIVE_POS))
     while True:
         step += 1
-        yield sync(request=__make_event("STEP"))
+        yield sync(request=make_step())
+
         if step == MAX_SIM_STEPS:
-            yield sync(
-                request=__make_event(
-                    "POSITION_UPDATE", {"agent_relative_position": END_RELATIVE_POS}
-                )
-            )
+            yield sync(request=make_position_update(END_RELATIVE_POS))
         else:
-            yield sync(
-                request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
-            )
+            yield sync(request=make_position_update(0))
+
         if step == 2:
-            yield sync(request=__make_event("LANE_CHANGE", {"step": step}))
+            yield sync(request=make_lane_change(step))
         if step == 5:
-            yield sync(request=__make_event("SPEED_UP", {"step": step}))
-        yield sync(request=__make_event("SPEED_UPDATE", {"speed": 20.0}))
+            yield sync(request=make_speed_up(step))
+
+        yield sync(request=make_speed_update(20.0))
+
         if step >= MAX_SIM_STEPS:
             break
-    yield sync(request=__make_event("END"))
+    yield sync(request=make_end())
 
 
 @thread
@@ -167,30 +172,24 @@ def invalid_speed_simulation():
     Hier wird z. B. eine Geschwindigkeit von 30.0 m/s gesendet (über MAX_SPEED).
     """
     step = 0
-    yield sync(
-        request=__make_event(
-            "POSITION_UPDATE", {"agent_relative_position": START_RELATIVE_POS}
-        )
-    )
+    yield sync(request=make_position_update(START_RELATIVE_POS))
     while True:
         step += 1
-        yield sync(request=__make_event("STEP"))
+        yield sync(request=make_step())
+
         if step == MAX_SIM_STEPS:
-            yield sync(
-                request=__make_event(
-                    "POSITION_UPDATE", {"agent_relative_position": END_RELATIVE_POS}
-                )
-            )
+            yield sync(request=make_position_update(END_RELATIVE_POS))
         else:
-            yield sync(
-                request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
-            )
+            yield sync(request=make_position_update(0))
+
         if step == 2:
-            yield sync(request=__make_event("LANE_CHANGE", {"step": step}))
+            yield sync(request=make_lane_change(step))
         if step == 15:
-            yield sync(request=__make_event("SPEED_UP", {"step": step}))
+            yield sync(request=make_speed_up(step))
+
         # Verletzung: Geschwindigkeit außerhalb des zulässigen Bereichs (z. B. 30.0 m/s)
-        yield sync(request=__make_event("SPEED_UPDATE", {"speed": 30.0}))
+        yield sync(request=make_speed_update(30.0))
+
         if step >= MAX_SIM_STEPS:
             break
-    yield sync(request=__make_event("END"))
+    yield sync(request=make_end())
