@@ -46,40 +46,32 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
-def make_event(name, data=None):
-    """
-    Erzeugt ein neues Event mit dem angegebenen Namen und Payload.
-    """
-    return BEvent(name, data=data or {})
-
-
-def is_position_update(e):
+def __is_position_update(e):
     return e.name == "POSITION_UPDATE"
 
 
-def is_step(e):
+def __is_step(e):
     return e.name == "STEP"
 
 
-def is_lane_change(e):
+def __is_lane_change(e):
     return e.name == "LANE_CHANGE"
 
 
-def is_speed_up(e):
+def __is_speed_up(e):
     return e.name == "SPEED_UP"
 
 
-def is_speed_update(e):
+def __is_speed_update(e):
     return e.name == "SPEED_UPDATE"
 
 
-def is_end(e):
+def __is_end(e):
     return e.name == "END"
 
 
 @thread
-def position_constraint():
+def __position_constraint():
     """
     Prüft, ob der Agent zu Beginn am START und am Ende am END ist.
     Erwartet POSITION_UPDATE-Events mit dem Payload-Feld "agent_relative_position".
@@ -88,9 +80,9 @@ def position_constraint():
     end_valid = False
     while True:
         evt = yield sync(waitFor=All())
-        if is_end(evt):
+        if __is_end(evt):
             break
-        if not is_position_update(evt):
+        if not __is_position_update(evt):
             continue
         pos = evt.data.get("agent_relative_position")
         if pos is None:
@@ -109,7 +101,7 @@ def position_constraint():
 
 
 @thread
-def duration_constraint():
+def __duration_constraint():
     """
     Überwacht die Simulationsdauer anhand von STEP-Events.
     Final: Es muss eine Anzahl von Steps zwischen MIN_SIM_STEPS und MAX_SIM_STEPS liegen.
@@ -117,9 +109,9 @@ def duration_constraint():
     step_count = 0
     while True:
         evt = yield sync(waitFor=All())
-        if is_end(evt):
+        if __is_end(evt):
             break
-        if not is_step(evt):
+        if not __is_step(evt):
             continue
         step_count += 1
     if MIN_SIM_STEPS <= step_count <= MAX_SIM_STEPS:
@@ -133,7 +125,7 @@ def duration_constraint():
 
 
 @thread
-def functional_action_order():
+def __functional_action_order():
     """
     Erzwingt: Zuerst LANE_CHANGE, dann SPEED_UP.
     Prüft, dass das Intervall (Payload "step") zwischen den Aktionen in [MIN_ACTION_INTERVAL_STEPS, MAX_ACTION_INTERVAL_STEPS] liegt.
@@ -146,12 +138,12 @@ def functional_action_order():
     order_violation = False
     while True:
         evt = yield sync(waitFor=All())
-        if is_end(evt):
+        if __is_end(evt):
             break
-        if is_lane_change(evt):
+        if __is_lane_change(evt):
             lane_change_step = evt.data.get("step", 0)
             lane_change_count += 1
-        elif is_speed_up(evt):
+        elif __is_speed_up(evt):
             if lane_change_step is None:
                 order_violation = True
             else:
@@ -182,16 +174,16 @@ def functional_action_order():
 
 
 @thread
-def speed_limit_constraint():
+def __speed_limit_constraint():
     """
     Stellt sicher, dass alle SPEED_UPDATE-Events (Payload: "speed") innerhalb der zulässigen Grenzen liegen.
     """
     violation_count = 0
     while True:
         evt = yield sync(waitFor=All())
-        if is_end(evt):
+        if __is_end(evt):
             break
-        if not is_speed_update(evt):
+        if not __is_speed_update(evt):
             continue
         speed = evt.data.get("speed")
         if speed is not None and (speed < MIN_SPEED or speed > MAX_SPEED):
@@ -205,16 +197,19 @@ def speed_limit_constraint():
             )
         )
 
+def get_checker_threads():
+    return [
+        __position_constraint(),
+        __duration_constraint(),
+        __functional_action_order(),
+        __speed_limit_constraint(),
+    ]
 
 def main():
     bthreads = [
-        position_constraint(),
-        duration_constraint(),
-        functional_action_order(),
-        speed_limit_constraint(),
-        # Unter dieser Zeile können beispielsweise die verschiedenen Demo-Szenarien aus demo_scenarios.py eingefügt werden.
         demo_scenarios.valid_demo_simulation(),
     ]
+    bthreads.extend(get_checker_threads())
     bp = BProgram(
         bthreads=bthreads,
         event_selection_strategy=SimpleEventSelectionStrategy(),
