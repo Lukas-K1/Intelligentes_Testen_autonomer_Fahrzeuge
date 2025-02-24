@@ -29,14 +29,13 @@ ausgewertet werden können.
 
 import logging
 
-from bppy import (All, BProgram, SimpleEventSelectionStrategy, sync,
-                  thread)
+from bppy import All, BProgram, SimpleEventSelectionStrategy, sync, thread
+
+import demo_scenarios
 from overtake_constraints import (END_RELATIVE_POS, MAX_ACTION_INTERVAL_STEPS,
                                   MAX_SIM_STEPS, MAX_SPEED,
                                   MIN_ACTION_INTERVAL_STEPS, MIN_SIM_STEPS,
                                   MIN_SPEED, START_RELATIVE_POS)
-
-import demo_scenarios
 
 # Logging konfigurieren
 logging.basicConfig(

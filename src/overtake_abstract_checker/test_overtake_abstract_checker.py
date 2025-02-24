@@ -1,8 +1,8 @@
-import unittest
 import io
+import unittest
 
-from src.overtake_abstract_checker.overtake_abstract_checker import *
 from src.overtake_abstract_checker.demo_scenarios import *
+from src.overtake_abstract_checker.overtake_abstract_checker import *
 
 
 def run_bp_with_simulation(simulation_thread):

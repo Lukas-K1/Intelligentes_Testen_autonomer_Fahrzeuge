@@ -14,11 +14,10 @@ Folgende Simulationen sind enthalten:
 """
 
 from bppy import BEvent, sync, thread
-from overtake_constraints import (
-    END_RELATIVE_POS,
-    MAX_SIM_STEPS,
-    START_RELATIVE_POS,
-)
+
+from overtake_constraints import (END_RELATIVE_POS, MAX_SIM_STEPS,
+                                  START_RELATIVE_POS)
+
 
 # Neue, spezifische Factory-Methoden für Events:
 def make_position_update(distance: float) -> BEvent:
