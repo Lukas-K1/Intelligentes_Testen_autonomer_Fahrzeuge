@@ -14,8 +14,8 @@ Hinweis: Zum Vergleich von Events verwenden wir ausschließlich Matcher-Funktion
 Vorgaben zur Nutzung:
 In der Schleife, die die Simulation steuert (also env.step() aufruft), muss in unmittelbarer Nähe folgendes passieren:
 In jeder Iteration müssen gesendet werden:
--- Ein Event mit dem Namen "POSITION_UPDATE" und dem Payload-Feld "agent_relative_position" wird gesendet.
-   Dabei ist der Wert von "agent_relative_position" die relative Position des Agenten zum VUT.
+-- Ein Event mit dem Namen "POSITION_UPDATE" und dem Payload-Feld "distance_to_vut" wird gesendet.
+   Dabei ist der Wert von "distance_to_vut" die relative Position (Entfernung in Meter) des Agenten zum VUT.
 -- Ein Event mit dem Namen "STEP" wird gesendet, um die Simulationsschritte zu zählen.
 -- Ein Event mit dem Namen "SPEED_UPDATE" und dem Payload-Feld "speed" wird gesendet, um die Geschwindigkeit des Agenten zu aktualisieren.
 
@@ -74,7 +74,7 @@ def __is_end(e):
 def __position_constraint():
     """
     Prüft, ob der Agent zu Beginn am START und am Ende am END ist.
-    Erwartet POSITION_UPDATE-Events mit dem Payload-Feld "agent_relative_position".
+    Erwartet POSITION_UPDATE-Events mit dem Payload-Feld "distance_to_vut" (Angabe der Distanz zwischen Agent und VUT).
     """
     start_valid = None
     end_valid = False
@@ -84,7 +84,7 @@ def __position_constraint():
             break
         if not __is_position_update(evt):
             continue
-        pos = evt.data.get("agent_relative_position")
+        pos = evt.data.get("distance_to_vut")
         if pos is None:
             continue
         if start_valid is None:

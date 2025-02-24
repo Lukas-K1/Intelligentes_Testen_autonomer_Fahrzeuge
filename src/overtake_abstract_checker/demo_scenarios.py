@@ -39,7 +39,7 @@ def valid_demo_simulation():
     step = 0
     yield sync(
         request=__make_event(
-            "POSITION_UPDATE", {"agent_relative_position": START_RELATIVE_POS}
+            "POSITION_UPDATE", {"distance_to_vut": START_RELATIVE_POS}
         )
     )
     while True:
@@ -48,12 +48,12 @@ def valid_demo_simulation():
         if step == MAX_SIM_STEPS:
             yield sync(
                 request=__make_event(
-                    "POSITION_UPDATE", {"agent_relative_position": END_RELATIVE_POS}
+                    "POSITION_UPDATE", {"distance_to_vut": END_RELATIVE_POS}
                 )
             )
         else:
             yield sync(
-                request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
+                request=__make_event("POSITION_UPDATE", {"distance_to_vut": 0})
             )
         if step == 2:
             yield sync(request=__make_event("LANE_CHANGE", {"step": step}))
@@ -73,18 +73,18 @@ def invalid_position_simulation():
     """
     step = 0
     # Falsche Startposition: statt -50 wird 0 gesendet.
-    yield sync(request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0}))
+    yield sync(request=__make_event("POSITION_UPDATE", {"distance_to_vut": 0}))
     while True:
         step += 1
         yield sync(request=__make_event("STEP"))
         # Immer falsche Positionsupdates
         yield sync(
-            request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
+            request=__make_event("POSITION_UPDATE", {"distance_to_vut": 0})
         )
         if step == MAX_SIM_STEPS:
             # Falsche Endposition: statt 50 wird 0 gesendet.
             yield sync(
-                request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
+                request=__make_event("POSITION_UPDATE", {"distance_to_vut": 0})
             )
             break
         if step == 2:
@@ -104,14 +104,14 @@ def invalid_duration_simulation():
     step = 0
     yield sync(
         request=__make_event(
-            "POSITION_UPDATE", {"agent_relative_position": START_RELATIVE_POS}
+            "POSITION_UPDATE", {"distance_to_vut": START_RELATIVE_POS}
         )
     )
     while True:
         step += 1
         yield sync(request=__make_event("STEP"))
         yield sync(
-            request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
+            request=__make_event("POSITION_UPDATE", {"distance_to_vut": 0})
         )
         if step == 2:
             yield sync(request=__make_event("LANE_CHANGE", {"step": step}))
@@ -133,7 +133,7 @@ def invalid_functional_action_simulation():
     step = 0
     yield sync(
         request=__make_event(
-            "POSITION_UPDATE", {"agent_relative_position": START_RELATIVE_POS}
+            "POSITION_UPDATE", {"distance_to_vut": START_RELATIVE_POS}
         )
     )
     while True:
@@ -142,12 +142,12 @@ def invalid_functional_action_simulation():
         if step == MAX_SIM_STEPS:
             yield sync(
                 request=__make_event(
-                    "POSITION_UPDATE", {"agent_relative_position": END_RELATIVE_POS}
+                    "POSITION_UPDATE", {"distance_to_vut": END_RELATIVE_POS}
                 )
             )
         else:
             yield sync(
-                request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
+                request=__make_event("POSITION_UPDATE", {"distance_to_vut": 0})
             )
         if step == 2:
             yield sync(request=__make_event("LANE_CHANGE", {"step": step}))
@@ -169,7 +169,7 @@ def invalid_speed_simulation():
     step = 0
     yield sync(
         request=__make_event(
-            "POSITION_UPDATE", {"agent_relative_position": START_RELATIVE_POS}
+            "POSITION_UPDATE", {"distance_to_vut": START_RELATIVE_POS}
         )
     )
     while True:
@@ -178,12 +178,12 @@ def invalid_speed_simulation():
         if step == MAX_SIM_STEPS:
             yield sync(
                 request=__make_event(
-                    "POSITION_UPDATE", {"agent_relative_position": END_RELATIVE_POS}
+                    "POSITION_UPDATE", {"distance_to_vut": END_RELATIVE_POS}
                 )
             )
         else:
             yield sync(
-                request=__make_event("POSITION_UPDATE", {"agent_relative_position": 0})
+                request=__make_event("POSITION_UPDATE", {"distance_to_vut": 0})
             )
         if step == 2:
             yield sync(request=__make_event("LANE_CHANGE", {"step": step}))
