@@ -195,5 +195,18 @@ class TestObservationWrapper(unittest.TestCase):
         obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
         self.assertEqual(25, obs_wrapper.get_velocity(0))
 
+    # is_in_same_lane tests
+    def test_is_in_same_lane(self):
+        obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
+        self.assertTrue(obs_wrapper.is_in_same_lane(1, 2))
+
+    def test_is_not_in_same_lane(self):
+        obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
+        self.assertFalse(obs_wrapper.is_in_same_lane(0, 2))
+
+    def test_is_in_same_lane_vehicle_not_found(self):
+        obs_wrapper = ObservationWrapper(np.array([]))
+        self.assertFalse(obs_wrapper.is_in_same_lane(1, 2))
+
 if __name__ == '__main__':
     unittest.main()
