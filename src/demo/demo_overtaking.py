@@ -16,15 +16,17 @@ ABORT_OVERTAKE = BEvent("AbortOvertake")
 
 def create_env(config: Dict[str, Any]) -> gym.Env:
     env = gym.make("highway-v0", render_mode="rgb_array", config=config)
-    obs, info = env.reset()
+    env.reset()
     return env
 
 
 def decide_overtake_action(vehicles: List[List[float]], lane_width: float = 4.0) -> int:
+    """ 
+    :param vehicles: List of vehicles in the highway_env observation
+    :param lane_width: float width of each lane
+    :return: action code for the highway_env
+    """
     ego_vehicle = vehicles[0]
-    ego_position = ego_vehicle[1]
-    ego_lane = int(round(ego_vehicle[2] / lane_width))
-    ego_speed = ego_vehicle[3]
 
     if len(vehicles) == 1:
         return 1
@@ -38,7 +40,6 @@ def decide_overtake_action(vehicles: List[List[float]], lane_width: float = 4.0)
 
 def check_action_for_vehicle(current_vehicle: List[float], ego_vehicle: List[float], lane_width: float = 4.0) -> int:
     """
-
     :param current_vehicle: the highway_env observation of the current non-controlled vehicle
     :param ego_vehicle: the highway_env observation of the ego vehicle
     :param lane_width: floar width of each lane
@@ -93,33 +94,28 @@ def check_action_for_vehicle(current_vehicle: List[float], ego_vehicle: List[flo
 
 
 @thread
-def check_clearance(env):
+def check_clearance(env, obs):
     while True:
         yield sync(request=CHECK_CLEARANCE)
-        obs, _, _, _, _ = env.step(1)
         vehicles = obs
         action = decide_overtake_action(vehicles)
         print("Action: ", action)
 
         if action in [0, 2]:
             yield sync(request=START_OVERTAKE)
-            env.step(action)
-            env.render()
         elif action in [3, 4]:
              yield sync(request=CHECK_CLEARANCE)
-             env.step(action)
-             env.render()
         else:
             yield sync(request=ABORT_OVERTAKE)
-            env.step(action)
-            env.render()
+
+        obs = env.step(action)
+        env.render()
 
 
 @thread
 def perform_overtake(env):
     while True:
         yield sync(waitFor=START_OVERTAKE)
-        env.render()
         yield sync(request=PERFORM_OVERTAKE)
         yield sync(request=COMPLETE_OVERTAKE)
 
@@ -128,15 +124,12 @@ def perform_overtake(env):
 def complete_overtake(env):
     while True:
         yield sync(waitFor=COMPLETE_OVERTAKE)
-        env.render()
 
 
 @thread
 def abort_overtake(env):
     while True:
         yield sync(waitFor=ABORT_OVERTAKE)
-        env.step(1)
-        env.render()
 
 
 def main():
@@ -148,9 +141,9 @@ def main():
         "observation": {
             "type": "Kinematics",
             "vehicles_count": 4,
-            "features": ["presence", "x", "y", "vx", "vy"],
+            "features": ["x", "y", "vx", "vy"],
             "normalize": False,
-            "absolute": True,
+            "absolute": False,
             "see_behind": True
         },
         "action": {
@@ -166,10 +159,6 @@ def main():
     obs, info = env.reset()
     bp = BProgram(bthreads=[check_clearance(env), perform_overtake(env), abort_overtake(env), complete_overtake(env)], event_selection_strategy=SimpleEventSelectionStrategy(), listener=PrintBProgramRunnerListener())
     bp.run()
-
-    for _ in range(100):
-        env.render()
-        env.step(1)
 
     env.close()
 

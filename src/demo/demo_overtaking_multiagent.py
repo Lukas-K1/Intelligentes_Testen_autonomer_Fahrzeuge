@@ -22,6 +22,11 @@ def process_observation(obs: Any) -> List[List[float]]:
 
 
 def decide_action(vehicles: List[List[float]], lane_width: float = 4.0) -> int:
+    """
+    :param vehicles: Vehicles in the highway_env observation
+    :param lane_width: Width of each lane
+    :return: Action code for the highway_env
+    """
     ego_vehicle = vehicles[0]
     ego_position, ego_lane, ego_speed = ego_vehicle[1], int(round(ego_vehicle[2] / lane_width)), ego_vehicle[3]
 
@@ -59,6 +64,11 @@ def decide_action(vehicles: List[List[float]], lane_width: float = 4.0) -> int:
 
 
 def decide_passiv(vehicles: List[List[float]], lane_width: float = 4.0) -> int:
+    """
+    :param vehicles: Vehicles in the highway_env observation
+    :param lane_width: Width of each lane
+    :return: Action code for the highway_env
+    """
     ego_vehicle = vehicles[0]
     ego_position, ego_lane, ego_speed = ego_vehicle[1], int(round(ego_vehicle[2] / lane_width)), ego_vehicle[3]
 
@@ -90,6 +100,12 @@ def decide_passiv(vehicles: List[List[float]], lane_width: float = 4.0) -> int:
 
 @thread
 def check_clearance(obs, env):
+    """
+
+    :param obs: the highway_env observation
+    :param env: the highway_env environment
+    :return:
+    """
     while True:
         yield sync(request=CHECK_CLEARANCE)
         vehicles = process_observation(obs)
@@ -135,7 +151,7 @@ def main():
         "initial_positions": [
             [15, 1, 20],  # (x_position, lane_index, speed)
             [45, 1, 10]   # Another vehicle in a different lane
-        ],  # Fixed start positions WIP
+        ],
         "observation": {
             "type": "MultiAgentObservation",
             "observation_config": {
