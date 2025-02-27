@@ -29,9 +29,8 @@ ausgewertet werden können.
 
 import logging
 
-from bppy import All, BProgram, SimpleEventSelectionStrategy, sync, thread
-
 import demo_scenarios
+from bppy import All, BProgram, SimpleEventSelectionStrategy, sync, thread
 from overtake_constraints import (END_RELATIVE_POS, MAX_ACTION_INTERVAL_STEPS,
                                   MAX_SIM_STEPS, MAX_SPEED,
                                   MIN_ACTION_INTERVAL_STEPS, MIN_SIM_STEPS,

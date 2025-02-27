@@ -1,8 +1,17 @@
 import unittest
+from typing import Any, Dict
 
+import gymnasium as gym
+import highway_env as highway
 import numpy as np
 
 from src.observation_wrapper import *
+
+
+def create_test_env(config: Dict[str, Any]) -> Env:
+    env = gym.make('highway-v0', render_mode='rgb_array', config=config)
+    env.reset()
+    return env
 
 
 class TestObservationWrapper(unittest.TestCase):
@@ -75,6 +84,38 @@ class TestObservationWrapper(unittest.TestCase):
             [-75, 0, 0, 0]
         ], dtype=np.float32)
     )
+
+    CONFIG = config = {
+        "centering_position": [0.5, 0.5],
+        "vehicles_count": 1,
+        "controlled_vehicles": 1,
+        "lanes_count": 4,
+        "initial_positions": [
+            [15, 2, 32]  # (x_position, lane_index, speed)
+        ],  # Fixed start positions WIP
+        "observation": {
+            "type": "MultiAgentObservation",
+            "observation_config": {
+                "type": "Kinematics",
+                "vehicles_count": 1,
+                "features": ["x", "y", "vx", "vy"],
+                "normalize": False,
+                "absolute": False,
+                "see_behind": True,
+                "order": "sorted"
+            },
+        },
+        "action": {
+            "type": "MultiAgentAction",
+            "action_config": {
+                "type": "DiscreteMetaAction",
+                "longitudinal": True,
+                "lateral": True,
+                "target_speeds": [0, 5, 10, 15, 20, 25, 30]
+            },
+        },
+        "simulation_frequency": 100
+    }
 
     # is_left_lane_clear tests
 
@@ -207,6 +248,56 @@ class TestObservationWrapper(unittest.TestCase):
     def test_is_in_same_lane_vehicle_not_found(self):
         obs_wrapper = ObservationWrapper(np.array([]))
         self.assertFalse(obs_wrapper.is_in_same_lane(1, 2))
+
+    # Testet, ob das Fahrzeug mit id=0 auf bestimmter Lane ist
+    def test_is_in_lane(self):
+        env = create_test_env(self.CONFIG)
+
+        obs, _ = env.reset()
+        obs_wrapper = ObservationWrapper(obs, env)
+
+        # in dem Beispiel sind Lanes 4 Einheiten breit und beginnen bei Koordinate 0
+        y_of_vehicle = (obs[0])[0][1]
+        expected_lane = y_of_vehicle / 4
+        # die Fahrzeuge befinden sich zu Beginn nicht immer auf der gleichen Lane,
+        # weshalb die Werte nicht fest gesetzt werden können
+        self.assertTrue(obs_wrapper.is_in_lane(0, expected_lane))
+
+    # Testet, ob das Fahrzeug mit id=0 auf bestimmter Lane ist
+    def test_is_in_lane_negativ(self):
+        env = create_test_env(self.CONFIG)
+
+        obs, _ = env.reset()
+        obs_wrapper = ObservationWrapper(obs, env)
+
+        # in dem Beispiel sind Lanes 4 Einheiten breit und beginnen bei Koordinate 0
+        y_of_vehicle = (obs[0])[0][1]
+        not_expected_lane = (y_of_vehicle / 4) + 1
+        if not_expected_lane == 4:
+            not_expected_lane = 1
+        # die Fahrzeuge befinden sich zu Beginn nicht immer auf der gleichen Lane,
+        # weshalb die Werte nicht fest gesetzt werden können
+        self.assertFalse(obs_wrapper.is_in_lane(0, not_expected_lane))
+
+    # testet, dass false bei nicht existierender Lane geliefert wird
+    def test_is_in_lane_lane_not_found(self):
+        env = create_test_env(self.CONFIG)
+
+        obs, _ = env.reset()
+        obs_wrapper = ObservationWrapper(obs, env)
+
+        # Env hat 4 Lanes
+        self.assertFalse(obs_wrapper.is_in_lane(0, 5))
+
+    # testet, dass false bei nicht existierendem Vehicle geliefert wird
+    def test_is_in_lane_vehicle_not_found(self):
+        env = create_test_env(self.CONFIG)
+
+        obs, _ = env.reset()
+        obs_wrapper = ObservationWrapper(obs, env)
+
+        # env hat 7 vehicles
+        self.assertFalse(obs_wrapper.is_in_lane(10, 0))
 
 if __name__ == '__main__':
     unittest.main()
