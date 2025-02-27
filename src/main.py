@@ -16,35 +16,63 @@ update_speed = BEvent("SPEED_UPDATE")
 
 def create_env(config: Dict[str, Any]) -> gym.Env:
     env = gym.make('highway-v0', render_mode='rgb_array', config=config)
-    env.reset()
+    env.reset(seed=1)
     return env
 
 
-def decide_action(obs_wrapper: ObservationWrapper, v_id: int, space: float) -> int:
+def decide_action(env, obs, obs_wrapper: ObservationWrapper, v_id: int, space: float) -> int:
     """
     Decides the action to be taken by the vehicle based on the current observation.
-    :param obs_wrapper: The observation wrapper containing functionality based on the current observation.
-    :param v_id: The id of the vehicle.
-    :param space: The space to be considered for the action.
-    :return: The action to be taken.
+    :param env: the highway environment
+    :param obs_wrapper: The observation wrapper containing functionality based on the current observation
+    :param v_id: The id of the vehicle
+    :param space: The space to be considered for the action
+    :return: The action to be taken
     """
     distance = obs_wrapper.get_distance_to_leading_vehicle(v_id)
     right_clear = obs_wrapper.is_right_lane_clear(v_id, space, space)
     left_clear = obs_wrapper.is_left_lane_clear(v_id, space, space)
-    same_lane = obs_wrapper.is_in_same_lane(v_id,0)
+    same_lane = obs_wrapper.is_in_same_lane(v_id, 1)
+    velocity = obs_wrapper.get_velocity(v_id)
+    lane = env.unwrapped.road.vehicles[v_id].lane_index
+    current_lane = lane[2]
+    other_lane_info = env.unwrapped.road.vehicles[1].lane_index[2]
+    # highway_env.envs.common.action.DiscreteMetaAction.get_available_actions
+    # highway_env.road.road.Road.neighbour_vehicles
+    current_vehicle = env.unwrapped.road.vehicles[v_id]
+    road_neighbours = env.unwrapped.road.neighbour_vehicles(current_vehicle)
 
     if distance > 35 and same_lane:
         return 3
-    if distance < 10 and right_clear and not left_clear and same_lane:
-        return 2
-    if not right_clear and distance < 10 and not left_clear and same_lane:
-        return 4
-    if not right_clear and distance < 10 and left_clear and same_lane:
+    elif 15 > distance > 10 and same_lane and (right_clear or left_clear) and current_lane != 0:
         return 0
-    if 35 > distance > 5:
+    elif 15 > distance > 10 and right_clear and not left_clear and same_lane and current_lane != 3:
+        return 2
+    elif not right_clear and 15 > distance > 10 and not left_clear and same_lane and (current_lane != 0 or current_lane != 3):
+        return 4
+    elif not right_clear and 15 > distance > 10 and left_clear and same_lane and current_lane != 0:
+        return 0
+    elif 35 > distance > 10 and same_lane:
         return 1
+    elif distance == 0 and right_clear and current_lane - other_lane_info < 0:
+        return 2
+    elif distance == 0 and right_clear and current_lane - other_lane_info > 0:
+        return 0
+    elif not same_lane:
+        return 1
+    elif distance == 0 and not same_lane and right_clear and not left_clear:
+        return 2
+    elif distance == 0 and not same_lane and left_clear and not right_clear:
+        return 0
+    elif velocity < 24 and same_lane:
+        return 3
+    elif 24 < velocity < 28:
+        return 1
+    elif distance == 0 and same_lane and 30 > velocity > 25:
+        return 4
+    elif distance < 12 and same_lane:
+        return 4
     return 1
-    # TODO rework if information about lane placement is available
 
 
 def position_update(distance: float) -> BEvent:
@@ -70,13 +98,14 @@ def change_the_lane(step: int) -> BEvent:
 def make_end() -> BEvent:
     return BEvent("END")
 
+
 @thread
 def control_vehicle(env, obs, obs_wrapper):
     step = 0
-    while True:  # TODO placeholder
+    while True:
         step += 1
         obs_wrapper.set_observation(obs)
-        action = decide_action(obs_wrapper, 1, 10)
+        action = decide_action(env, obs, obs_wrapper, 0, 20)
         print(action)
         if action == 0:
             yield sync(request=change_the_lane(step))
@@ -88,33 +117,35 @@ def control_vehicle(env, obs, obs_wrapper):
             yield sync(request=speed_increase(step))
         if action == 4:
             print("Action 4")
-        obs,  _, _, _, _ = env.step((action, 1))
+        obs, _, _, _, _ = env.step((action, 1))
         env.render()
-        yield sync(request=position_update(obs_wrapper.get_distance_to_leading_vehicle(1)))
-        yield sync(request=speed_update(obs_wrapper.get_velocity(1)))
+        distance = obs_wrapper.get_distance_to_leading_vehicle(0)
+        yield sync(request=position_update(distance))
+        velocity = obs_wrapper.get_velocity(0)
+        yield sync(request=speed_update(velocity))
         yield sync(request=make_step())
 
 
 @thread
 def control_events():
-    print("Control events")  # TODO placeholder
+    print("Control events")
 
 
 def set_config():
     config = {
         "centering_position": [0.5, 0.5],
-        "vehicles_count": 1,
+        "vehicles_count": 0,
         #"controlled_vehicles": 7,
-        "controlled_vehicles": 6,
+        "controlled_vehicles": 2,
         "lanes_count": 4,
         "initial_positions": [
-            [65, 3, 20],  # (x_position, lane_index, speed)
-            [15, 3, 20],
-            [85, 0, 20],
-            [105, 0, 20],
-            [55, 0, 20],
-            [45, 1, 25],
-            [25, 3, 25]
+            [55, 0, 25],
+            [105, 0, 20]  #,
+            #[55, 2, 20],
+            #[65, 3, 20],  # (x_position, lane_index, speed)
+            #[45, 2, 20],
+            #[15, 3, 20],
+            #[85, 3, 20]
         ],  # Fixed start positions WIP
         "observation": {
             "type": "MultiAgentObservation",
@@ -152,7 +183,7 @@ def main():
     bp.run()
 
     for _ in range(100):
-        obs = env.step((1, 1, 1, 1, 1, 1))
+        obs = env.step((1, 1))
         print(obs)
         env.render()
 
