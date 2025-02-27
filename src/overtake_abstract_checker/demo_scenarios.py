@@ -14,7 +14,6 @@ Folgende Simulationen sind enthalten:
 """
 
 from bppy import BEvent, sync, thread
-
 from overtake_constraints import (END_RELATIVE_POS, MAX_SIM_STEPS,
                                   START_RELATIVE_POS)
 

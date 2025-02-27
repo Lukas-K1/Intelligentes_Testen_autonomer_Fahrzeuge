@@ -1,11 +1,11 @@
 import unittest
-from typing import Dict, Any
+from typing import Any, Dict
 
+import gymnasium as gym
+import highway_env as highway
 import numpy as np
 
 from src.observation_wrapper import *
-import gymnasium as gym
-import highway_env as highway
 
 
 def create_test_env(config: Dict[str, Any]) -> Env:
