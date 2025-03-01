@@ -47,7 +47,7 @@ jobs:
           git config --global user.email "actions@github.com"
           git commit -a -m "Apply code formatting with Black and isort" || echo "No changes to commit"
       - name: Push changes
-        if: failure()
+        if: ${{ steps.format_code.outcome == 'success' }}
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
