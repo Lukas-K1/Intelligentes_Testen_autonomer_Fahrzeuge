@@ -40,6 +40,8 @@ def decide_action(env, obs, obs_wrapper: ObservationWrapper, v_id: int, space: f
     # highway_env.envs.common.action.DiscreteMetaAction.get_available_actions
     # highway_env.road.road.Road.neighbour_vehicles
     current_vehicle = env.unwrapped.road.vehicles[v_id]
+    vehicles = env.unwrapped.road.vehicles
+    print(vehicles)
     road_neighbours = env.unwrapped.road.neighbour_vehicles(current_vehicle)
 
     if distance > 35 and same_lane:
@@ -117,7 +119,7 @@ def control_vehicle(env, obs, obs_wrapper):
             yield sync(request=speed_increase(step))
         if action == 4:
             print("Action 4")
-        obs, _, _, _, _ = env.step((action, 1))
+        obs, _, _, _, _ = env.step((action, 1, 1, 1, 1, 1, 1))
         env.render()
         distance = obs_wrapper.get_distance_to_leading_vehicle(0)
         yield sync(request=position_update(distance))
@@ -135,17 +137,16 @@ def set_config():
     config = {
         "centering_position": [0.5, 0.5],
         "vehicles_count": 0,
-        #"controlled_vehicles": 7,
-        "controlled_vehicles": 2,
+        "controlled_vehicles": 7,
         "lanes_count": 4,
         "initial_positions": [
             [55, 0, 25],
-            [105, 0, 20]  #,
-            #[55, 2, 20],
-            #[65, 3, 20],  # (x_position, lane_index, speed)
-            #[45, 2, 20],
-            #[15, 3, 20],
-            #[85, 3, 20]
+            [105, 0, 20],  #,
+            [55, 2, 20],
+            [65, 3, 20],  # (x_position, lane_index, speed)
+            [45, 2, 20],
+            [15, 3, 20],
+            [85, 3, 20]
         ],  # Fixed start positions WIP
         "observation": {
             "type": "MultiAgentObservation",
@@ -176,14 +177,14 @@ def set_config():
 def main():
     config = set_config()
     env = create_env(config)
-    obs, _ = env.reset()
+    obs, _ = env.reset(seed=0)
     obsw = ObservationWrapper(obs)
     bp = BProgram(bthreads=[control_vehicle(env, obs, obsw)],
                   event_selection_strategy=SimpleEventSelectionStrategy(), listener=PrintBProgramRunnerListener())
     bp.run()
 
     for _ in range(100):
-        obs = env.step((1, 1))
+        obs = env.step((1, 1, 1, 1, 1, 1, 1))
         print(obs)
         env.render()
 
