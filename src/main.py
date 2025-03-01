@@ -29,6 +29,71 @@ def decide_action(env, obs, obs_wrapper: ObservationWrapper, v_id: int, space: f
     :param space: The space to be considered for the action
     :return: The action to be taken
     """
+    # distance = obs_wrapper.get_distance_to_leading_vehicle(v_id)
+    # right_clear = obs_wrapper.is_right_lane_clear(v_id, space, space)
+    # left_clear = obs_wrapper.is_left_lane_clear(v_id, space, space)
+    # same_lane = obs_wrapper.is_in_same_lane(v_id, 1)
+    # velocity = obs_wrapper.get_velocity(v_id)
+    # lane = env.unwrapped.road.vehicles[v_id].lane_index
+    # current_lane = lane[2]
+    # other_lane_info = env.unwrapped.road.vehicles[1].lane_index[2]
+    # # highway_env.envs.common.action.DiscreteMetaAction.get_available_actions
+    # # highway_env.road.road.Road.neighbour_vehicles
+    # current_vehicle = env.unwrapped.road.vehicles[v_id]
+    # vehicles = env.unwrapped.road.vehicles
+    # print(vehicles)
+    # road_neighbours = env.unwrapped.road.neighbour_vehicles(current_vehicle)
+    istuple = len(obs) >= 2
+
+    vehicles = env.unwrapped.road.vehicles
+    print(vehicles)
+    isIDM = env.unwrapped.road.vehicles[1].__class__.__name__ == "IDMVehicle"
+    # if distance > 35 and same_lane:
+    #     return 3
+    # elif 15 > distance > 10 and same_lane and (right_clear or left_clear) and current_lane != 0:
+    #     return 0
+    # elif 15 > distance > 10 and right_clear and not left_clear and same_lane and current_lane != 3:
+    #     return 2
+    # elif not right_clear and 15 > distance > 10 and not left_clear and same_lane and (current_lane != 0 or current_lane != 3):
+    #     return 4
+    # elif not right_clear and 15 > distance > 10 and left_clear and same_lane and current_lane != 0:
+    #     return 0
+    # elif 35 > distance > 10 and same_lane:
+    #     return 1
+    # elif distance == 0 and right_clear and current_lane - other_lane_info < 0:
+    #     return 2
+    # elif distance == 0 and right_clear and current_lane - other_lane_info > 0:
+    #     return 0
+    # elif not same_lane:
+    #     return 1
+    # elif distance == 0 and not same_lane and right_clear and not left_clear:
+    #     return 2
+    # elif distance == 0 and not same_lane and left_clear and not right_clear:
+    #     return 0
+    # elif velocity < 24 and same_lane:
+    #     return 3
+    # elif 24 < velocity < 28:
+    #     return 1
+    # elif distance == 0 and same_lane and 30 > velocity > 25:
+    #     return 4
+    # elif distance < 12 and same_lane:
+    #     return 4
+    # return 1
+    if istuple and not isIDM:
+        return define_multiagent_action(env, obs, obs_wrapper, v_id, space)
+    else:
+        return define_action_nonagent_vut(env, obs, obs_wrapper, v_id, space)
+
+
+def define_multiagent_action(env, obs, obs_wrapper: ObservationWrapper, v_id: int, space: float) -> int:
+    """
+        Decides the action to be taken by the vehicle based on the current observation.
+        :param env: the highway environment
+        :param obs_wrapper: The observation wrapper containing functionality based on the current observation
+        :param v_id: The id of the vehicle
+        :param space: The space to be considered for the action
+        :return: The action to be taken
+        """
     distance = obs_wrapper.get_distance_to_leading_vehicle(v_id)
     right_clear = obs_wrapper.is_right_lane_clear(v_id, space, space)
     left_clear = obs_wrapper.is_left_lane_clear(v_id, space, space)
@@ -37,12 +102,8 @@ def decide_action(env, obs, obs_wrapper: ObservationWrapper, v_id: int, space: f
     lane = env.unwrapped.road.vehicles[v_id].lane_index
     current_lane = lane[2]
     other_lane_info = env.unwrapped.road.vehicles[1].lane_index[2]
-    # highway_env.envs.common.action.DiscreteMetaAction.get_available_actions
-    # highway_env.road.road.Road.neighbour_vehicles
-    current_vehicle = env.unwrapped.road.vehicles[v_id]
     vehicles = env.unwrapped.road.vehicles
     print(vehicles)
-    road_neighbours = env.unwrapped.road.neighbour_vehicles(current_vehicle)
 
     if distance > 35 and same_lane:
         return 3
@@ -50,7 +111,8 @@ def decide_action(env, obs, obs_wrapper: ObservationWrapper, v_id: int, space: f
         return 0
     elif 15 > distance > 10 and right_clear and not left_clear and same_lane and current_lane != 3:
         return 2
-    elif not right_clear and 15 > distance > 10 and not left_clear and same_lane and (current_lane != 0 or current_lane != 3):
+    elif not right_clear and 15 > distance > 10 and not left_clear and same_lane and (
+            current_lane != 0 or current_lane != 3):
         return 4
     elif not right_clear and 15 > distance > 10 and left_clear and same_lane and current_lane != 0:
         return 0
@@ -73,6 +135,63 @@ def decide_action(env, obs, obs_wrapper: ObservationWrapper, v_id: int, space: f
     elif distance == 0 and same_lane and 30 > velocity > 25:
         return 4
     elif distance < 12 and same_lane:
+        return 4
+    return 1
+
+
+def define_action_nonagent_vut(env, obs, obs_wrapper: ObservationWrapper, v_id: int, space: float) -> int:
+    """
+        Decides the action to be taken by the vehicle based on the current observation.
+        :param env: the highway environment
+        :param obs_wrapper: The observation wrapper containing functionality based on the current observation
+        :param v_id: The id of the vehicle
+        :param space: The space to be considered for the action
+        :return: The action to be taken
+        """
+    distance = obs_wrapper.get_distance_to_leading_vehicle(v_id)
+    right_clear = obs_wrapper.is_right_lane_clear(v_id, space, space)
+    left_clear = obs_wrapper.is_left_lane_clear(v_id, space, space)
+    velocity = obs_wrapper.get_velocity(v_id)
+    lane = env.unwrapped.road.vehicles[v_id].lane_index
+    current_lane = lane[2]
+    other_lane_info = env.unwrapped.road.vehicles[1].lane_index[2]
+    current_vehicle = env.unwrapped.road.vehicles[v_id]
+    vehicles = env.unwrapped.road.vehicles
+    print(vehicles)
+    road_neighbours = env.unwrapped.road.neighbour_vehicles(current_vehicle)
+
+    if distance > 35 and road_neighbours[0] is not None:
+        return 3
+    elif 15 > distance > 10 and road_neighbours[0] is not None and (right_clear or left_clear) and current_lane != 0:
+        return 0
+    elif 15 > distance > 10 and right_clear and not left_clear and road_neighbours[0] is not None and current_lane != 3:
+        return 2
+    elif not right_clear and 15 > distance > 10 and not left_clear and road_neighbours[0] is not None and (
+            current_lane != 0 or current_lane != 3):
+        return 4
+    elif not right_clear and 15 > distance > 10 and left_clear and road_neighbours[0] is not None and current_lane != 0:
+        return 0
+    elif 35 > distance > 10 and road_neighbours[0] is not None:
+        return 1
+    elif distance == 0 and right_clear and current_lane - other_lane_info < 0:
+        return 2
+    elif distance == 0 and right_clear and current_lane - other_lane_info > 0:
+        return 0
+    elif road_neighbours[0] is None:
+        return 1
+    elif  road_neighbours[1] is None:
+        return 1
+    elif distance == 0 and road_neighbours[1] is None and right_clear and not left_clear:
+        return 2
+    elif distance == 0 and road_neighbours[1] is None and left_clear and not right_clear:
+        return 0
+    elif velocity < 24 and road_neighbours[0] is not None:
+        return 3
+    elif 24 < velocity < 28:
+        return 1
+    elif distance == 0 and road_neighbours[0] is not None and 30 > velocity > 25:
+        return 4
+    elif distance < 12 and road_neighbours[0] is not None:
         return 4
     return 1
 
@@ -120,6 +239,7 @@ def control_vehicle(env, obs, obs_wrapper):
         if action == 4:
             print("Action 4")
         obs, _, _, _, _ = env.step((action, 1, 1, 1, 1, 1, 1))
+        #obs, _, _, _, _ = env.step((action,1))
         env.render()
         distance = obs_wrapper.get_distance_to_leading_vehicle(0)
         yield sync(request=position_update(distance))
@@ -136,8 +256,8 @@ def control_events():
 def set_config():
     config = {
         "centering_position": [0.5, 0.5],
-        "vehicles_count": 0,
-        "controlled_vehicles": 7,
+        "vehicles_count": 1,
+        "controlled_vehicles": 6,
         "lanes_count": 4,
         "initial_positions": [
             [55, 0, 25],
@@ -177,7 +297,7 @@ def set_config():
 def main():
     config = set_config()
     env = create_env(config)
-    obs, _ = env.reset(seed=0)
+    obs, _ = env.reset(seed=5)
     obsw = ObservationWrapper(obs)
     bp = BProgram(bthreads=[control_vehicle(env, obs, obsw)],
                   event_selection_strategy=SimpleEventSelectionStrategy(), listener=PrintBProgramRunnerListener())
@@ -185,6 +305,7 @@ def main():
 
     for _ in range(100):
         obs = env.step((1, 1, 1, 1, 1, 1, 1))
+        #obs = env.step((1,1))
         print(obs)
         env.render()
 
