@@ -150,27 +150,30 @@ def define_action_nonagent_vut(env, obs, obs_wrapper: ObservationWrapper, v_id: 
         """
     distance = obs_wrapper.get_distance_to_leading_vehicle(v_id)
     right_clear = obs_wrapper.is_right_lane_clear(v_id, space, space)
+    print(right_clear)
     left_clear = obs_wrapper.is_left_lane_clear(v_id, space, space)
+    print(left_clear)
     velocity = obs_wrapper.get_velocity(v_id)
     lane = env.unwrapped.road.vehicles[v_id].lane_index
     current_lane = lane[2]
+    print(current_lane)
     other_lane_info = env.unwrapped.road.vehicles[1].lane_index[2]
     current_vehicle = env.unwrapped.road.vehicles[v_id]
     vehicles = env.unwrapped.road.vehicles
-    print(vehicles)
+    #print(vehicles)
     road_neighbours = env.unwrapped.road.neighbour_vehicles(current_vehicle)
+    print(road_neighbours)
 
     if distance > 35 and road_neighbours[0] is not None:
         return 3
-    elif 15 > distance > 10 and road_neighbours[0] is not None and (right_clear or left_clear) and current_lane != 0:
-        return 0
-    elif 15 > distance > 10 and right_clear and not left_clear and road_neighbours[0] is not None and current_lane != 3:
-        return 2
-    elif not right_clear and 15 > distance > 10 and not left_clear and road_neighbours[0] is not None and (
-            current_lane != 0 or current_lane != 3):
-        return 4
     elif not right_clear and 15 > distance > 10 and left_clear and road_neighbours[0] is not None and current_lane != 0:
         return 0
+    elif right_clear and 15 > distance > 10 and left_clear and road_neighbours[0] is not None and current_lane == 0:
+        return 2
+    elif 15 > distance > 10 and right_clear and not left_clear and road_neighbours[0] is not None and current_lane != 3:
+        return 2
+    elif not right_clear and 15 > distance > 10 and not left_clear and road_neighbours[0] is not None:
+        return 4
     elif 35 > distance > 10 and road_neighbours[0] is not None:
         return 1
     elif distance == 0 and right_clear and current_lane - other_lane_info < 0:
@@ -179,11 +182,13 @@ def define_action_nonagent_vut(env, obs, obs_wrapper: ObservationWrapper, v_id: 
         return 0
     elif road_neighbours[0] is None:
         return 1
-    elif  road_neighbours[1] is None:
+    elif  road_neighbours[1] is None and road_neighbours[0] is None:
         return 1
-    elif distance == 0 and road_neighbours[1] is None and right_clear and not left_clear:
+    elif  road_neighbours[1] is None and current_lane == 3:
+        return 1
+    elif distance == 0 and road_neighbours[1] is None and right_clear and not left_clear and current_lane != 3:
         return 2
-    elif distance == 0 and road_neighbours[1] is None and left_clear and not right_clear:
+    elif distance == 0 and road_neighbours[1] is None and left_clear and not right_clear and current_lane != 0:
         return 0
     elif velocity < 24 and road_neighbours[0] is not None:
         return 3
@@ -226,7 +231,7 @@ def control_vehicle(env, obs, obs_wrapper):
     while True:
         step += 1
         obs_wrapper.set_observation(obs)
-        action = decide_action(env, obs, obs_wrapper, 0, 20)
+        action = decide_action(env, obs, obs_wrapper, 0, 15)
         print(action)
         if action == 0:
             yield sync(request=change_the_lane(step))
