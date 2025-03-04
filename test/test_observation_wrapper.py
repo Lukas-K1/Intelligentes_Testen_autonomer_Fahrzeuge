@@ -9,7 +9,7 @@ from src.observation_wrapper import *
 
 
 def create_test_env(config: Dict[str, Any]) -> Env:
-    env = gym.make('highway-v0', render_mode='rgb_array', config=config)
+    env = gym.make("highway-v0", render_mode="rgb_array", config=config)
     env.reset()
     return env
 
@@ -18,71 +18,51 @@ class TestObservationWrapper(unittest.TestCase):
     # Zwei Vehicles fahren auf der linken Spur 50m auseinander bei gleicher Geschwindigkeit. Ein weiteres Vehicle fährt
     # auf der mittleren Spur 25m vor dem einen und 25m hinter dem anderen, bie gleicher Geschwindigkeit.
     OBS_LEFT_LANE_CLEAR_TEST = (
-        np.array([
-            [100, 2, 25, 0],
-            [-25, -2, 0.0, 0.0],
-            [25, -2, 0, 0]
-        ], dtype=np.float32),
-        np.array([
-            [75, 0, 25, 0],
-            [25, 2, 0.0, 0.0],
-            [50, 0, 0.0, 0.0]
-        ], dtype=np.float32),
-        np.array([
-            [125, 0, 25, 0],
-            [-25, -2, 0.0, 0],
-            [-50, 0.0, 0.0, 0]
-        ], dtype=np.float32)
+        np.array(
+            [[100, 2, 25, 0], [-25, -2, 0.0, 0.0], [25, -2, 0, 0]], dtype=np.float32
+        ),
+        np.array(
+            [[75, 0, 25, 0], [25, 2, 0.0, 0.0], [50, 0, 0.0, 0.0]], dtype=np.float32
+        ),
+        np.array(
+            [[125, 0, 25, 0], [-25, -2, 0.0, 0], [-50, 0.0, 0.0, 0]], dtype=np.float32
+        ),
     )
 
     # Zwei Vehicles fahren auf der rechten Spur 50m auseinander bei gleicher Geschwindigkeit. Ein weiteres Vehicle fährt
     # auf der mittleren Spur 25m vor dem einen und 25m hinter dem anderen, bie gleicher Geschwindigkeit.
     OBS_RIGHT_LANE_CLEAR_TEST = (
-        np.array([
-            [100, 2, 25, 0],
-            [-25, 4, 0.0, 0.0],
-            [25, 4, 0, 0]
-        ], dtype=np.float32),
-        np.array([
-            [75, 4, 25, 0],
-            [25, -2, 0.0, 0.0],
-            [50, 0, 0.0, 0.0]
-        ], dtype=np.float32),
-        np.array([
-            [125, 4, 25, 0],
-            [-25, -2, 0.0, 0],
-            [-50, 0, 0.0, 0]
-        ], dtype=np.float32)
+        np.array(
+            [[100, 2, 25, 0], [-25, 4, 0.0, 0.0], [25, 4, 0, 0]], dtype=np.float32
+        ),
+        np.array(
+            [[75, 4, 25, 0], [25, -2, 0.0, 0.0], [50, 0, 0.0, 0.0]], dtype=np.float32
+        ),
+        np.array(
+            [[125, 4, 25, 0], [-25, -2, 0.0, 0], [-50, 0, 0.0, 0]], dtype=np.float32
+        ),
     )
 
     # Drei Vehicles fahren auf der rechten bei gleicher Geschwindigkeit. Das hinterste Auto auf der Spur hat einen Abstand
     # von 50m zum nächsten. Dieses hat nur noch einen Abstand von 25m zum vorderen.
     # Ein weiteres Vehicle fährt auf der mittleren Spur.
     OBS_DISTANCE_TO_LEADING_VEHICLE = (
-        np.array([
-            [100, 2, 25, 0],
-            [-25, 4, 0.0, 0.0],
-            [25, 4, 0, 0],
-            [50, 4, 0, 0]
-        ], dtype=np.float32),
-        np.array([
-            [75, 4, 25, 0],
-            [25, -2, 0.0, 0.0],
-            [75, 0, 0.0, 0.0],
-            [50, 0, 0.0, 0.0]
-        ], dtype=np.float32),
-        np.array([
-            [125, 4, 25, 0],
-            [-25, -2, 0.0, 0],
-            [-50, 0, 0.0, 0],
-            [25, 0, 0, 0]
-        ], dtype=np.float32),
-        np.array([
-            [150, 4, 25, 0],
-            [-50, -2, 0.0, 0],
-            [-25, 0, 0.0, 0],
-            [-75, 0, 0, 0]
-        ], dtype=np.float32)
+        np.array(
+            [[100, 2, 25, 0], [-25, 4, 0.0, 0.0], [25, 4, 0, 0], [50, 4, 0, 0]],
+            dtype=np.float32,
+        ),
+        np.array(
+            [[75, 4, 25, 0], [25, -2, 0.0, 0.0], [75, 0, 0.0, 0.0], [50, 0, 0.0, 0.0]],
+            dtype=np.float32,
+        ),
+        np.array(
+            [[125, 4, 25, 0], [-25, -2, 0.0, 0], [-50, 0, 0.0, 0], [25, 0, 0, 0]],
+            dtype=np.float32,
+        ),
+        np.array(
+            [[150, 4, 25, 0], [-50, -2, 0.0, 0], [-25, 0, 0.0, 0], [-75, 0, 0, 0]],
+            dtype=np.float32,
+        ),
     )
 
     CONFIG = config = {
@@ -102,7 +82,7 @@ class TestObservationWrapper(unittest.TestCase):
                 "normalize": False,
                 "absolute": False,
                 "see_behind": True,
-                "order": "sorted"
+                "order": "sorted",
             },
         },
         "action": {
@@ -111,33 +91,33 @@ class TestObservationWrapper(unittest.TestCase):
                 "type": "DiscreteMetaAction",
                 "longitudinal": True,
                 "lateral": True,
-                "target_speeds": [0, 5, 10, 15, 20, 25, 30]
+                "target_speeds": [0, 5, 10, 15, 20, 25, 30],
             },
         },
-        "simulation_frequency": 100
+        "simulation_frequency": 100,
     }
 
     # is_left_lane_clear tests
 
     def test_left_lane_clear(self):
         obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
-        self.assertTrue(obs_wrapper.is_left_lane_clear(0,10,10))
+        self.assertTrue(obs_wrapper.is_left_lane_clear(0, 10, 10))
 
     def test_left_lane_both_distances_zero(self):
         obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
-        self.assertFalse(obs_wrapper.is_left_lane_clear(0,0,0))
+        self.assertFalse(obs_wrapper.is_left_lane_clear(0, 0, 0))
 
     def test__left_lane_front_distance_zero(self):
         obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
-        self.assertTrue(obs_wrapper.is_left_lane_clear(0,0,10))
+        self.assertTrue(obs_wrapper.is_left_lane_clear(0, 0, 10))
 
     def test_left_lane_back_distance_zero(self):
         obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
-        self.assertTrue(obs_wrapper.is_left_lane_clear(0,10,0))
+        self.assertTrue(obs_wrapper.is_left_lane_clear(0, 10, 0))
 
     def test_left_lane_edge_distance(self):
         obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
-        self.assertTrue(obs_wrapper.is_left_lane_clear(0,24,24))
+        self.assertTrue(obs_wrapper.is_left_lane_clear(0, 24, 24))
 
     def test_left_lane_exact_distance_between_vehicles(self):
         obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
@@ -145,15 +125,15 @@ class TestObservationWrapper(unittest.TestCase):
 
     def test_left_lane_edge_distance_greater(self):
         obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
-        self.assertFalse(obs_wrapper.is_left_lane_clear(0,26,26))
+        self.assertFalse(obs_wrapper.is_left_lane_clear(0, 26, 26))
 
     def test_left_lane_edge_distance_front_failed(self):
         obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
-        self.assertFalse(obs_wrapper.is_left_lane_clear(0,26,24))
+        self.assertFalse(obs_wrapper.is_left_lane_clear(0, 26, 24))
 
     def test_left_lane_edge_distance_back_failed(self):
         obs_wrapper = ObservationWrapper(self.OBS_LEFT_LANE_CLEAR_TEST)
-        self.assertFalse(obs_wrapper.is_left_lane_clear(0,24,26))
+        self.assertFalse(obs_wrapper.is_left_lane_clear(0, 24, 26))
 
     def test_left_lane_clear_vehicle_not_found(self):
         obs_wrapper = ObservationWrapper(np.array([]))
@@ -299,5 +279,6 @@ class TestObservationWrapper(unittest.TestCase):
         # env hat 7 vehicles
         self.assertFalse(obs_wrapper.is_in_lane(10, 0))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
