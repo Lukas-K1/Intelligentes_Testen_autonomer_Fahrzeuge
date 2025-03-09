@@ -75,6 +75,7 @@ def initialize_environment() -> gymnasium.Env:
         "lanes_count": 3,
         "screen_height": 150,
         "screen_width": 1200,
+        "centering_position": [0.5, 0.5],
     }
     env = gymnasium.make("highway-v0", render_mode="rgb_array", config=env_config)
     env.reset()
