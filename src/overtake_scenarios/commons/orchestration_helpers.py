@@ -18,6 +18,7 @@ def is_safe_to_change_lane(vehicle, target_lane, safe_distance, env):
                     return False
     return True
 
+
 def is_safe_to_accelerate(vehicle, safe_distance, env):
     """
     Checks if there are no vehicles in the same lane within the safe_distance.
@@ -34,5 +35,3 @@ def is_safe_to_accelerate(vehicle, safe_distance, env):
                 if distance < safe_distance:
                     return False
     return True
-
-

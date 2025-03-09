@@ -7,7 +7,8 @@ from bppy import BProgram, SMTEventSelectionStrategy, sync, thread, true
 from highway_env.vehicle.controller import MDPVehicle
 from z3 import *
 
-from src.overtake_scenarios.commons.controllable_vehicle import ControllableVehicle
+from src.overtake_scenarios.commons.controllable_vehicle import \
+    ControllableVehicle
 from src.overtake_scenarios.commons.vehicle import Vehicle
 from src.overtake_scenarios.commons.z3_actions import *
 
