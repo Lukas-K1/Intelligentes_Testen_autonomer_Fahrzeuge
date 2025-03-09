@@ -32,7 +32,7 @@ from src.overtake_scenarios.commons.orchestration_helpers import is_safe_to_acce
 # -----------------------------------------------------------------------------
 logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
-    level=logging.DEBUG,
+    level=logging.INFO,
 )
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ def initialize_environment() -> gymnasium.Env:
         "centering_position": [0.5, 0.5],
     }
     env = gymnasium.make("highway-v0", render_mode="rgb_array", config=env_config)
-    env.reset()
+    env.reset(seed=1) # Seed 1 klappt, seed 2 nicht
     return env
 
 
@@ -124,7 +124,7 @@ def fall_behind(behind_vehicle, in_front_vehicle, min_distance: float = FALL_BEH
             if is_safe_to_accelerate(behind_vehicle, SAFE_DISTANCE, env):
                 yield sync(request=behind_vehicle.FASTER())
             else:
-                logger.info(f"{behind_vehicle.name}: Not safe to accelerate while falling behind")
+                logger.warning(f"{behind_vehicle.name}: Not safe to accelerate while falling behind")
                 yield sync(request=behind_vehicle.IDLE())
         else:
             yield sync(request=behind_vehicle.IDLE())
