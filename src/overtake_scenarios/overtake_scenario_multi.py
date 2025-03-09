@@ -65,7 +65,7 @@ def initialize_environment() -> gymnasium.Env:
             "type": "MultiAgentAction",
             "action_config": {
                 "type": "DiscreteMetaAction",
-                "target_speeds": np.arange(0, 31, 3),
+                "target_speeds": np.arange(0, 31, 5),
             },
         },
         "observation": {
