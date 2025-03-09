@@ -37,7 +37,7 @@ env.unwrapped.config.update(
         "screen_width": 1200,
     }
 )
-env.reset(seed=0)
+env.reset()
 
 # ---- Z3 Setup für SMT-basierte Aktionen ----
 Actions, (LANE_LEFT, IDLE, LANE_RIGHT, FASTER, SLOWER) = EnumSort(
@@ -243,7 +243,7 @@ def overtaking_maneuver():
     yield from wait_seconds(0.5)
 
     # Phase 3: Überholen – beschleunige, bis v1 den VUT überholt (x-Position von v1 > x-Position von VUT + Abstand)
-    safe_distance = 10.0  # Sicherheitsabstand zum Einscheren
+    safe_distance = 7.0  # Sicherheitsabstand zum Einscheren
     while v1.position()[0] <= vut.position()[0] + safe_distance:
         logger.debug(
             f"overtaking_maneuver: v1 pos: {v1.position()[0]}, vut pos: {vut.position()[0]}"
