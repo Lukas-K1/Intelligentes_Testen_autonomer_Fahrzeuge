@@ -8,8 +8,9 @@ def kinematics_observation():
         "features": ["cos_d", "sin_d"],
         "absolute": False,
         "order": "sorted",
-        "see_behind": True # damit auch die Fahrzeuge hinter einem Fahrzeug mit observiert werden
+        "see_behind": True,  # damit auch die Fahrzeuge hinter einem Fahrzeug mit observiert werden
     }
+
 
 def occupancygrid_observation():
     return {
@@ -19,12 +20,13 @@ def occupancygrid_observation():
             "x": [-100, 100],
             "y": [-100, 100],
             "vx": [-20, 20],
-            "vy": [-20, 20]
+            "vy": [-20, 20],
         },
         "grid_size": [[-27.5, 27.5], [-27.5, 27.5]],
         "grid_step": [5, 5],
-        "absolute": False
+        "absolute": False,
     }
+
 
 def grayscale_observation():
     return {
@@ -32,39 +34,46 @@ def grayscale_observation():
         "observation_shape": (128, 64),
         "stack_size": 4,
         "weights": [0.2989, 0.5870, 0.1140],  # weights for RGB conversion
-        "scaling": 1.75
+        "scaling": 1.75,
     }
+
 
 # wenn keine Spur mehr vorhanden ist, neben der aktuell befahrenen Spur, dann wird dies als 1 interpretiert
 def time_to_collision_observation():
     return {
         "type": "TimeToCollision",
         "horizon": 10,
-        }
-
-def multiagent_observation():
-    return { "type": "MultiAgentObservation",
-    "observation_config":
-        kinematics_observation()
-        #occupancygrid_observation()
-        #time_to_collision_observation()
-        #grayscale_observation()
     }
 
-env = gym.make('roundabout-v0', render_mode='rgb_array', config={
 
-    "simulation_frequency": 100,
-    "observation":
+def multiagent_observation():
+    return {
+        "type": "MultiAgentObservation",
+        "observation_config": kinematics_observation(),
+        # occupancygrid_observation()
+        # time_to_collision_observation()
+        # grayscale_observation()
+    }
+
+
+env = gym.make(
+    "roundabout-v0",
+    render_mode="rgb_array",
+    config={
+        "simulation_frequency": 100,
+        "observation":
         # multiagent_observation()
         # kinematics_observation()
         occupancygrid_observation()
         # grayscale_observation()
-    ,
-    "screen_width": 1024,
-    "screen_height": 720
-})
+        ,
+        "screen_width": 1024,
+        "screen_height": 720,
+    },
+)
 
 obs = env.reset()
+
 
 def action_name(action) -> str:
     if action == 0:
@@ -78,7 +87,8 @@ def action_name(action) -> str:
     elif action == 4:
         return "SLOWER"
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     for i in range(15):
         obs, reward, done, truncated, info = env.step(1)
         print(obs)

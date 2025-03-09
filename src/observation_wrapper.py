@@ -7,6 +7,7 @@ from gymnasium import Env
 class VehicleNotFoundError(Exception):
     pass
 
+
 class ObservationWrapper:
     """
     Diese Klasse dient dazu eine Observation aus HighwayEnv fachlich zu interpretieren.
@@ -35,8 +36,12 @@ class ObservationWrapper:
     def set_observation(self, observation):
         self.observation = observation
 
-    def is_right_lane_clear(self, vehicle_id, minimal_distance_to_front: float,
-                            minimal_distance_to_back: float) -> bool:
+    def is_right_lane_clear(
+        self,
+        vehicle_id,
+        minimal_distance_to_front: float,
+        minimal_distance_to_back: float,
+    ) -> bool:
         """
         Check, ob die vom übergebenen Fahrzeug rechte Spur frei ist.
         :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
@@ -56,15 +61,25 @@ class ObservationWrapper:
                 # theoretisch, um nur die nächstgelegene Spur zu nehmen, muss y noch eingeschränkt werden + lane_size
                 if values[vehicle_i][1] > 0:
                     x_of_vehicle_i = values[vehicle_i][0]
-                    if -minimal_distance_to_back <= x_of_vehicle_i <= minimal_distance_to_front:
+                    if (
+                        -minimal_distance_to_back
+                        <= x_of_vehicle_i
+                        <= minimal_distance_to_front
+                    ):
                         return False
             return True
         except VehicleNotFoundError:
-            warnings.warn("The Vehicle was not found in the observation. The return value will always be False")
+            warnings.warn(
+                "The Vehicle was not found in the observation. The return value will always be False"
+            )
             return False
 
-    def is_left_lane_clear(self, vehicle_id, minimal_distance_to_front: float,
-                            minimal_distance_to_back: float) -> bool:
+    def is_left_lane_clear(
+        self,
+        vehicle_id,
+        minimal_distance_to_front: float,
+        minimal_distance_to_back: float,
+    ) -> bool:
         """
         Check, ob die vom übergebenen Fahrzeug linke Spur frei ist.
         :param vehicle_id: Die ID des Fahrzeugs , für das die Überprüfung durchgeführt werden soll.
@@ -82,11 +97,17 @@ class ObservationWrapper:
             for vehicle_i in range(1, (values.shape[0])):
                 if values[vehicle_i][1] < 0:
                     x_of_vehicle_i = values[vehicle_i][0]
-                    if -minimal_distance_to_back <= x_of_vehicle_i <= minimal_distance_to_front:
+                    if (
+                        -minimal_distance_to_back
+                        <= x_of_vehicle_i
+                        <= minimal_distance_to_front
+                    ):
                         return False
             return True
         except VehicleNotFoundError:
-            warnings.warn("The Vehicle was not found in the observation. The return value will always be False")
+            warnings.warn(
+                "The Vehicle was not found in the observation. The return value will always be False"
+            )
             return False
 
     def get_distance_to_leading_vehicle(self, vehicle_id) -> float:
@@ -113,7 +134,9 @@ class ObservationWrapper:
 
             return shortest_distance if shortest_distance is not None else 0
         except VehicleNotFoundError:
-            warnings.warn("The Vehicle was not found in the observation. The return value will always be zero.")
+            warnings.warn(
+                "The Vehicle was not found in the observation. The return value will always be zero."
+            )
             return 0
 
     def get_velocity(self, vehicle_id) -> float:
@@ -126,7 +149,7 @@ class ObservationWrapper:
         """
         try:
             values = self.__get_values_for_vehicle(vehicle_id)
-            vx =  values[0][2]
+            vx = values[0][2]
             vy = values[0][3]
             """
             Die Berechnung basiert auf den beiden unabhängigen Geschwindigkeiten vx, vy und werden mittels
@@ -134,7 +157,9 @@ class ObservationWrapper:
             """
             return np.sqrt(vx**2 + vy**2)
         except VehicleNotFoundError:
-            warnings.warn("The Vehicle was not found in the observation. The return value will always be zero.")
+            warnings.warn(
+                "The Vehicle was not found in the observation. The return value will always be zero."
+            )
             return 0
 
     def is_in_same_lane(self, vehicle1_id, vehicle2_id):
@@ -152,7 +177,9 @@ class ObservationWrapper:
             values_vehicle2 = self.__get_values_for_vehicle(vehicle2_id)
             return round(values_vehicle1[0][1]) == round(values_vehicle2[0][1])
         except VehicleNotFoundError:
-            warnings.warn("At least one vehicle was not found in the observation. The return value will always be False.")
+            warnings.warn(
+                "At least one vehicle was not found in the observation. The return value will always be False."
+            )
             return False
 
     def is_in_lane(self, vehicle_id, lane_id) -> bool:
@@ -168,17 +195,21 @@ class ObservationWrapper:
         try:
             vehicle_y = self.__get_values_for_vehicle(vehicle_id)[0][1]
         except VehicleNotFoundError:
-            warnings.warn("The Vehicle was not found in the observation. The return value will always be false.")
+            warnings.warn(
+                "The Vehicle was not found in the observation. The return value will always be false."
+            )
             return False
 
         # False, wenn aus Env nicht alle nötigen Daten gelesen werden können
         try:
-            abstract_env = getattr(self.env, 'env')
-            highway = getattr(abstract_env, 'env')
-            road = getattr(highway, 'road')
-            network = getattr(road, 'network')
+            abstract_env = getattr(self.env, "env")
+            highway = getattr(abstract_env, "env")
+            road = getattr(highway, "road")
+            network = getattr(road, "network")
         except AttributeError:
-            warnings.warn("The Environment was not set up properly. The return value will always be false.")
+            warnings.warn(
+                "The Environment was not set up properly. The return value will always be false."
+            )
             return False
 
         # False, wenn Lane nicht existiert
@@ -193,6 +224,6 @@ class ObservationWrapper:
 
     def __get_values_for_vehicle(self, vehicle_id):
         try:
-         return self.observation[vehicle_id]
+            return self.observation[vehicle_id]
         except IndexError:
-           raise VehicleNotFoundError("Vehicle not found in observation.")
+            raise VehicleNotFoundError("Vehicle not found in observation.")

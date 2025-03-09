@@ -6,8 +6,9 @@ from bppy import *
 
 # BPpy Events
 
+
 def create_env(config: Dict[str, Any]) -> gym.Env:
-    env = gym.make('highway-v0', render_mode='rgb_array', config=config)
+    env = gym.make("highway-v0", render_mode="rgb_array", config=config)
     env.reset()
     return env
 
@@ -26,7 +27,7 @@ def set_config():
             [135, 3, 35],
             [165, 1, 17],
             [195, 3, 23],
-            [225, 0, 29]
+            [225, 0, 29],
         ],  # Fixed start positions WIP
         "observation": {
             "type": "MultiAgentObservation",
@@ -37,7 +38,7 @@ def set_config():
                 "normalize": False,
                 "absolute": False,
                 "see_behind": True,
-                "order": "sorted"
+                "order": "sorted",
             },
         },
         "action": {
@@ -46,10 +47,10 @@ def set_config():
                 "type": "DiscreteMetaAction",
                 "longitudinal": True,
                 "lateral": True,
-                "target_speeds": [0, 5, 10, 15, 20, 25, 30]
+                "target_speeds": [0, 5, 10, 15, 20, 25, 30],
             },
         },
-        "simulation_frequency": 100
+        "simulation_frequency": 100,
     }
     return config
 
@@ -63,7 +64,7 @@ def main():
     # bp.run()
 
     for _ in range(100):
-        #bp.run()
+        # bp.run()
         obs = env.step((1, 1, 2, 4, 0, 4, 4))
         print(obs)
         env.render()

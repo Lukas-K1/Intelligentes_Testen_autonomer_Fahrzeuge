@@ -1,0 +1,53 @@
+name: Lint and Format
+
+on:
+  - push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout Code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      # Install Dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black isort flake8
+
+      # Run Black
+      - name: Run Linting Check
+        run: |
+          black --check --diff .
+          isort --check --diff .
+          flake8 .
+        continue-on-error: true
+      
+      - name: Format code if needed
+        run: |
+          black .
+          isort .
+        id : format_code
+
+      # Apply Black and isort if necessary and commit changes
+      - name: Create commit if needed
+        if: ${{ steps.format_code.outcome == 'success' }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git commit -a -m "Apply code formatting with Black and isort" || echo "No changes to commit"
+      - name: Push changes
+        if: ${{ steps.format_code.outcome == 'success' }}
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
