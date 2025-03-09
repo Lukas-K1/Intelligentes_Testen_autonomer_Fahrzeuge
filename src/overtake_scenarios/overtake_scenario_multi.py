@@ -288,7 +288,6 @@ def overtaking_maneuver(vehicle: ControllableVehicle):
         logger.info(f"{vehicle.name}: Starting overtaking maneuver")
         # Phase 1: Positioning
         yield from get_behind(vehicle, vut)
-        yield from wait_seconds(0.5)
 
         # Phase 2: Lane Change for Overtaking
         original_lane = vehicle.lane_index()
@@ -303,7 +302,6 @@ def overtaking_maneuver(vehicle: ControllableVehicle):
                 yield sync(request=vehicle.LANE_RIGHT())
             else:
                 logger.info(f"{vehicle.name}: Not safe to change lane right for overtaking")
-        yield from wait_seconds(0.5)
 
         # Phase 3: Acceleration to Overtake
         while vehicle.position()[0] <= vut.position()[0] + SAFE_DISTANCE:
@@ -317,7 +315,7 @@ def overtaking_maneuver(vehicle: ControllableVehicle):
         # Phase 4: Reintegrate and Equalize Speed
         yield from change_to_same_lane(vehicle, original_lane)
         yield from equalize_speeds(vehicle, vut)
-        yield sync(request=vehicle.IDLE())
+        yield from idle_lock(vehicle)
         logger.info(f"{vehicle.name}: Overtaking maneuver completed.")
 
     return maneuver()
