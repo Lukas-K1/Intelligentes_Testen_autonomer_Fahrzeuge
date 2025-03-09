@@ -41,7 +41,9 @@ logger = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 SIMULATION_FREQUENCY: int = 20
 POLICY_FREQUENCY: int = 4
-SAFE_DISTANCE: float = 10.0  # Safe Euclidean distance for lane changes and acceleration
+SAFE_DISTANCE: float = 10.0        # Used for lane change and acceleration safety checks
+FALL_BEHIND_DISTANCE: float = 15.0   # Target gap for falling behind maneuvers
+MAX_MANEUVER_SPEED_DELTA: float = 6.0  # Maximum speed difference between the VUT and controlled vehicles for maneuvers
 
 # Global simulation time counter
 step_count: int = 0
@@ -75,7 +77,7 @@ def initialize_environment() -> gymnasium.Env:
         "screen_width": 1200,
     }
     env = gymnasium.make("highway-v0", render_mode="rgb_array", config=env_config)
-    env.reset(seed=2)
+    env.reset()
     return env
 
 
@@ -91,7 +93,7 @@ def seconds(steps: int) -> float:
 
 def wait_seconds(duration: float):
     """
-    Generator that yields sync requests until a specified duration (in seconds) has elapsed.
+    Yields sync requests until a specified duration (in seconds) has elapsed.
     """
     global step_count
     target_step = step_count + int(duration * SIMULATION_FREQUENCY)
@@ -102,10 +104,11 @@ def wait_seconds(duration: float):
 # -----------------------------------------------------------------------------
 # Maneuver Utility Functions
 # -----------------------------------------------------------------------------
-def fall_behind(behind_vehicle, in_front_vehicle, min_distance: float = SAFE_DISTANCE, max_duration: float = float("inf")):
+def fall_behind(behind_vehicle, in_front_vehicle, min_distance: float = FALL_BEHIND_DISTANCE,
+                max_duration: float = float("inf")):
     """
     Commands the behind_vehicle to fall behind the in_front_vehicle until the specified
-    minimum distance is achieved.
+    minimum gap (FALL_BEHIND_DISTANCE) is achieved.
     """
     global step_count
     start_steps = step_count
@@ -114,9 +117,9 @@ def fall_behind(behind_vehicle, in_front_vehicle, min_distance: float = SAFE_DIS
             f"fall_behind: {behind_vehicle.name} speed: {behind_vehicle.speed()}, "
             f"{in_front_vehicle.name} speed: {in_front_vehicle.speed()}"
         )
-        if behind_vehicle.speed() + 2.0 > in_front_vehicle.speed():
+        if behind_vehicle.speed() + MAX_MANEUVER_SPEED_DELTA > in_front_vehicle.speed():
             yield sync(request=behind_vehicle.SLOWER())
-        elif behind_vehicle.speed() - 2.0 < in_front_vehicle.speed():
+        elif behind_vehicle.speed() - MAX_MANEUVER_SPEED_DELTA < in_front_vehicle.speed():
             if is_safe_to_accelerate(behind_vehicle, SAFE_DISTANCE, env):
                 yield sync(request=behind_vehicle.FASTER())
             else:
@@ -148,7 +151,8 @@ def change_to_same_lane(vehicle, target_lane: int):
     yield sync(request=vehicle.IDLE())
 
 
-def close_distance(behind_vehicle, in_front_vehicle, max_distance: float = 25.0, max_duration: float = float("inf")):
+def close_distance(behind_vehicle, in_front_vehicle, max_distance: float = 25.0,
+                   max_duration: float = float("inf")):
     """
     Adjusts the behind_vehicle's speed to reduce the gap with the in_front_vehicle until the
     distance is within a defined threshold.
@@ -222,27 +226,6 @@ def idle_lock(vehicle):
 # Behavioral Threads (BThreads)
 # -----------------------------------------------------------------------------
 @thread
-def maintain_safe_distance_same_line():
-    """
-    Continuously monitors and maintains a safe longitudinal gap between the two controlled vehicles
-    when they share the same lane.
-    """
-    safe_gap: float = 15.0  # Minimum longitudinal gap (x-direction)
-    while True:
-        if v1.lane_index() == v2.lane_index():
-            trailing, leading = (v1, v2) if v1.position()[0] < v2.position()[0] else (v2, v1)
-            gap = leading.position()[0] - trailing.position()[0]
-            logger.debug(f"maintain_safe_distance: Gap between {trailing.name} and {leading.name} = {gap:.2f}")
-            if gap < safe_gap:
-                logger.info(f"{trailing.name}: Too close to {leading.name} (gap={gap:.2f}). Slowing down.")
-                yield sync(request=trailing.SLOWER())
-            else:
-                yield sync(request=trailing.IDLE())
-        else:
-            yield sync(request=true)
-
-
-@thread
 def highway_env_bthread():
     """
     Acts as the central simulation loop. It synchronizes vehicle actions according to the SMT
@@ -286,10 +269,15 @@ def overtaking_maneuver(vehicle: ControllableVehicle):
     @thread
     def maneuver():
         logger.info(f"{vehicle.name}: Starting overtaking maneuver")
-        # Phase 1: Positioning
+        # Phase 1: Positioning behind the VUT.
         yield from get_behind(vehicle, vut)
 
-        # Phase 2: Lane Change for Overtaking
+        # Re-check alignment: ensure the vehicle is still in the same lane and behind the VUT.
+        while vehicle.lane_index() != vut.lane_index() or not vehicle.is_behind(vut):
+            logger.info(f"{vehicle.name}: VUT lane changed. Repositioning behind VUT.")
+            yield from get_behind(vehicle, vut)
+
+        # Phase 2: Lane Change for Overtaking.
         original_lane = vehicle.lane_index()
         logger.info(f"{vehicle.name}: Changing lane for overtaking (original lane: {original_lane})")
         if original_lane > 0:
@@ -303,7 +291,7 @@ def overtaking_maneuver(vehicle: ControllableVehicle):
             else:
                 logger.info(f"{vehicle.name}: Not safe to change lane right for overtaking")
 
-        # Phase 3: Acceleration to Overtake
+        # Phase 3: Acceleration to Overtake.
         while vehicle.position()[0] <= vut.position()[0] + SAFE_DISTANCE:
             logger.info(f"{vehicle.name}: Overtaking: pos: {vehicle.position()[0]} vs. VUT: {vut.position()[0]}")
             if is_safe_to_accelerate(vehicle, SAFE_DISTANCE, env):
@@ -312,7 +300,7 @@ def overtaking_maneuver(vehicle: ControllableVehicle):
                 logger.info(f"{vehicle.name}: Not safe to accelerate during overtaking")
                 yield sync(request=vehicle.IDLE())
 
-        # Phase 4: Reintegrate and Equalize Speed
+        # Phase 4: Reintegrate and Equalize Speed.
         yield from change_to_same_lane(vehicle, original_lane)
         yield from equalize_speeds(vehicle, vut)
         yield from idle_lock(vehicle)
@@ -338,8 +326,6 @@ if __name__ == "__main__":
     # Assemble BThreads for the simulation.
     bthreads = [
         highway_env_bthread(),
-        # Uncomment the following line to enable safe distance monitoring between controlled vehicles:
-        # maintain_safe_distance_same_line(),
         overtaking_maneuver(v1),
         overtaking_maneuver(v2),
     ]
