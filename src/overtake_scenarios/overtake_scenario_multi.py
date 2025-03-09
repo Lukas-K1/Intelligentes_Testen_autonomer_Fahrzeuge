@@ -227,6 +227,33 @@ def idle_lock(vehicle):
 # Behavioral Threads (BThreads)
 # -----------------------------------------------------------------------------
 @thread
+def maintain_safe_distance_same_line():
+    """
+    Blocks acceleration events from the trailing vehicle when the gap between vehicles is below SAFE_DISTANCE.
+    This ensures that no event is allowed which would further reduce the gap, thereby preventing collisions.
+    """
+    while True:
+        # Only check when both vehicles are in the same lane.
+        if v1.lane_index() == v2.lane_index():
+            # Identify the trailing vehicle.
+            if v1.position()[0] < v2.position()[0]:
+                trailing = v1
+            else:
+                trailing = v2
+            # Compute the gap between the two vehicles.
+            gap = abs(v2.position()[0] - v1.position()[0])
+            logger.debug(f"maintain_safe_distance: Gap between vehicles = {gap:.2f}")
+            if gap < SAFE_DISTANCE:
+                logger.info(f"Blocking acceleration for {trailing.name} due to unsafe gap ({gap:.2f} < {SAFE_DISTANCE})")
+                # Block any event that would cause the trailing vehicle to accelerate.
+                yield sync(request= trailing.SLOWER(), block=trailing.FASTER())
+            else:
+                # When the gap is safe, do nothing and wait for the next event.
+                yield sync(waitFor=true)
+        else:
+            yield sync(waitFor=true)
+
+@thread
 def highway_env_bthread():
     """
     Acts as the central simulation loop. It synchronizes vehicle actions according to the SMT
@@ -327,6 +354,7 @@ if __name__ == "__main__":
     # Assemble BThreads for the simulation.
     bthreads = [
         highway_env_bthread(),
+        maintain_safe_distance_same_line(),
         overtaking_maneuver(v1),
         overtaking_maneuver(v2),
     ]
