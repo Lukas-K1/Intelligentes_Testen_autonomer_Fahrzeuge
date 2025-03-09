@@ -102,7 +102,7 @@ def wait_seconds(duration: float):
 # -----------------------------------------------------------------------------
 # Maneuver Utility Functions
 # -----------------------------------------------------------------------------
-def fall_behind(behind_vehicle, in_front_vehicle, min_distance: float = 25.0, max_duration: float = float("inf")):
+def fall_behind(behind_vehicle, in_front_vehicle, min_distance: float = SAFE_DISTANCE, max_duration: float = float("inf")):
     """
     Commands the behind_vehicle to fall behind the in_front_vehicle until the specified
     minimum distance is achieved.
