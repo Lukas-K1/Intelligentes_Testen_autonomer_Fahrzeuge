@@ -7,6 +7,10 @@ from bppy import BProgram, SMTEventSelectionStrategy, sync, thread, true
 from highway_env.vehicle.controller import MDPVehicle
 from z3 import *
 
+from src.overtake_scenarios.commons.controllable_vehicle import ControllableVehicle
+from src.overtake_scenarios.commons.vehicle import Vehicle
+from src.overtake_scenarios.commons.z3_actions import *
+
 # ---- Logging configuration ----
 logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -39,59 +43,7 @@ env.unwrapped.config.update(
 )
 env.reset()
 
-# ---- Z3 Setup für SMT-basierte Aktionen ----
-Actions, (LANE_LEFT, IDLE, LANE_RIGHT, FASTER, SLOWER) = EnumSort(
-    "Actions", ["LANE_LEFT", "IDLE", "LANE_RIGHT", "FASTER", "SLOWER"]
-)
 v1_action = Const("v1_action", Actions)
-
-
-# ---- Fahrzeugklassen ----
-class Vehicle:
-    def __init__(self, v_index, env, name=""):
-        self.v_index = v_index
-        self.env = env
-        self.env_vehicle = env.unwrapped.road.vehicles[v_index]
-        self.name = name
-
-    def position(self):
-        return self.env_vehicle.position  # (x, y)
-
-    def lane_index(self):
-        li = self.env_vehicle.lane_index
-        # Falls die lane_index als Tuple zurückkommt, verwende den dritten Wert
-        if isinstance(li, tuple):
-            return li[2]
-        return li
-
-    def speed(self):
-        return self.env_vehicle.speed
-
-    def is_behind(self, other, margin=0.0):
-        return self.position()[0] + margin < other.position()[0]
-
-
-class ControllableVehicle(Vehicle):
-    def __init__(self, v_index, env, vehicle_smt_var, name=""):
-        super().__init__(v_index, env, name)
-        self.vehicle_smt_var = vehicle_smt_var
-
-    # Action-Methoden für sync()-Requests
-    def LANE_LEFT(self):
-        return self.vehicle_smt_var == LANE_LEFT
-
-    def IDLE(self):
-        return self.vehicle_smt_var == IDLE
-
-    def LANE_RIGHT(self):
-        return self.vehicle_smt_var == LANE_RIGHT
-
-    def FASTER(self):
-        return self.vehicle_smt_var == FASTER
-
-    def SLOWER(self):
-        return self.vehicle_smt_var == SLOWER
-
 
 # ---- Fahrzeuge erstellen ----
 v1 = ControllableVehicle(0, env, v1_action, "v1")
@@ -201,11 +153,11 @@ def get_behind(behind_vehicle, in_front_vehicle):
 def highway_env_bthread():
     global step_count
     while True:
-        _ = yield sync(waitFor=true)
+        evt = yield sync(waitFor=true)
         logger.debug(
-            f"highway_env_bthread: step_count: {step_count}, action: {_.eval(v1.vehicle_smt_var)}"
+            f"highway_env_bthread: step_count: {step_count}, action: {evt.eval(v1.vehicle_smt_var)}"
         )
-        action_val = _.eval(v1.vehicle_smt_var)
+        action_val = evt.eval(v1.vehicle_smt_var)
         if action_val == LANE_LEFT:
             action_index = 0
         elif action_val == LANE_RIGHT:
