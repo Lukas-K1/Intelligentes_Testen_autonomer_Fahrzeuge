@@ -13,28 +13,33 @@ def setup_sumo_connection(config_path: str, sumo_gui=True):
         sumo_gui (bool): Whether to run sumo-gui or just sumo in command line.
     """
     # Check SUMO_HOME environment
-    if 'SUMO_HOME' not in os.environ:
+    if "SUMO_HOME" not in os.environ:
         sys.exit("Please declare environment variable 'SUMO_HOME'")
 
-    sumo_bin = 'sumo-gui' if sumo_gui else 'sumo'
-    sumo_bin_path = os.path.join(os.environ['SUMO_HOME'], 'bin', sumo_bin)
+    sumo_bin = "sumo-gui" if sumo_gui else "sumo"
+    sumo_bin_path = os.path.join(os.environ["SUMO_HOME"], "bin", sumo_bin)
 
     if not os.path.isfile(sumo_bin_path):
         sys.exit(f"SUMO executable not found at: {sumo_bin_path}")
 
     # Append tools path for traci import
-    tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
+    tools = os.path.join(os.environ["SUMO_HOME"], "tools")
     sys.path.append(tools)
 
     sumo_config = [
         sumo_bin_path,
-        "-c", config_path,
-        "--step-length", "0.05",
-        "--delay", "1000",
-        "--lateral-resolution", "0.1"
+        "-c",
+        config_path,
+        "--step-length",
+        "0.05",
+        "--delay",
+        "1000",
+        "--lateral-resolution",
+        "0.1",
     ]
 
     traci.start(sumo_config)
+
 
 if __name__ == "__main__":
     """
@@ -51,8 +56,8 @@ if __name__ == "__main__":
     export SUMO_HOME=/path/to/your/sumo-installation
     """
 
-    vehicle_id = 'normal.0'
-    config_path = "../../sumo-maps/autobahn/autobahn.sumocfg" # for an autobahn network
+    vehicle_id = "normal.0"
+    config_path = "../../sumo-maps/autobahn/autobahn.sumocfg"  # for an autobahn network
 
     setup_sumo_connection(config_path)
 
