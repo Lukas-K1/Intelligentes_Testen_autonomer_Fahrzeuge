@@ -60,12 +60,27 @@ if __name__ == "__main__":
     vehicle_speed = 0
     total_speed = 0
 
+    route_edges = ["entry", "longEdge", "exit"]  # Same as in your flow
+    traci.vehicle.addFull(
+        vehID="veh_manual",
+        routeID="",  # We'll assign edges manually
+        typeID="normal_car",
+        depart=0,
+        departPos=10.0,  # 10 meters into the entry edge
+        departLane=1,
+        departSpeed=14.15
+    )
+    traci.vehicle.setRoute("veh_manual", route_edges)
+
     while traci.simulation.getMinExpectedNumber() > 0:
         traci.simulationStep()
         step_count += 1
 
         if vehicle_id in traci.vehicle.getIDList():
             vehicle_speed = traci.vehicle.getSpeed(vehicle_id)
+
+        if step_count == 10:
+            traci.vehicle.changeLane(vehicle_id, laneIndex=1, duration=5)
 
         print(f"Step {step_count}: Vehicle speed of {vehicle_id}: {vehicle_speed} m/s")
 
