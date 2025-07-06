@@ -73,7 +73,7 @@ if __name__ == "__main__":
         depart=0,
         departPos=10.0,  # 10 meters into the entry edge
         departLane=1,
-        departSpeed=14.15
+        departSpeed=14.15,
     )
     traci.vehicle.setRoute("veh_manual", route_edges)
 
