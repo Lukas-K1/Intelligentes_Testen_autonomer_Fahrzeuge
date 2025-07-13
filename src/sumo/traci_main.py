@@ -39,7 +39,8 @@ def setup_sumo_connection(config_path: str, sumo_gui=True):
     ]
 
     traci.start(sumo_config)
-
+    traci.gui.setZoom("View #0", 600)
+    traci.gui.setOffset("View #0", -100, -196)
 
 if __name__ == "__main__":
     """
@@ -67,15 +68,15 @@ if __name__ == "__main__":
 
     route_edges = ["entry", "longEdge", "exit"]  # Same as in your flow
     traci.vehicle.addFull(
-        vehID="veh_manual",
+        vehID="veh_manual_1",
         routeID="",  # We'll assign edges manually
-        typeID="normal_car",
+        typeID="manual",
         depart=0,
         departPos=10.0,  # 10 meters into the entry edge
         departLane=1,
         departSpeed=14.15,
     )
-    traci.vehicle.setRoute("veh_manual", route_edges)
+    traci.vehicle.setRoute("veh_manual_1", route_edges)
 
     while traci.simulation.getMinExpectedNumber() > 0:
         traci.simulationStep()
@@ -85,8 +86,11 @@ if __name__ == "__main__":
             vehicle_speed = traci.vehicle.getSpeed(vehicle_id)
 
         if step_count == 10:
-            traci.vehicle.changeLane(vehicle_id, laneIndex=1, duration=5)
+            traci.vehicle.changeLane(vehicle_id, laneIndex=1, duration=10)
+            traci.vehicle.changeLane("veh_manual_1", laneIndex=0, duration=10)
+            traci.vehicle.slowDown("veh_manual_1", 10, 1)  # Slow down to 10 m/s over 10 seconds
 
+        print(f"Step {step_count}: Vehicle speed of {vehicle_id}: {vehicle_speed} m/s")
         print(f"Step {step_count}: Vehicle speed of {vehicle_id}: {vehicle_speed} m/s")
 
     traci.close()

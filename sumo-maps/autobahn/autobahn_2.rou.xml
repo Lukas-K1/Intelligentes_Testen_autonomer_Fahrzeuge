@@ -1,0 +1,4 @@
+<routes>
+    <vType id="vut" vClass="passenger" maxSpeed="40" speedFactor="0.9" speedDev="0.2" sigma="0.5" laneChangeMode="1621" color="0,0,255" />
+    <vType id="manual" vClass="passenger" maxSpeed="40" speedFactor="0.9" speedDev="0.2" sigma="0.5" laneChangeMode="0" />
+</routes>
