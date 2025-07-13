@@ -42,6 +42,7 @@ def setup_sumo_connection(config_path: str, sumo_gui=True):
     traci.gui.setZoom("View #0", 600)
     traci.gui.setOffset("View #0", -100, -196)
 
+
 if __name__ == "__main__":
     """
     IMPORTANT:
@@ -88,7 +89,9 @@ if __name__ == "__main__":
         if step_count == 10:
             traci.vehicle.changeLane(vehicle_id, laneIndex=1, duration=10)
             traci.vehicle.changeLane("veh_manual_1", laneIndex=0, duration=10)
-            traci.vehicle.slowDown("veh_manual_1", 10, 1)  # Slow down to 10 m/s over 10 seconds
+            traci.vehicle.slowDown(
+                "veh_manual_1", 10, 1
+            )  # Slow down to 10 m/s over 10 seconds
 
         print(f"Step {step_count}: Vehicle speed of {vehicle_id}: {vehicle_speed} m/s")
         print(f"Step {step_count}: Vehicle speed of {vehicle_id}: {vehicle_speed} m/s")

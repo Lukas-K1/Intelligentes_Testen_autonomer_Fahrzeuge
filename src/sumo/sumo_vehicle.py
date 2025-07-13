@@ -8,6 +8,7 @@ class SumoVehicle:
     A class representing a controllable vehicle in SUMO.
     Inherits from SumoVehicle and adds methods for controlling the vehicle.
     """
+
     def __init__(self, vehicle_id: str):
         self.vehicle_id = vehicle_id
 
@@ -40,11 +41,13 @@ class SumoVehicle:
         x_other, _ = traci.vehicle.getPosition(other_vehicle.vehicle_id)
         return x_self < x_other - threshold
 
+
 class SumoControllableVehicle(SumoVehicle):
     """
     A class representing a controllable vehicle in SUMO.
     Inherits from SumoVehicle and adds methods for controlling the vehicle.
     """
+
     def __init__(self, vehicle_id: str, vehicle_smt_var):
         """
         Initialize the SumoControllableVehicle with a vehicle ID.
