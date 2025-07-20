@@ -182,9 +182,7 @@ def await_condition(
 @thread
 def abstract_scenario_two_vehicles_follow_vut():
     def condition():
-        return v1.is_behind_by_x(vut) and v2.is_behind_by_x(
-            v1
-        )  # TODO: Same lane?
+        return v1.is_behind_by_x(vut) and v2.is_behind_by_x(v1)  # TODO: Same lane?
 
     satisfied = yield from await_condition(condition, 10)
     if satisfied:
@@ -260,8 +258,8 @@ def sumo_env_bthread():
         step_count += 1
 
 if __name__ == "__main__":
-    #setup_sumo_connection(config_path)
-    #setup_sumo_vehicles()
+    # setup_sumo_connection(config_path)
+    # setup_sumo_vehicles()
     # Creating a BProgram with the defined b-threads, SMTEventSelectionStrategy,
     # and a listener to print the selected events
     b_program = BProgram(
