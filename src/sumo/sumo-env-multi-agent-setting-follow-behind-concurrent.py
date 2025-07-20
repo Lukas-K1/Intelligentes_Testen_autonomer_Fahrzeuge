@@ -12,7 +12,11 @@ from src.sumo.action_enum import *
 from src.sumo.sumo_vehicle import *
 
 config_path = "../../sumo-maps/autobahn/autobahn.sumocfg"
-env = gym.make("SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles_ids=["veh_manual_1", "veh_manual_2"])
+env = gym.make(
+    "SumoEnv-v0",
+    sumo_config_file=config_path,
+    controllable_vehicles_ids=["veh_manual_1", "veh_manual_2"],
+)
 env.reset()
 
 # Create symbolic variables that can take any value from the Actions enum (for SMT-based events in BPpy)
@@ -37,6 +41,7 @@ def wait_seconds(seconds):
 
 def seconds(steps):
     return steps * 0.05
+
 
 step_count = 0
 
@@ -162,9 +167,7 @@ def await_condition(
 @thread
 def abstract_scenario_two_vehicles_follow_vut():
     def condition():
-        return v1.is_behind_by_x(vut) and v2.is_behind_by_x(
-            v1
-        )  # TODO: Same lane?
+        return v1.is_behind_by_x(vut) and v2.is_behind_by_x(v1)  # TODO: Same lane?
 
     satisfied = yield from await_condition(condition, 10)
     if satisfied:
@@ -232,20 +235,25 @@ def sumo_env_bthread():
             if action_vehicle in action_map:
                 actions.append(action_map[action_vehicle])
             else:
-                actions.append(4) # default is IDLE
+                actions.append(4)  # default is IDLE
         actions_tuple = tuple(actions)
 
         obs, reward, truncated, terminated, _ = env.step(actions_tuple)
         print(f"OBSERVATION in step {step_count}: {obs}")
         step_count += 1
 
+
 if __name__ == "__main__":
-    #setup_sumo_connection(config_path)
-    #setup_sumo_vehicles()
+    # setup_sumo_connection(config_path)
+    # setup_sumo_vehicles()
     # Creating a BProgram with the defined b-threads, SMTEventSelectionStrategy,
     # and a listener to print the selected events
     b_program = BProgram(
-        bthreads=[sumo_env_bthread(), two_vehicles_follow_vut(), abstract_scenario_two_vehicles_follow_vut()],
+        bthreads=[
+            sumo_env_bthread(),
+            two_vehicles_follow_vut(),
+            abstract_scenario_two_vehicles_follow_vut(),
+        ],
         event_selection_strategy=SMTEventSelectionStrategy(),
         listener=PrintBProgramRunnerListener(),
     )

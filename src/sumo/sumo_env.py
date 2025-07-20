@@ -16,20 +16,24 @@ class SumoEnv(gym.Env):
         # wie wo welche Autos sein sollen etc.
         self.sumo_config_file = sumo_config_file
         self.controllable_vehicles_ids = controllable_vehicles_ids
-        self.observation_space = spaces.Box(low=0, high=1e3, shape=(20, 5), dtype=np.float32)
-        self.action_space = spaces.MultiDiscrete([5] * len(self.controllable_vehicles_ids))
+        self.observation_space = spaces.Box(
+            low=0, high=1e3, shape=(20, 5), dtype=np.float32
+        )
+        self.action_space = spaces.MultiDiscrete(
+            [5] * len(self.controllable_vehicles_ids)
+        )
         self.episode = 0
         self.step_count = 0
         self.max_steps = 1000
 
     def _start_simulation(self, sumo_gui: bool = True):
         """
-            Setup and start the SUMO-traci connection.
+        Setup and start the SUMO-traci connection.
 
-            Args:
-                config_path (str): Path to the .sumocfg file, to set up the simulation environment.
-                sumo_gui (bool): Whether to run sumo-gui or just sumo in command line.
-            """
+        Args:
+            config_path (str): Path to the .sumocfg file, to set up the simulation environment.
+            sumo_gui (bool): Whether to run sumo-gui or just sumo in command line.
+        """
         # Check SUMO_HOME environment
         if "SUMO_HOME" not in os.environ:
             sys.exit("Please declare environment variable 'SUMO_HOME'")
@@ -55,23 +59,25 @@ class SumoEnv(gym.Env):
             "--lateral-resolution",
             "0.1",
             "--start",
-            "--quit-on-end"
+            "--quit-on-end",
         ]
 
         traci.start(sumo_config)
         traci.gui.setZoom("View #0", 600)
         traci.gui.setOffset("View #0", -100, -196)
 
-    def build_vehicles(self,
-                      route_edges: str = ["entry", "longEdge", "exit"],
-                      typeID: str = "manual",
-                      depart_time: int = 0,
-                      depart_pos: float = 0.0,
-                      depart_lane: int = 0,
-                      depart_speed: str = "avg",
-                      vehicle_color: Tuple[int, int, int] = (0, 255, 0),
-                      lane_change_mode: int = 0,
-                      speed_mode: int = 0):
+    def build_vehicles(
+        self,
+        route_edges: str = ["entry", "longEdge", "exit"],
+        typeID: str = "manual",
+        depart_time: int = 0,
+        depart_pos: float = 0.0,
+        depart_lane: int = 0,
+        depart_speed: str = "avg",
+        vehicle_color: Tuple[int, int, int] = (0, 255, 0),
+        lane_change_mode: int = 0,
+        speed_mode: int = 0,
+    ):
         """
         Build a vehicle in the SUMO simulation.
 
@@ -95,7 +101,7 @@ class SumoEnv(gym.Env):
         )
         # Disable lane changes for manual vehicle
         traci.vehicle.setRoute("vut", route_edges)
-        traci.vehicle.setColor("vut", [0,0,255])
+        traci.vehicle.setColor("vut", [0, 0, 255])
 
         for vehicle_id in self.controllable_vehicles_ids:
             traci.vehicle.addFull(
@@ -193,4 +199,3 @@ class SumoEnv(gym.Env):
 
     def close(self):
         traci.close()
-
