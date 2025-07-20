@@ -9,15 +9,17 @@ import numpy as np
 import traci
 from gymnasium import spaces
 
+from src.sumo.sumo_vehicle import SumoVehicle
+
 
 class SumoEnv(gym.Env):
-    def __init__(self, sumo_config_file: str, controllable_vehicles_ids: list[str]):
+    def __init__(self, sumo_config_file: str, controllable_vehicles: list[SumoVehicle]):
         # hier Sumo Setup machen initialisieren
         # wie wo welche Autos sein sollen etc.
         self.sumo_config_file = sumo_config_file
-        self.controllable_vehicles_ids = controllable_vehicles_ids
+        self.controllable_vehicles = controllable_vehicles
         self.observation_space = spaces.Box(low=0, high=1e3, shape=(20, 5), dtype=np.float32)
-        self.action_space = spaces.MultiDiscrete([5] * len(self.controllable_vehicles_ids))
+        self.action_space = spaces.MultiDiscrete([5] * len(self.controllable_vehicles))
         self.episode = 0
         self.step_count = 0
         self.max_steps = 1000
@@ -62,28 +64,15 @@ class SumoEnv(gym.Env):
         traci.gui.setZoom("View #0", 600)
         traci.gui.setOffset("View #0", -100, -196)
 
-    def build_vehicles(self,
-                      route_edges: str = ["entry", "longEdge", "exit"],
-                      typeID: str = "manual",
-                      depart_time: int = 0,
-                      depart_pos: float = 0.0,
-                      depart_lane: int = 0,
-                      depart_speed: str = "avg",
-                      vehicle_color: Tuple[int, int, int] = (0, 255, 0),
-                      lane_change_mode: int = 0,
-                      speed_mode: int = 0):
+    def build_vehicles(self):
         """
-        Build a vehicle in the SUMO simulation.
-
-        Args:
-            vehicle_id (str): The ID of the vehicle to be created.
-            route_edges (list): List of edges that the vehicle will traverse.
-            typeID (str): The type of the vehicle.
-            depart_time (int): The time at which the vehicle should depart.
+        Build and add vehicles to the simulation.
+        :return:
         """
         # TODO: put it in the SumoVehicle class and make it a method
         # TODO: find a way to not have the vut vehicle hardcoded here, maybe in a .rou file, but it will only spawned after
         # the first step, so we need to add it manually here (for now?)
+        route_edges = ["entry", "longEdge", "exit"]
         traci.vehicle.addFull(
             vehID="vut",
             routeID="",  # We'll assign edges manually
@@ -95,22 +84,22 @@ class SumoEnv(gym.Env):
         )
         # Disable lane changes for manual vehicle
         traci.vehicle.setRoute("vut", route_edges)
-        traci.vehicle.setColor("vut", [0,0,255])
+        traci.vehicle.setColor("vut", [0, 0, 255])
 
-        for vehicle_id in self.controllable_vehicles_ids:
+        for vehicle in self.controllable_vehicles:
             traci.vehicle.addFull(
-                vehID=vehicle_id,
+                vehID=vehicle.vehicle_id,
                 routeID="",
-                typeID=typeID,
-                depart=depart_time,
-                departPos=depart_pos,
-                departLane=depart_lane,
-                departSpeed=depart_speed,
+                typeID=vehicle.typeID,
+                depart=vehicle.depart_time,
+                departPos=vehicle.depart_pos,
+                departLane=vehicle.depart_lane,
+                departSpeed=vehicle.depart_speed,
             )
-            traci.vehicle.setRoute(vehicle_id, route_edges)
-            traci.vehicle.setColor(vehicle_id, vehicle_color)
-            traci.vehicle.setLaneChangeMode(vehicle_id, lane_change_mode)
-            traci.vehicle.setSpeedMode(vehicle_id, speed_mode)
+            traci.vehicle.setRoute(vehicle.vehicle_id, vehicle.route_edges)
+            traci.vehicle.setColor(vehicle.vehicle_id, vehicle.vehicle_color)
+            traci.vehicle.setLaneChangeMode(vehicle.vehicle_id, vehicle.lane_change_mode)
+            traci.vehicle.setSpeedMode(vehicle.vehicle_id, vehicle.speed_mode)
 
     def reset(self, seed: Optional[int] = None, **kwargs):
         if self.episode != 0:
@@ -137,7 +126,8 @@ class SumoEnv(gym.Env):
         return obs, reward, terminated, truncated, {}
 
     def _apply_action(self, action):
-        for i, vehicle_id in enumerate(self.controllable_vehicles_ids):
+        for i, vehicle in enumerate(self.controllable_vehicles):
+            vehicle_id = vehicle.vehicle_id
             speed = traci.vehicle.getSpeed(vehicle_id)
             if action[i] == 0:
                 if 0 <= traci.vehicle.getLaneIndex(vehicle_id) + 1 < 3:
@@ -145,16 +135,16 @@ class SumoEnv(gym.Env):
                         vehicle_id, traci.vehicle.getLaneIndex(vehicle_id) + 1, 1
                     )
             elif action[i] == 1:
-                traci.vehicle.setSpeed(vehicle_id, speed)
+                traci.vehicle.setSpeed(vehicle_id, speed) # Idle action, maintain current speed
             elif action[i] == 2:
                 if 0 <= traci.vehicle.getLaneIndex(vehicle_id) - 1 < 3:
                     traci.vehicle.changeLane(
                         vehicle_id, traci.vehicle.getLaneIndex(vehicle_id) - 1, 1
                     )
             elif action[i] == 3:
-                traci.vehicle.setSpeed(vehicle_id, max(0, speed + 1))
+                traci.vehicle.setSpeed(vehicle_id, speed +1)
             elif action[i] == 4:
-                traci.vehicle.setSpeed(vehicle_id, speed - 1)
+                traci.vehicle.setSpeed(vehicle_id, max(0, speed - 1))
 
     def _get_obs(self) -> np.ndarray:
         obs = []

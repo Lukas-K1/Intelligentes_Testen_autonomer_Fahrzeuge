@@ -11,18 +11,38 @@ from z3 import *
 from src.sumo.action_enum import *
 from src.sumo.sumo_vehicle import *
 
-config_path = "../../sumo-maps/autobahn/autobahn.sumocfg"
-env = gym.make("SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles_ids=["veh_manual_1", "veh_manual_2"])
-env.reset()
-
 # Create symbolic variables that can take any value from the Actions enum (for SMT-based events in BPpy)
 v1_action = Const("v1_action", Actions)
 v2_action = Const("v2_action", Actions)
 
-v1: SumoControllableVehicle = SumoControllableVehicle("veh_manual_1", v1_action)
-v2: SumoControllableVehicle = SumoControllableVehicle("veh_manual_2", v2_action)
+v1: SumoControllableVehicle = SumoControllableVehicle("veh_manual_1",
+                                                      ["entry", "longEdge", "exit"],
+                                                      typeID="manual",
+                                                      depart_time=0,
+                                                      depart_pos=0.0,
+                                                      depart_lane=1,
+                                                      depart_speed="avg",
+                                                      vehicle_color=[255, 0, 0], #red
+                                                      lane_change_mode=0,
+                                                      speed_mode=0,
+                                                      vehicle_smt_var=v1_action)
+v2: SumoControllableVehicle = SumoControllableVehicle("veh_manual_2",
+                                                      ["entry", "longEdge", "exit"],
+                                                      typeID="manual",
+                                                      depart_time=0,
+                                                      depart_pos=30.0,
+                                                      depart_lane=1,
+                                                      depart_speed="avg",
+                                                      vehicle_color=[0, 255, 0], # green
+                                                      lane_change_mode=0,
+                                                      speed_mode=0,
+                                                      vehicle_smt_var=v2_action)
 controllable_vehicles = [v1, v2]
 vut: SumoVehicle = SumoVehicle("vut")
+
+config_path = "../../sumo-maps/autobahn/autobahn.sumocfg"
+env = gym.make("SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1, v2])
+env.reset()
 
 action_map = {LANE_LEFT: 0, IDLE: 1, LANE_RIGHT: 2, FASTER: 3, SLOWER: 4}
 
@@ -245,7 +265,7 @@ if __name__ == "__main__":
     # Creating a BProgram with the defined b-threads, SMTEventSelectionStrategy,
     # and a listener to print the selected events
     b_program = BProgram(
-        bthreads=[sumo_env_bthread(), two_vehicles_follow_vut(), abstract_scenario_two_vehicles_follow_vut()],
+        bthreads=[sumo_env_bthread(), two_vehicles_follow_vut(), abstract_scenario_2()],
         event_selection_strategy=SMTEventSelectionStrategy(),
         listener=PrintBProgramRunnerListener(),
     )
