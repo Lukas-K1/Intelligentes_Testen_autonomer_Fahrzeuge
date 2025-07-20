@@ -15,33 +15,39 @@ from src.sumo.sumo_vehicle import *
 v1_action = Const("v1_action", Actions)
 v2_action = Const("v2_action", Actions)
 
-v1: SumoControllableVehicle = SumoControllableVehicle("veh_manual_1",
-                                                      ["entry", "longEdge", "exit"],
-                                                      typeID="manual",
-                                                      depart_time=0,
-                                                      depart_pos=0.0,
-                                                      depart_lane=1,
-                                                      depart_speed="avg",
-                                                      vehicle_color=[255, 0, 0], #red
-                                                      lane_change_mode=0,
-                                                      speed_mode=0,
-                                                      vehicle_smt_var=v1_action)
-v2: SumoControllableVehicle = SumoControllableVehicle("veh_manual_2",
-                                                      ["entry", "longEdge", "exit"],
-                                                      typeID="manual",
-                                                      depart_time=0,
-                                                      depart_pos=30.0,
-                                                      depart_lane=1,
-                                                      depart_speed="avg",
-                                                      vehicle_color=[0, 255, 0], # green
-                                                      lane_change_mode=0,
-                                                      speed_mode=0,
-                                                      vehicle_smt_var=v2_action)
+v1: SumoControllableVehicle = SumoControllableVehicle(
+    "veh_manual_1",
+    ["entry", "longEdge", "exit"],
+    typeID="manual",
+    depart_time=0,
+    depart_pos=0.0,
+    depart_lane=1,
+    depart_speed="avg",
+    vehicle_color=[255, 0, 0],  # red
+    lane_change_mode=0,
+    speed_mode=0,
+    vehicle_smt_var=v1_action,
+)
+v2: SumoControllableVehicle = SumoControllableVehicle(
+    "veh_manual_2",
+    ["entry", "longEdge", "exit"],
+    typeID="manual",
+    depart_time=0,
+    depart_pos=30.0,
+    depart_lane=1,
+    depart_speed="avg",
+    vehicle_color=[0, 255, 0],  # green
+    lane_change_mode=0,
+    speed_mode=0,
+    vehicle_smt_var=v2_action,
+)
 controllable_vehicles = [v1, v2]
 vut: SumoVehicle = SumoVehicle("vut")
 
 config_path = "../../sumo-maps/autobahn/autobahn.sumocfg"
-env = gym.make("SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1, v2])
+env = gym.make(
+    "SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1, v2]
+)
 env.reset()
 
 action_map = {LANE_LEFT: 0, IDLE: 1, LANE_RIGHT: 2, FASTER: 3, SLOWER: 4}
@@ -57,6 +63,7 @@ def wait_seconds(seconds):
 
 def seconds(steps):
     return steps * 0.05
+
 
 step_count = 0
 
@@ -250,12 +257,13 @@ def sumo_env_bthread():
             if action_vehicle in action_map:
                 actions.append(action_map[action_vehicle])
             else:
-                actions.append(4) # default is IDLE
+                actions.append(4)  # default is IDLE
         actions_tuple = tuple(actions)
 
         obs, reward, truncated, terminated, _ = env.step(actions_tuple)
         print(f"OBSERVATION in step {step_count}: {obs}")
         step_count += 1
+
 
 if __name__ == "__main__":
     # setup_sumo_connection(config_path)

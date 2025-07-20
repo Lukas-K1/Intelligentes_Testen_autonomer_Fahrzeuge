@@ -11,17 +11,19 @@ class SumoVehicle:
     Inherits from SumoVehicle and adds methods for controlling the vehicle.
     """
 
-    def __init__(self,
-                 vehicle_id: str,
-                 route_edges: str = ["entry", "longEdge", "exit"],
-                 typeID: str = "manual",
-                 depart_time: float = 0,
-                 depart_pos: float = 0.0,
-                 depart_lane: int = 0,
-                 depart_speed: str = "avg",
-                 vehicle_color: Tuple[int, int, int] = (0, 255, 0),
-                 lane_change_mode: int = 0,
-                 speed_mode: int = 0):
+    def __init__(
+        self,
+        vehicle_id: str,
+        route_edges: str = ["entry", "longEdge", "exit"],
+        typeID: str = "manual",
+        depart_time: float = 0,
+        depart_pos: float = 0.0,
+        depart_lane: int = 0,
+        depart_speed: str = "avg",
+        vehicle_color: Tuple[int, int, int] = (0, 255, 0),
+        lane_change_mode: int = 0,
+        speed_mode: int = 0,
+    ):
 
         self.vehicle_id = vehicle_id
         self.route_edges = route_edges
@@ -70,26 +72,38 @@ class SumoControllableVehicle(SumoVehicle):
     Inherits from SumoVehicle and adds methods for controlling the vehicle.
     """
 
-    def __init__(self,
-                 vehicle_id: str,
-                 route_edges: str = ["entry", "longEdge", "exit"],
-                 typeID: str = "manual",
-                 depart_time: int = 0,
-                 depart_pos: float = 0.0,
-                 depart_lane: int = 0,
-                 depart_speed: str = "avg",
-                 vehicle_color: Tuple[int, int, int] = (0, 255, 0),
-                 lane_change_mode: int = 0,
-                 speed_mode: int = 0,
-                 vehicle_smt_var=None):
+    def __init__(
+        self,
+        vehicle_id: str,
+        route_edges: str = ["entry", "longEdge", "exit"],
+        typeID: str = "manual",
+        depart_time: int = 0,
+        depart_pos: float = 0.0,
+        depart_lane: int = 0,
+        depart_speed: str = "avg",
+        vehicle_color: Tuple[int, int, int] = (0, 255, 0),
+        lane_change_mode: int = 0,
+        speed_mode: int = 0,
+        vehicle_smt_var=None,
+    ):
         """
         Initialize the SumoControllableVehicle with a vehicle ID.
 
         Args:
             vehicle_id (str): The ID of the vehicle in SUMO.
         """
-        super().__init__(vehicle_id, route_edges, typeID, depart_time, depart_pos, depart_lane,
-                         depart_speed, vehicle_color, lane_change_mode, speed_mode)
+        super().__init__(
+            vehicle_id,
+            route_edges,
+            typeID,
+            depart_time,
+            depart_pos,
+            depart_lane,
+            depart_speed,
+            vehicle_color,
+            lane_change_mode,
+            speed_mode,
+        )
         self.vehicle_smt_var = vehicle_smt_var
 
     def LANE_LEFT(self):
