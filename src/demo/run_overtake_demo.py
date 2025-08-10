@@ -14,11 +14,11 @@ if __name__ == "__main__":
     done = False
 
     while not done:
-        action, _ = model.predict(obs, deterministic=True)
+        action, _ = model.predict(obs, deterministic=False)
         obs, reward, done, truncated, info = env.step(action)
         total_reward += reward
 
         env.render()
-        time.sleep(0.1)  # für flüssigere Darstellung
+        time.sleep(0)  # für flüssigere Darstellung
 
     print(f"Episode beendet. Gesamt-Reward: {total_reward:.2f}")

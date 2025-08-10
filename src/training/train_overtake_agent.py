@@ -1,9 +1,29 @@
+import time
+
 from stable_baselines3 import DQN
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import BaseCallback
 from src.envs.overtake_env import CutOffScenarioEnv
 import torch
+import numpy as np, torch
 from pathlib import Path
+
+SEED = 42
+
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(SEED)
+
+def make_env(rank: int):
+    """Funktion zum Erstellen einer einzelnen Umgebung."""
+    def _init():
+        env = CutOffScenarioEnv(render_mode="human")
+        obs, info = env.reset()
+        return env
+    return _init
+
+
 
 class RenderCallback(BaseCallback):
     """Rendert jede N-te Episode im Trainingsfenster."""
@@ -36,22 +56,31 @@ if __name__ == "__main__":
         policy="MlpPolicy",
         device = "cuda" if use_cuda else "cpu",
         env=env,
-        learning_rate=5e-4,
-        buffer_size=10000,
-        batch_size=64,
-        gamma=0.95,
-        train_freq=1,
-        target_update_interval=100,
+        learning_rate=1e-4,
+        buffer_size=200_000,
+        learning_starts=1_000,
+        batch_size=128,
+        gamma=0.99,
+        train_freq=4,
+        target_update_interval=1_000,
+        gradient_steps=1,
+        n_steps=3,
+        exploration_fraction=0.1,
+        exploration_initial_eps=1.0,
+        exploration_final_eps=0.02,
+        policy_kwargs=dict(net_arch=[256, 256]),
         verbose=1,
         tensorboard_log="logs/overtake_rl/",
     )
 
     # Training mit Render-Callback starten
-    model.learn(total_timesteps=200_000, callback=RenderCallback(render_freq=20))
+    model.learn(total_timesteps=1_000_000, callback=RenderCallback(render_freq=20))
 
     # Modellpfad erstellen, falls nicht vorhanden
     Path("models").mkdir(exist_ok=True)
 
     # Modell speichern
-    model.save("models/overtake_dqn.zip")
-    print("Modell gespeichert unter models/overtake_dqn.zip")
+    # Current time as a string for unique filename
+    current_time = time.strftime("%Y%m%d-%H%M%S")
+    model.save("models/overtake_dqn.zip" + current_time)
+    print("Modell gespeichert unter models/overtake_dqn " + current_time + ".zip")
