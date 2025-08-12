@@ -41,7 +41,9 @@ controllable_vehicles = [v1, v2]
 vut: SumoVehicle = SumoVehicle("vut")
 
 config_path = "../../sumo-maps/autobahn/autobahn.sumocfg"
-env = gym.make("SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1, v2])
+env = gym.make(
+    "SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1, v2]
+)
 env.reset()
 
 action_map = {LANE_LEFT: 0, IDLE: 1, LANE_RIGHT: 2, FASTER: 3, SLOWER: 4}
@@ -57,6 +59,7 @@ def wait_seconds(seconds):
 
 def seconds(steps):
     return steps * 0.05
+
 
 step_count = 0
 
@@ -259,12 +262,13 @@ def sumo_env_bthread():
             if action_vehicle in action_map:
                 actions.append(action_map[action_vehicle])
             else:
-                actions.append(4) # default is IDLE
+                actions.append(4)  # default is IDLE
         actions_tuple = tuple(actions)
 
         obs, reward, truncated, terminated, _ = env.step(actions_tuple)
         print(f"OBSERVATION in step {step_count}: {obs}")
         step_count += 1
+
 
 if __name__ == "__main__":
     # setup_sumo_connection(config_path)

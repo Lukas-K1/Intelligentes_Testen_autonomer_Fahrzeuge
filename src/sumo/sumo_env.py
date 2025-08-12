@@ -19,7 +19,9 @@ class SumoEnv(gym.Env):
         # wie wo welche Autos sein sollen etc.
         self.sumo_config_file = sumo_config_file
         self.controllable_vehicles = controllable_vehicles
-        self.observation_space = spaces.Box(low=0, high=1e3, shape=(20, 5), dtype=np.float32)
+        self.observation_space = spaces.Box(
+            low=0, high=1e3, shape=(20, 5), dtype=np.float32
+        )
         self.action_space = spaces.MultiDiscrete([5] * len(self.controllable_vehicles))
         self.episode = 0
         self.step_count = 0
@@ -27,12 +29,12 @@ class SumoEnv(gym.Env):
 
     def _start_simulation(self, sumo_gui: bool = True):
         """
-            Setup and start the SUMO-traci connection.
+        Setup and start the SUMO-traci connection.
 
-            Args:
-                config_path (str): Path to the .sumocfg file, to set up the simulation environment.
-                sumo_gui (bool): Whether to run sumo-gui or just sumo in command line.
-            """
+        Args:
+            config_path (str): Path to the .sumocfg file, to set up the simulation environment.
+            sumo_gui (bool): Whether to run sumo-gui or just sumo in command line.
+        """
         # Check SUMO_HOME environment
         if "SUMO_HOME" not in os.environ:
             sys.exit("Please declare environment variable 'SUMO_HOME'")
@@ -103,7 +105,9 @@ class SumoEnv(gym.Env):
             )
             traci.vehicle.setRoute(vehicle.vehicle_id, vehicle.route_edges)
             traci.vehicle.setColor(vehicle.vehicle_id, vehicle.vehicle_color)
-            traci.vehicle.setLaneChangeMode(vehicle.vehicle_id, vehicle.lane_change_mode)
+            traci.vehicle.setLaneChangeMode(
+                vehicle.vehicle_id, vehicle.lane_change_mode
+            )
             traci.vehicle.setSpeedMode(vehicle.vehicle_id, vehicle.speed_mode)
 
     def reset(self, seed: Optional[int] = None, **kwargs):
@@ -140,14 +144,16 @@ class SumoEnv(gym.Env):
                         vehicle_id, traci.vehicle.getLaneIndex(vehicle_id) + 1, 1
                     )
             elif action[i] == 1:
-                traci.vehicle.setSpeed(vehicle_id, speed) # Idle action, maintain current speed
+                traci.vehicle.setSpeed(
+                    vehicle_id, speed
+                )  # Idle action, maintain current speed
             elif action[i] == 2:
                 if 0 <= traci.vehicle.getLaneIndex(vehicle_id) - 1 < 3:
                     traci.vehicle.changeLane(
                         vehicle_id, traci.vehicle.getLaneIndex(vehicle_id) - 1, 1
                     )
             elif action[i] == 3:
-                traci.vehicle.setSpeed(vehicle_id, speed +1)
+                traci.vehicle.setSpeed(vehicle_id, speed + 1)
             elif action[i] == 4:
                 traci.vehicle.setSpeed(vehicle_id, max(0, speed - 1))
 
@@ -189,4 +195,3 @@ class SumoEnv(gym.Env):
 
     def close(self):
         traci.close()
-
