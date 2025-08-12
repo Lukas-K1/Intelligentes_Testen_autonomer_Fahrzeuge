@@ -40,6 +40,7 @@ class SumoEnv(gym.Env):
             sys.exit("Please declare environment variable 'SUMO_HOME'")
 
         sumo_bin = "sumo-gui" if sumo_gui else "sumo"
+        sumo_bin += ".exe" if sys.platform == "win32" else ""
         sumo_bin_path = os.path.join(os.environ["SUMO_HOME"], "bin", sumo_bin)
 
         if not os.path.isfile(sumo_bin_path):
