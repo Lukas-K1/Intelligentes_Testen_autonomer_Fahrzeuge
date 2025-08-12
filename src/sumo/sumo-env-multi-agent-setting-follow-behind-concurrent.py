@@ -15,28 +15,32 @@ from src.sumo.sumo_vehicle import *
 v1_action = Const("v1_action", Actions)
 v2_action = Const("v2_action", Actions)
 
-v1: SumoControllableVehicle = SumoControllableVehicle("veh_manual_1",
-                                                      ["entry", "longEdge", "exit"],
-                                                      typeID="manual",
-                                                      depart_time=0,
-                                                      depart_pos=0.0,
-                                                      depart_lane=1,
-                                                      depart_speed="avg",
-                                                      vehicle_color=[255, 0, 0], #red
-                                                      lane_change_mode=0,
-                                                      speed_mode=0,
-                                                      vehicle_smt_var=v1_action)
-v2: SumoControllableVehicle = SumoControllableVehicle("veh_manual_2",
-                                                      ["entry", "longEdge", "exit"],
-                                                      typeID="manual",
-                                                      depart_time=0,
-                                                      depart_pos=45.0,
-                                                      depart_lane=1,
-                                                      depart_speed="avg",
-                                                      vehicle_color=[0, 255, 0], # green
-                                                      lane_change_mode=0,
-                                                      speed_mode=0,
-                                                      vehicle_smt_var=v2_action)
+v1: SumoControllableVehicle = SumoControllableVehicle(
+    "veh_manual_1",
+    ["entry", "longEdge", "exit"],
+    typeID="manual",
+    depart_time=0,
+    depart_pos=0.0,
+    depart_lane=1,
+    depart_speed="avg",
+    vehicle_color=[255, 0, 0],  # red
+    lane_change_mode=0,
+    speed_mode=0,
+    vehicle_smt_var=v1_action,
+)
+v2: SumoControllableVehicle = SumoControllableVehicle(
+    "veh_manual_2",
+    ["entry", "longEdge", "exit"],
+    typeID="manual",
+    depart_time=0,
+    depart_pos=45.0,
+    depart_lane=1,
+    depart_speed="avg",
+    vehicle_color=[0, 255, 0],  # green
+    lane_change_mode=0,
+    speed_mode=0,
+    vehicle_smt_var=v2_action,
+)
 controllable_vehicles = [v1, v2]
 vut: SumoVehicle = SumoVehicle("vut")
 

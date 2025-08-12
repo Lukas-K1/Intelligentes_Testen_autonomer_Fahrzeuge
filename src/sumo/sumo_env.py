@@ -175,6 +175,7 @@ class SumoEnv(gym.Env):
 
     def get_lane_number(lane_id: str) -> Optional[int]:
         import re
+
         match = re.search(r"_(\d+)$", lane_id)
         return int(match.group(1)) if match else None
 
