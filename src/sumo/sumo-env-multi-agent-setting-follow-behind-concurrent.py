@@ -30,7 +30,7 @@ v2: SumoControllableVehicle = SumoControllableVehicle("veh_manual_2",
                                                       ["entry", "longEdge", "exit"],
                                                       typeID="manual",
                                                       depart_time=0,
-                                                      depart_pos=30.0,
+                                                      depart_pos=45.0,
                                                       depart_lane=1,
                                                       depart_speed="avg",
                                                       vehicle_color=[0, 255, 0], # green
@@ -242,6 +242,15 @@ def parallel(*bthreads):
 def sumo_env_bthread():
     global step_count
     while True:
+        # set vehicle_id to one of in this scenario to let it the gui follow that vehicle
+        # vut, veh_manual_1, veh_manual_2
+        traci.gui.trackVehicle("View #0", "veh_manual_1")
+        collisions = traci.simulation.getCollisions()
+        if collisions:
+            print("Collision detected! Exiting simulation...")
+            traci.close()
+            raise SystemExit()
+
         e = yield sync(waitFor=true)
 
         actions = []

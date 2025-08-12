@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import sys
 import time
@@ -56,8 +57,12 @@ class SumoEnv(gym.Env):
             "1000",
             "--lateral-resolution",
             "0.1",
+            "--collision.action",
+            "warn",
+            "--time-to-teleport",
+            "-1",
             "--start",
-            "--quit-on-end"
+            "--quit-on-end",
         ]
 
         traci.start(sumo_config)
@@ -153,18 +158,19 @@ class SumoEnv(gym.Env):
             try:
                 speed = traci.vehicle.getSpeed(veh_id)
                 position = traci.vehicle.getPosition(veh_id)
-                lane_id = traci.vehicle.getLaneID(veh_id)
-
-                # Hash lane ID to float between 0 and 1
-                lane_hash = (hash(lane_id) % 1000) / 1000
 
                 # Optional: include ID hash or vehicle role
-                obs.append([speed, *position, lane_hash])
+                obs.append([speed, *position])
 
             except traci.TraCIException:
                 obs.append([0.0, 0.0, 0.0, 0.0])  # or np.zeros(4)
 
         return np.array(obs, dtype=np.float32)
+
+    def get_lane_number(lane_id: str) -> Optional[int]:
+        import re
+        match = re.search(r"_(\d+)$", lane_id)
+        return int(match.group(1)) if match else None
 
     def _get_reward(self):
         return 1
