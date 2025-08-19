@@ -3,11 +3,10 @@ import sys
 import time
 
 import gymnasium as gym
-from gymnasium.spaces import Box
-
 import register_env
 import traci
 from bppy import *
+from gymnasium.spaces import Box
 from z3 import *
 
 from src.sumo.action_enum import *
@@ -38,9 +37,7 @@ controllable_vehicles = [v1]
 vut: SumoVehicle = SumoVehicle("vut")
 
 config_path = "../../sumo-maps/autobahn/autobahn.sumocfg"
-env = gym.make(
-    "SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1]
-)
+env = gym.make("SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1])
 env.reset()
 
 action_map = {LANE_LEFT: 0, IDLE: 1, LANE_RIGHT: 2, FASTER: 3, SLOWER: 4}
@@ -176,7 +173,6 @@ def await_condition(
     return false
 
 
-
 @thread
 def abstract_scenario_2():
     # cond 1.
@@ -249,12 +245,7 @@ def sumo_env_bthread():
 #     b_program.run()
 
 
-
 import numpy as np
-
-
-
-
 
 
 class BPObservationSpaceBox(Box):
@@ -262,6 +253,7 @@ class BPObservationSpaceBox(Box):
     A base class used to represent a BProgram-based continuous-valued observation space. This is an abstract class
     that requires the implementation of `bp_state_to_gym_space` methods.
     """
+
     @property
     def np_random(self):
         return super().np_random
@@ -300,15 +292,17 @@ class BPObservationSpaceBox(Box):
 
 
 # ---- Normalization parameters (tweak to taste) ----
-_POS_RANGE_M = 100.0   # +/- meters around the env vehicle are mapped to [-1, 1]
-_SPEED_RANGE = 30.0    # +/- m/s relative speed mapped to [-1, 1]
-_ENV_IDX = 1           # <-- you said the second row is the env vehicle
+_POS_RANGE_M = 100.0  # +/- meters around the env vehicle are mapped to [-1, 1]
+_SPEED_RANGE = 30.0  # +/- m/s relative speed mapped to [-1, 1]
+_ENV_IDX = 1  # <-- you said the second row is the env vehicle
+
 
 def _clip_div(value: np.ndarray, max_abs: float) -> np.ndarray:
     """Scale to [-1, 1] by dividing with max_abs and clipping."""
     if max_abs <= 0:
         raise ValueError("max_abs must be positive")
     return np.clip(value / max_abs, -1.0, 1.0)
+
 
 def _make_relative(obs: np.ndarray, env_idx: int) -> np.ndarray:
     """
@@ -322,12 +316,13 @@ def _make_relative(obs: np.ndarray, env_idx: int) -> np.ndarray:
         raise IndexError(f"env_idx {env_idx} out of bounds for {obs.shape[0]} vehicles")
 
     env_speed = obs[env_idx, 0]
-    env_pos   = obs[env_idx, 1:3]  # [x, y]
+    env_pos = obs[env_idx, 1:3]  # [x, y]
 
     rel = obs.copy()
-    rel[:, 0] = rel[:, 0] - env_speed          # relative speed
+    rel[:, 0] = rel[:, 0] - env_speed  # relative speed
     rel[:, 1:3] = rel[:, 1:3] - env_pos[None]  # relative position
     return rel
+
 
 def _normalize_rel_obs(rel_obs: np.ndarray) -> np.ndarray:
     """
@@ -335,10 +330,11 @@ def _normalize_rel_obs(rel_obs: np.ndarray) -> np.ndarray:
     Values beyond range are clipped.
     """
     out = rel_obs.astype(np.float32, copy=True)
-    out[:, 0] = _clip_div(out[:, 0], _SPEED_RANGE)   # v_rel
-    out[:, 1] = _clip_div(out[:, 1], _POS_RANGE_M)   # x_rel
-    out[:, 2] = _clip_div(out[:, 2], _POS_RANGE_M)   # y_rel
+    out[:, 0] = _clip_div(out[:, 0], _SPEED_RANGE)  # v_rel
+    out[:, 1] = _clip_div(out[:, 1], _POS_RANGE_M)  # x_rel
+    out[:, 2] = _clip_div(out[:, 2], _POS_RANGE_M)  # y_rel
     return out
+
 
 def _extract_obs_or_none(bthreads_states):
     """Return first valid ndarray from a bthread local 'obs', else None."""
@@ -348,6 +344,7 @@ def _extract_obs_or_none(bthreads_states):
         if isinstance(arr, np.ndarray) and arr.ndim == 2 and arr.shape[1] >= 3:
             return arr
     return None
+
 
 class SumoObservationSpace(BPObservationSpaceBox):
     def __init__(self, dim: tuple[int, int]):
@@ -370,20 +367,25 @@ class SumoObservationSpace(BPObservationSpaceBox):
         return norm_obs
 
 
-from bp_env_smt import BPEnvSMT, BPActionSpace
+from bp_env_smt import BPActionSpace, BPEnvSMT
 
 
 def init_bprogram():
     return BProgram(
-        bthreads=[sumo_env_bthread(),
-                  #vehicle_follows_vut(), # commented out -> this behavior should be learned.
-                  abstract_scenario_2()],
+        bthreads=[
+            sumo_env_bthread(),
+            # vehicle_follows_vut(), # commented out -> this behavior should be learned.
+            abstract_scenario_2(),
+        ],
         event_selection_strategy=SMTEventSelectionStrategy(),
         listener=PrintBProgramRunnerListener(),
     )
 
+
 from itertools import product
+
 from z3 import And
+
 
 def get_action_list():
     """
@@ -403,8 +405,7 @@ def get_action_list():
 
     # Per-vehicle choice lists: [[v1==LL, v1==IDLE, ...], [v2==LL, v2==IDLE, ...], ...]
     per_vehicle_choices = [
-        [action_vars[i] == a for a in act_consts]
-        for i in range(num_vehicles)
+        [action_vars[i] == a for a in act_consts] for i in range(num_vehicles)
     ]
 
     joint_actions = []
@@ -416,6 +417,7 @@ def get_action_list():
 
     return joint_actions
 
+
 def calc_dim(features_per_vehicle: int = 3) -> tuple[int, int]:
     if features_per_vehicle <= 0:
         raise ValueError("features_per_vehicle must be positive")
@@ -426,11 +428,13 @@ def calc_dim(features_per_vehicle: int = 3) -> tuple[int, int]:
     return (num_vehicles, features_per_vehicle)
 
 
-env = BPEnvSMT(bprogram_generator=lambda: init_bprogram(),
-               # TODO: write a function that returns a list of actions
-                action_list=get_action_list(), # num_nonVUT_vehicles: number of agent-controlled vehicles, VUT is uncontrollable
-                observation_space=SumoObservationSpace(dim=calc_dim()),
-                reward_function=lambda rewards: sum(filter(None, rewards)))
+env = BPEnvSMT(
+    bprogram_generator=lambda: init_bprogram(),
+    # TODO: write a function that returns a list of actions
+    action_list=get_action_list(),  # num_nonVUT_vehicles: number of agent-controlled vehicles, VUT is uncontrollable
+    observation_space=SumoObservationSpace(dim=calc_dim()),
+    reward_function=lambda rewards: sum(filter(None, rewards)),
+)
 
 
 class ActionSpace(BPActionSpace):
@@ -442,16 +446,17 @@ env.action_space = ActionSpace(get_action_list())
 
 
 import argparse
+import json
 import shutil
 from glob import glob
-import pandas as pd
-import json
 
+import pandas as pd
 from stable_baselines3.common.monitor import Monitor, load_results
 
-
 parser = argparse.ArgumentParser()
-parser.add_argument("steps", type=int, nargs="?", default=1000, help="Number of training timesteps")
+parser.add_argument(
+    "steps", type=int, nargs="?", default=1000, help="Number of training timesteps"
+)
 args = parser.parse_args()
 
 STEPS = args.steps
@@ -463,6 +468,7 @@ if os.path.exists(log_dir) and os.path.isdir(log_dir):
     shutil.rmtree(log_dir)
 with warnings.catch_warnings():
     from stable_baselines3 import PPO
+
     env = Monitor(env, log_dir)
     os.makedirs(log_dir, exist_ok=True)
     mdl = PPO("MlpPolicy", env, verbose=1)
@@ -487,9 +493,12 @@ def load_results(path):
     data_frame["t"] -= min(header["t_start"] for header in headers)
     return data_frame
 
+
 results = load_results(log_dir)
 results["episode"] = results["index"] + 1
 results["timesteps"] = results["episode"] * results["l"]
-results["mean_reward"] = results['r'][::-1].rolling(200,min_periods=1).mean()[::-1]
-results[["episode", "l", "timesteps", "r", "mean_reward"]].to_csv(os.path.join(log_dir, "results.csv"), index=False)
+results["mean_reward"] = results["r"][::-1].rolling(200, min_periods=1).mean()[::-1]
+results[["episode", "l", "timesteps", "r", "mean_reward"]].to_csv(
+    os.path.join(log_dir, "results.csv"), index=False
+)
 print("results saved to", os.path.join(log_dir, "results.csv"))

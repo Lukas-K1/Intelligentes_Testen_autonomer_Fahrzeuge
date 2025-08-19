@@ -1,11 +1,21 @@
-from bppy.gym import BPEnv, BPObservationSpace, SimpleBPObservationSpace, BPActionSpace
-import gymnasium as gym
 import warnings
-from bppy import And, true, false, Not, Implies, Bool, Or, is_true, Int
+
+import gymnasium as gym
+from bppy import And, Bool, Implies, Int, Not, Or, false, is_true, true
+from bppy.gym import (BPActionSpace, BPEnv, BPObservationSpace,
+                      SimpleBPObservationSpace)
 from bppy.utils.z3helper import *
+
+
 class BPEnvSMT(BPEnv):
-    def __init__(self, bprogram_generator, action_list, observation_space=None, action_space=None,
-                 reward_function=None):
+    def __init__(
+        self,
+        bprogram_generator,
+        action_list,
+        observation_space=None,
+        action_space=None,
+        reward_function=None,
+    ):
         """
         Initializes the BPEnv environment.
 
@@ -32,7 +42,9 @@ class BPEnvSMT(BPEnv):
             self.reward_function = lambda rewards: sum(filter(None, rewards))
         self.observation_space = observation_space
         if self.observation_space is None:
-            self.observation_space = SimpleBPObservationSpace(self.bprogram_generator, action_list)
+            self.observation_space = SimpleBPObservationSpace(
+                self.bprogram_generator, action_list
+            )
         self.last_state = None
         self.done_flag = Bool("done")
 
@@ -64,7 +76,9 @@ class BPEnvSMT(BPEnv):
             return self._state(), 0, True, None, {"message": "Last event is disabled"}
         additional_constraint = self.event_list[action]
         # print("action:", additional_constraint)
-        model = self.bprogram.event_selection_strategy.select(self.bprogram.tickets + [{"request": additional_constraint}])
+        model = self.bprogram.event_selection_strategy.select(
+            self.bprogram.tickets + [{"request": additional_constraint}]
+        )
         done = is_true(model.evaluate(self.done_flag))
         self.bprogram.advance_bthreads(self.bprogram.tickets, model)
         local_reward = self._reward()
@@ -74,7 +88,9 @@ class BPEnvSMT(BPEnv):
         # print(self._state().reshape((4,4)))
         # print("----------------------")
         while not done and not self._step_done():
-            model = self.bprogram.event_selection_strategy.select(self.bprogram.tickets + [{"block": additional_constraint}])
+            model = self.bprogram.event_selection_strategy.select(
+                self.bprogram.tickets + [{"block": additional_constraint}]
+            )
             done = is_true(model.evaluate(self.done_flag))
             self.bprogram.advance_bthreads(self.bprogram.tickets, model)
             # print(self._state().reshape((4, 4)))
@@ -107,7 +123,7 @@ class BPEnvSMT(BPEnv):
         while not self._step_done():
             model = self.bprogram.event_selection_strategy.select(self.bprogram.tickets)
             self.bprogram.advance_bthreads(self.bprogram.tickets, model)
-            #print(self.observation_space.bp_state_to_gym_space(self._bthreads_states()).reshape((4,4)))
+            # print(self.observation_space.bp_state_to_gym_space(self._bthreads_states()).reshape((4,4)))
         return self.observation_space.bp_state_to_gym_space(self._bthreads_states()), {}
 
     def render(self, mode="human"):
@@ -129,7 +145,10 @@ class BPEnvSMT(BPEnv):
         return self._state()
 
     def _bthreads_states(self):
-        return [dict([k, v] for k, v in statement.items() if k != "bt") for statement in self.bprogram.tickets]
+        return [
+            dict([k, v] for k, v in statement.items() if k != "bt")
+            for statement in self.bprogram.tickets
+        ]
 
     def _state(self):
         return self.observation_space.bp_state_to_gym_space(self._bthreads_states())
