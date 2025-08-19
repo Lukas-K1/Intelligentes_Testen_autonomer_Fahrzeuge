@@ -16,7 +16,7 @@ from src.sumo.sumo_vehicle import *
 v1_action = Const("v1_action", Actions)
 v2_action = Const("v2_action", Actions)
 
-#action_vars = [v1_action, v2_action]
+# action_vars = [v1_action, v2_action]
 action_vars = [v1_action]
 
 
