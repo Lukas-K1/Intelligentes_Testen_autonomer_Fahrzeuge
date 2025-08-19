@@ -16,7 +16,8 @@ from src.sumo.sumo_vehicle import *
 v1_action = Const("v1_action", Actions)
 v2_action = Const("v2_action", Actions)
 
-action_vars = [v1_action, v2_action]
+#action_vars = [v1_action, v2_action]
+action_vars = [v1_action]
 
 
 v1: SumoControllableVehicle = SumoControllableVehicle(
@@ -225,6 +226,7 @@ def sumo_env_bthread():
                 actions.append(4)  # default is IDLE
         actions_tuple = tuple(actions)
 
+        print(f"actions_tuple: {actions_tuple}")
         obs, reward, truncated, terminated, _ = env.step(actions_tuple)
         print(f"OBSERVATION in step {step_count}: {obs}")
         step_count += 1
