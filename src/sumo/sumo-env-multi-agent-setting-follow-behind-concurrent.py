@@ -280,10 +280,49 @@ if __name__ == "__main__":
     # Creating a BProgram with the defined b-threads, SMTEventSelectionStrategy,
     # and a listener to print the selected events
     b_program = BProgram(
-        bthreads=[sumo_env_bthread(),
-                  two_vehicles_follow_vut(), # concrete scenarios / manually crafted implementation -> to be learned by RL
-                  abstract_scenario_2()], # abstract scenarios / declarative / spec / target / rewards
+        bthreads=[
+            sumo_env_bthread(),
+            # two_vehicles_follow_vut(), # concrete scenarios / manually crafted implementation -> to be learned by RL
+            abstract_scenario_2(),
+        ],  # abstract scenarios / declarative / spec / target / rewards
         event_selection_strategy=SMTEventSelectionStrategy(),
         listener=PrintBProgramRunnerListener(),
     )
     b_program.run()
+
+# BPEnv -> State-Space, Action-Space
+
+import numpy as np
+# BPStateSpace BPActionSpace,
+from bppy.gym import BPActionSpace, BPEnv, BPObservationSpace
+
+sumo_BP_action_space = ActionSpace(get_action_list(N))
+
+
+class SumoObservationSpace(BPObservationSpace):
+    def __init__(self, dim):
+        super().__init__(dim, np.int64, None)
+
+    def bp_state_to_gym_space(self, bthreads_states):
+        # look for a bthread that has a local variable 'obs' and wrap this
+        obs = [
+            x.get("locals", {}).get("obs")
+            for x in bthreads_states
+            if "obs" in x.get("locals", {})
+        ][0]
+        return np.asarray(obs, dtype=self.dtype)  # also int64, maybe int16?
+        # as array?
+        # return np.asarray([x.get("locals", {}).get("obs") for x in bthreads_states if "obs" in x.get("locals", {})][0], dtype=self.dtype)
+
+
+# create a masked environment
+## 1. function to start the bprogram
+## 2. get_action_list(N) -- plain list of all actions-constraints (they get accessed by index in the BPActionSpace)
+## 3. observation space: TODO try out Multidescrete or Box?? ->
+## 4. reward_function : can stay like this -> sum up local rewards.
+env = BPEnv_Masked(
+    bprogram_generator=lambda: init_bprogram(N, M),
+    action_list=get_action_list(N),
+    observation_space=SumoObservationSpace(np.ones([3, 3] * 1000)),
+    reward_function=lambda rewards: sum(filter(None, rewards)),
+)
