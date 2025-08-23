@@ -1,13 +1,12 @@
 import time
-
-from stable_baselines3 import DQN
-from stable_baselines3.common.vec_env import DummyVecEnv
-from stable_baselines3.common.callbacks import BaseCallback
-
-from envs.intersection_env import IntersectionScenarioEnv
-import torch
-import numpy as np, torch
 from pathlib import Path
+
+import numpy as np
+import torch
+from envs.intersection_env import IntersectionScenarioEnv
+from stable_baselines3 import DQN
+from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.vec_env import DummyVecEnv
 
 SEED = 42
 

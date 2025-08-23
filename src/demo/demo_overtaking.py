@@ -1,9 +1,9 @@
+import time
+from typing import Any, Dict, List
+
 import gymnasium as gym
 import highway_env
-import time
 from bppy import *
-from typing import Dict, Any, List
-
 
 # TODO DO NOT USE OBSOLETE DEMO
 # BPpy Events

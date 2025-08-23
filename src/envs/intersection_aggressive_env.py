@@ -1,8 +1,9 @@
+from typing import Optional
+
 import gymnasium as gym
 import highway_env
-from highway_env.vehicle.behavior import IDMVehicle
-from typing import Optional
 import numpy as np
+from highway_env.vehicle.behavior import IDMVehicle
 
 
 class IntersectionCutOffScenarioEnv(gym.Env):

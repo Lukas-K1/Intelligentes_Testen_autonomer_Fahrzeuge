@@ -1,7 +1,8 @@
+from typing import Any, Dict, List
+
 import gymnasium as gym
 import highway_env
 from bppy import *
-from typing import Dict, Any, List
 
 # BPpy Events
 CHECK_CLEARANCE = BEvent("CheckClearance")

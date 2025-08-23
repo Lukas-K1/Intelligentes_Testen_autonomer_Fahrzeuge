@@ -1,6 +1,7 @@
-from stable_baselines3 import DQN
-from src.envs.overtake_env import CutOffScenarioEnv
 import time
+
+from src.envs.overtake_env import CutOffScenarioEnv
+from stable_baselines3 import DQN
 
 if __name__ == "__main__":
     # Umgebung vorbereiten
