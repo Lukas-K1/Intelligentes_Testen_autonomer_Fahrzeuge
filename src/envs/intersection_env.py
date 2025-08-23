@@ -27,7 +27,7 @@ class IntersectionScenarioEnv(gym.Env):
             "policy_frequency": 10,
         }
         # Use the intersection-v0 environment from highway-env
-        self._core_env = gym.make("i", render_mode=render_mode, config=cfg)
+        self._core_env = gym.make("intersection-v0", render_mode=render_mode, config=cfg)
         self.base_env = self._core_env.unwrapped
 
         # Use highway-env’s own RNG for consistent randomizations
