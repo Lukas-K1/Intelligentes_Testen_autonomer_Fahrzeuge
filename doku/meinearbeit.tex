@@ -1,0 +1,133 @@
+\documentclass[a4paper,oneside,openright,11pt]{book}
+
+\usepackage[T1]{fontenc}
+
+%%%%%%%% Schriftart Latin Modern verwenden:
+\usepackage{lmodern}
+
+
+%%%%%%%% Um Helvetica serifenlos zu verwenden, folgende Zeilen auskommentieren:
+%\renewcommand{\familydefault}{\sfdefault}
+%\usepackage{helvet} 
+
+
+\usepackage[utf8]{inputenc} % ggf. Editor auf utf8 stellen!!
+
+\usepackage[ngerman]{babel}
+
+\usepackage{ngerman} % unter anderem für bessere Silbentrennung
+
+\usepackage{listings}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{url}
+\def\UrlBreaks{\do\/\do-} % Zeilenumbrüche in URLs bei Bindestrich oder Schrägstrich
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{csquotes}
+
+\usepackage{color}
+
+
+%avoid overfull hbox problem
+\setlength{\emergencystretch}{3em}
+
+%avoid underfull hbox problem in bibliography
+\usepackage{etoolbox}
+% Variant A
+\apptocmd{\sloppy}{\hbadness 2000\relax}{}{}
+% Variant B
+% \apptocmd{\thebibliography}{\raggedright}{}{}
+
+\hyphenpenalty=5000
+\tolerance=1000
+
+
+
+% standard scaling factor for graphics, to support homogenous looks.
+\newcommand{\stdScaleFactor}{0.45}
+
+% Titelseite und Erklaerung
+\usepackage{sethesis}
+
+
+% Angaben Titelseite
+\unilogo{\includegraphics[scale=0.75]{FHDW-Logo.eps}}
+%\uniname{}
+\fachgebiet{}
+\institut{}
+\fachbereich{}
+% Angaben zur Arbeit
+\author{Studiengruppe HFP424} % Hier Namen eintragen
+\title{Dokumentation Integrationsprojekt} % Hier Titel
+\englishtitle{}
+\ort{Hannover}
+\thesistype{} % Praxisarbeit, Bachelorarbeit, Masterarbeit
+%\thesistype{Masterarbeit}
+\studiengang{Informatik} % Hier Studiengang angeben
+\erstpru{Name des Erstprüfers}
+\zweitpru{Name des Zweitprüfers (Bei Praxisprojekt frei lassen)}
+\betreu{}
+\datum{\today} % Datum der Abgabe hier einsetzen
+
+% Sonstiges
+%\allowdisplaybreaks
+%\setlength{\parindent}{1em}
+%\setlength{\parskip}{0em}
+%\makeatletter
+%\renewcommand{\fps@figure}{ht!}
+%\renewcommand{\fps@table}{ht!}
+%\setlength{\@fptop}{0pt}
+%\makeatother
+
+
+\begin{document}
+
+\frontmatter
+
+\maketitle
+
+\clearpage
+\input{affirmation.tex}
+
+%%%%%% Sperrvermerk einkommentieren, falls nötig.
+%\input{restriction-notice}
+
+\clearpage
+% \input{contents/abstract.tex}
+
+
+\tableofcontents
+
+\mainmatter
+
+\input{contents/motivation.tex}
+
+\input{contents/verwandte_arbeiten.tex}
+
+\input{contents/grundlagen.tex}
+
+\input{contents/problemanalyse.tex}
+
+\input{contents/umsetzung.tex}
+
+\input{contents/evaluierung.tex}
+
+\input{contents/fazit.tex}
+
+\input{contents/ausblick.tex}
+
+
+\appendix
+
+\input{contents/A-anhang-a}
+
+%\bibliographystyle{alpha}
+\bibliographystyle{halpha-abbrv} % Support curstom abbreviation labels, see https://www.math.cmu.edu/~gautam/sj/blog/20171114-bibtex-doi.html
+\bibliography{meinearbeit}
+
+\backmatter
+
+
+\end{document}

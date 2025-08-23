@@ -1,0 +1,126 @@
+\ProvidesPackage{sethesis}
+
+%\RequirePackage[standard-baselineskips]{cmbright}
+%\RequirePackage{palatino}
+
+%\def\usedfonts{CM-Bright}
+
+\newcommand{\@uniname}{}
+\newcommand{\@fachbereich}{}
+\newcommand{\@fachgebiet}{}
+\newcommand{\@institut}{}
+\newcommand{\@thesistype}{}
+\newcommand{\@studiengang}{}
+\newcommand{\@erstpru}{}
+\newcommand{\@zweitpru}{}
+\newcommand{\@betreu}{}
+\newcommand{\@ort}{}
+\newcommand{\@datum}{}
+
+\newcommand{\unilogo}[1]{\def\@unilogo{#1}}
+\newcommand{\uniname}[1]{\def\@uniname{#1}}
+\newcommand{\fachgebiet}[1]{\def\@fachgebiet{#1}}
+\newcommand{\institut}[1]{\def\@institut{#1}}
+\newcommand{\fachbereich}[1]{\def\@fachbereich{#1}}
+\newcommand{\thesistype}[1]{\def\@thesistype{#1}}
+\newcommand{\studiengang}[1]{\def\@studiengang{#1}}
+\newcommand{\erstpru}[1]{\def\@erstpru{#1}}
+\newcommand{\zweitpru}[1]{\def\@zweitpru{#1}}
+\newcommand{\betreu}[1]{\def\@betreu{#1}}
+\newcommand{\ort}[1]{\def\@ort{#1}}
+\newcommand{\datum}[1]{\def\@datum{#1}}
+
+\newcommand{\englishtitle}[1]{\def\@englishtitle{#1}}
+
+\renewcommand{\maketitle}{
+\begin{titlepage}
+%
+\begin{center}
+%\vspace*{0.5em}
+\@unilogo
+\Large {%
+	\textbf{\expandafter{\@uniname}}\\ 
+	\ifx\@fachbereich\@empty%
+	\else \textbf{\expandafter{\@fachbereich}}\\
+	\fi
+	\ifx\@institut\@empty%
+	\else \textbf{\expandafter{\@institut}}\\
+	\fi
+	\ifx\@fachgebiet\@empty%
+	\else \textbf{\expandafter{\@fachgebiet}}
+	\fi
+}
+\end{center}
+%
+\vfill
+%
+\begin{center}
+\huge { \textbf{\expandafter{\@title}} }
+\end{center}
+%
+\vspace*{0.25cm}
+%
+\begin{center}
+\large { \textbf{\expandafter{\@englishtitle}} }
+\end{center}
+%
+\vfill
+%
+\begin{center}
+	\LARGE { \textbf{ \expandafter{\@thesistype}} }\\
+	\vspace*{1em}
+	\Large im Studiengang \expandafter{\@studiengang}
+\end{center}
+%
+\begin{center}
+\vspace*{1em}
+\Large von
+\vspace*{1em}
+\end{center}
+%
+\begin{center}
+\Large \textbf{\expandafter{\@author}}
+\end{center}
+%
+\vspace*{0.05\textheight}
+%
+\begin{center}
+\Large \textbf{Prüfer: \expandafter{\@erstpru}}\\
+\ifx\@zweitpru\@empty%
+\else
+	\textbf{Zweitprüfer: \expandafter{\@zweitpru}}\\
+\fi
+\ifx\@betreu\@empty%
+\else
+	\textbf{Betreuer: \expandafter{\@betreu}}
+\fi
+\end{center}
+%
+\vspace*{0.75em}
+%
+\begin{center}
+\Large \textbf{\expandafter{\@ort}, \expandafter{\@datum}}
+\end{center}
+%
+\end{titlepage}%
+}
+
+\newcommand{\makeerklaerung}{
+\chapter*{Erklärung der Selbstständigkeit}
+\label{chap:erklaerung-selbstaendigkeit}
+
+Hiermit versichere ich, dass ich die vorliegende \expandafter{\@thesistype} selbständig verfasst und keine anderen als die angegebenen Quellen verwendet habe. Alle Textstellen und andere Inhalte wie Bilder, Quellcode oder Daten, die wörtlich oder sinngemäß aus anderen Quellen entnommen sind, habe ich eindeutig mit korrekten Quellenangaben versehen. Über Zitierrichtlinien bin ich schriftlich informiert worden. Diese Arbeit wurde bisher in gleicher oder ähnlicher Form, auch nicht in Teilen, keiner anderen Prüfungsbehörde vorgelegt.
+\par 
+Falls ich während der Erstellung dieser Arbeit generative KI oder andere KI-gestützte Technologien verwendet habe, die über grundlegende Werkzeuge für Übersetzungen und zur Überprüfung von Grammatik oder Rechtschreibung hinausgehen, erkläre ich, nach der Nutzung dieser Tools den Inhalt meiner \expandafter{\@thesistype} überprüft und bearbeitet zu haben und übernehme die volle Verantwortung für die diesbezüglichen Ausführungen. Eine Verwendung solcher Werkzeuge habe ich in meiner Arbeit dokumentiert (bspw.\ im Abschnitt „Struktur der Arbeit, Methodik“ oder durch Erläuterungen zur Nutzung im Anhang).
+
+
+\vspace*{2em}
+\begin{flushleft}
+  \expandafter{\@ort}, den \expandafter{\@datum}\\
+  \vspace*{2em}
+  \underline{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}\\
+  \expandafter{\@author}
+\end{flushleft}
+
+\vfill
+}
