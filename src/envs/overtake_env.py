@@ -17,7 +17,7 @@ class CutOffScenarioEnv(gym.Env):
 
     metadata = {"render_modes": ["human", "rgb_array"]}
 
-    def __init__(self, render_mode: Optional[str] = None):
+    def __init__(self, render_mode: Optional[str] = None, **config_overrides):
         cfg = {
             "lanes_count": 2,
             "vehicles_count": 0,
@@ -27,6 +27,9 @@ class CutOffScenarioEnv(gym.Env):
             "simulation_frequency": 10,
             "policy_frequency": 10,
         }
+
+        cfg.update(config_overrides)
+
         self._core_env = gym.make("highway-v0", render_mode=render_mode, config=cfg)
         self.base_env = self._core_env.unwrapped
 
