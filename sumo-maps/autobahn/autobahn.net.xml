@@ -4,11 +4,11 @@
 <neteditConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/neteditConfiguration.xsd">
 
     <input>
-        <sumo-net-file value="/Users/jonas.brunswig/Developer/university/IntegrationProject/Intelligentes_Testen_autonomer_Fahrzeuge/sumo-maps/autobahn/autobahn.net.xml"/>
+        <sumo-net-file value="C:\Users\admin\PycharmProjects\Intelligentes_Testen_autonomer_Fahrzeuge\sumo-maps\autobahn\autobahn.net.xml"/>
     </input>
 
     <output>
-        <output-file value="/Users/jonas.brunswig/Developer/university/IntegrationProject/Intelligentes_Testen_autonomer_Fahrzeuge/sumo-maps/autobahn/autobahn.net.xml"/>
+        <output-file value="C:\Users\admin\PycharmProjects\Intelligentes_Testen_autonomer_Fahrzeuge\sumo-maps\autobahn\autobahn.net.xml"/>
     </output>
 
     <processing>

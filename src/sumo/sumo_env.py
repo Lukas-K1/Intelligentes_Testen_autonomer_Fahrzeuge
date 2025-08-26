@@ -80,19 +80,19 @@ class SumoEnv(gym.Env):
         # TODO: put it in the SumoVehicle class and make it a method
         # TODO: find a way to not have the vut vehicle hardcoded here, maybe in a .rou file, but it will only spawned after
         # the first step, so we need to add it manually here (for now?)
-        route_edges = ["entry", "longEdge", "exit"]
-        traci.vehicle.addFull(
-            vehID="vut",
-            routeID="",  # We'll assign edges manually
-            typeID="vut",
-            depart=0,
-            departPos=15.0,  # 15 meters into the entry edge
-            departLane=0,
-            departSpeed="avg",
-        )
-        # Disable lane changes for manual vehicle
-        traci.vehicle.setRoute("vut", route_edges)
-        traci.vehicle.setColor("vut", [0, 0, 255])
+        # route_edges = ["entry", "longEdge", "exit"]
+        # traci.vehicle.addFull(
+        #     vehID="vut",
+        #     routeID="",  # We'll assign edges manually
+        #     typeID="vut",
+        #     depart=0,
+        #     departPos=15.0,  # 15 meters into the entry edge
+        #     departLane=0,
+        #     departSpeed="avg",
+        # )
+        # # Disable lane changes for manual vehicle
+        # traci.vehicle.setRoute("vut", route_edges)
+        # traci.vehicle.setColor("vut", [0, 0, 255])
 
         for vehicle in self.controllable_vehicles:
             traci.vehicle.addFull(
