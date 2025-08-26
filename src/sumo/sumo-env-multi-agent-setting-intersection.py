@@ -1,18 +1,18 @@
 # src/sumo/sumo-env-multi-agent-setting-intersection.py
 import logging
-import traceback
-import time
 import sys
+import time
+import traceback
 
-import traci
 import gymnasium as gym
 import register_env  # registriert "SumoEnv-v0"
+import traci
 from bppy import *
 from z3 import Const
 
 from src.sumo.action_enum import *
-from src.sumo.sumo_vehicle import SumoControllableVehicle, SumoVehicle
 from src.sumo.sumo_env import SumoEnv  # <- deine robuste Env
+from src.sumo.sumo_vehicle import SumoControllableVehicle, SumoVehicle
 
 # -----------------------------------------------------------------------------
 # Logging Setup
@@ -123,6 +123,7 @@ action_map = {LANE_LEFT: 0, IDLE: 1, LANE_RIGHT: 2, FASTER: 3, SLOWER: 4}
 def seconds(steps):
     return steps * 0.05  # same step-length like SumoEnv
 
+
 def await_condition(condition_function, deadline_seconds=float("inf")) -> bool:
     """warte bis condition_function() True wird oder Deadline überschreitet.
     Gibt True/False zurück. Tick-getrieben mittels yield sync(waitFor=true)."""
@@ -137,10 +138,13 @@ def await_condition(condition_function, deadline_seconds=float("inf")) -> bool:
         yield sync(waitFor=true)
     return False
 
+
 @thread
-def abstract_check_stop_and_pass(stop_speed_threshold: float = 0.1,
-                                 wait_stop_seconds: float = 100.0,
-                                 wait_pass_seconds: float = 100.0):
+def abstract_check_stop_and_pass(
+    stop_speed_threshold: float = 0.1,
+    wait_stop_seconds: float = 100.0,
+    wait_pass_seconds: float = 100.0,
+):
     """
     Abstraktes Szenario:
       1) Warte bis veh_south speed <= stop_speed_threshold (innerhalb wait_stop_seconds)
@@ -162,9 +166,14 @@ def abstract_check_stop_and_pass(stop_speed_threshold: float = 0.1,
         except Exception:
             return False
 
-    stopped = yield from await_condition(south_stopped, deadline_seconds=wait_stop_seconds)
+    stopped = yield from await_condition(
+        south_stopped, deadline_seconds=wait_stop_seconds
+    )
     if not stopped:
-        log.warning("[ABSTRACT] UNSAT: veh_south hat nicht gestoppt innerhalb %.1fs", wait_stop_seconds)
+        log.warning(
+            "[ABSTRACT] UNSAT: veh_south hat nicht gestoppt innerhalb %.1fs",
+            wait_stop_seconds,
+        )
         return
     log.info("[ABSTRACT] COND1 SAT: veh_south gestoppt.")
 
@@ -178,13 +187,23 @@ def abstract_check_stop_and_pass(stop_speed_threshold: float = 0.1,
         except Exception:
             return False
 
-    log.info("[ABSTRACT] Warte darauf, dass 'veh_east' Westseite erreicht (edges=%s)", west_edges)
-    passed = yield from await_condition(east_passed_west, deadline_seconds=wait_pass_seconds)
+    log.info(
+        "[ABSTRACT] Warte darauf, dass 'veh_east' Westseite erreicht (edges=%s)",
+        west_edges,
+    )
+    passed = yield from await_condition(
+        east_passed_west, deadline_seconds=wait_pass_seconds
+    )
     if not passed:
-        log.warning("[ABSTRACT] UNSAT: veh_east hat Westseite nicht erreicht innerhalb %.1fs", wait_pass_seconds)
+        log.warning(
+            "[ABSTRACT] UNSAT: veh_east hat Westseite nicht erreicht innerhalb %.1fs",
+            wait_pass_seconds,
+        )
         return
 
-    log.info("[ABSTRACT] SAT: veh_south gestoppt und veh_east hat die Kreuzung passiert.")
+    log.info(
+        "[ABSTRACT] SAT: veh_south gestoppt und veh_east hat die Kreuzung passiert."
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -194,7 +213,7 @@ def abstract_check_stop_and_pass(stop_speed_threshold: float = 0.1,
 def right_of_way_scenario():
     log.info("[BTHREAD] right_of_way_scenario gestartet")
 
-    STOP_TRIGGER_DISTANCE = 30. #30 Meters distance to intersection
+    STOP_TRIGGER_DISTANCE = 30.0  # 30 Meters distance to intersection
 
     while True:
         ids = set(traci.vehicle.getIDList())
@@ -217,42 +236,65 @@ def right_of_way_scenario():
 
             # compute distance-to-end
             try:
-                lane_id = traci.vehicle.getLaneID(v_east.vehicle_id)  # for example "Edge_East_to_Intersection"
+                lane_id = traci.vehicle.getLaneID(
+                    v_east.vehicle_id
+                )  # for example "Edge_East_to_Intersection"
                 lane_pos = traci.vehicle.getLanePosition(v_east.vehicle_id)
                 lane_length = traci.lane.getLength(lane_id)
                 distance_to_junction = lane_length - lane_pos
-                log.debug("[SCEN] v_east lane=%s lane_pos=%.2f lane_len=%.2f dist_to_junc=%.2f",
-                          lane_id, lane_pos, lane_length, distance_to_junction)
+                log.debug(
+                    "[SCEN] v_east lane=%s lane_pos=%.2f lane_len=%.2f dist_to_junc=%.2f",
+                    lane_id,
+                    lane_pos,
+                    lane_length,
+                    distance_to_junction,
+                )
             except Exception as e:
                 log.debug("[SCEN] Konnte Distanz zu Junction nicht berechnen: %s", e)
                 distance_to_junction = None
 
-            #Stop veh_south if veh_east is to close to intersection
+            # Stop veh_south if veh_east is to close to intersection
             if east_road == "Edge_East_to_Intersection":
-                if distance_to_junction is not None and distance_to_junction <= STOP_TRIGGER_DISTANCE:
-                    log.debug("[SCEN] v_east ist <= %.1fm vor Kreuzung -> stoppe v_south", STOP_TRIGGER_DISTANCE)
+                if (
+                    distance_to_junction is not None
+                    and distance_to_junction <= STOP_TRIGGER_DISTANCE
+                ):
+                    log.debug(
+                        "[SCEN] v_east ist <= %.1fm vor Kreuzung -> stoppe v_south",
+                        STOP_TRIGGER_DISTANCE,
+                    )
                     _allowed_south = False
                     current_actions["veh_south"] = SLOWER
                     current_actions["veh_east"] = FASTER
                 else:
                     # if veh_east not close enough, do as before (allowed_south)
-                    log.debug("[SCEN] v_east auf Edge_East_to_Intersection, aber noch %.2fm entfernt -> warte",
-                              distance_to_junction if distance_to_junction is not None else -1.0)
+                    log.debug(
+                        "[SCEN] v_east auf Edge_East_to_Intersection, aber noch %.2fm entfernt -> warte",
+                        (
+                            distance_to_junction
+                            if distance_to_junction is not None
+                            else -1.0
+                        ),
+                    )
                     if _allowed_south:
                         current_actions["veh_south"] = FASTER
                     else:
                         current_actions["veh_south"] = IDLE
                     current_actions["veh_east"] = FASTER
 
-         # v_east passed the intersection
+            # v_east passed the intersection
             elif east_road == "Edge_West_from_Intersection":
-                log.debug("[SCEN] v_east auf Edge_West_from_Intersection -> erlaube v_south")
+                log.debug(
+                    "[SCEN] v_east auf Edge_West_from_Intersection -> erlaube v_south"
+                )
                 _allowed_south = True
                 current_actions["veh_south"] = FASTER
                 current_actions["veh_east"] = FASTER
 
             elif east_road == "Edge_West_from_Middle":
-                log.debug("[SCEN] v_east auf Edge_West_from_Middle -> stoppe v_east, erlaube v_south")
+                log.debug(
+                    "[SCEN] v_east auf Edge_West_from_Middle -> stoppe v_east, erlaube v_south"
+                )
                 _allowed_south = True
                 current_actions["veh_east"] = SLOWER
                 current_actions["veh_south"] = FASTER
@@ -346,7 +388,12 @@ def sumo_env_bthread():
 if __name__ == "__main__":
     try:
         b_program = BProgram(
-            bthreads=[sumo_env_bthread(), right_of_way_scenario(), tick_bthread(), abstract_check_stop_and_pass()],
+            bthreads=[
+                sumo_env_bthread(),
+                right_of_way_scenario(),
+                tick_bthread(),
+                abstract_check_stop_and_pass(),
+            ],
             event_selection_strategy=SMTEventSelectionStrategy(),
             listener=PrintBProgramRunnerListener(),
         )
