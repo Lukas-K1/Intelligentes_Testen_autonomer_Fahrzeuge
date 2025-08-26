@@ -4,4 +4,54 @@
 \section{Modellierung von Szenarien mit BPpy}
 \section{Visualisierung von ausgeführten konkreten Szeanrien}
 \section{Reinforcement Learning}
+Hier wird die Struktur und Funktionalität des Projekts, das ein Reinforcement-Learning-Modell (RL) für Überholszenarien trainiert, speichert und nutzt beschrieben. Die Hauptkomponenten des Projekts sind in mehreren Python-Dateien organisiert.
+
+\texttt{src/envs/overtake\_env.py}
+Diese Datei definiert die Umgebung für das Überholszenario. Sie basiert auf einer Kernumgebung und erweitert diese um spezifische Logik für das Training eines RL-Agenten.
+
+\begin{itemize}
+    \item \texttt{reset(**kwargs)}: Setzt die Umgebung zurück, initialisiert die Position und Geschwindigkeit des Agenten sowie des zu überholenden Fahrzeugs (VUT).
+    \item \texttt{step(action)}: Führt einen Schritt in der Umgebung aus, basierend auf der Aktion des Agenten. Berechnet Belohnungen und überprüft, ob die Episode beendet ist.
+    \item \texttt{render()}: Rendert die Umgebung.
+\end{itemize}
+
+\texttt{src/main.py}
+Diese Datei enthält den Einstiegspunkt für die Ausführung des Projekts und die Konfiguration der Umgebung.
+
+\begin{itemize}
+    \item \texttt{create\_env(config: Dict[str, Any])}: Erstellt eine neue Umgebung basierend auf der übergebenen Konfiguration.
+    \item \texttt{set\_config()}: Definiert die Konfiguration der Umgebung, einschließlich Fahrspuren, Fahrzeugpositionen und Beobachtungs-/Aktionsräume.
+    \item \texttt{main()}: Führt die Hauptlogik aus, einschließlich der Initialisierung der Umgebung und der Simulation von Aktionen.
+\end{itemize}
+
+\texttt{src/training/train\_overtake\_agent.py}
+Diese Datei ist für das Training des RL-Modells verantwortlich.
+
+\begin{itemize}
+    \item \texttt{make\_env(rank: int)}: Erstellt eine Instanz der Überholumgebung für das Training.
+    \item \texttt{RenderCallback}: Ein Callback, der die Umgebung während des Trainings in regelmäßigen Abständen rendert.
+    \item \texttt{main()}: Führt das Training des RL-Modells durch. Es initialisiert das Modell, trainiert es mit der \texttt{DQN}-Methode und speichert das trainierte Modell.
+\end{itemize}
+
+\subsection{Trainieren des Modells}
+Das Training erfolgt in der Datei \texttt{train\_overtake\_agent.py}. Die Hauptschritte sind:
+\begin{enumerate}
+    \item Initialisierung der Umgebung mit \texttt{DummyVecEnv}.
+    \item Definition des RL-Modells mit \texttt{DQN}.
+    \item Start des Trainings mit \texttt{model.learn()}.
+\end{enumerate}
+
+\subsection{Speichern des Modells}
+Das trainierte Modell wird mit einem Zeitstempel versehen und im Verzeichnis \texttt{models/} gespeichert:
+\begin{lstlisting}
+model.save("models/overtake_dqn.zip" + current_time)
+\end{lstlisting}
+
+\subsection{Nutzen des Modells}
+Das gespeicherte Modell kann später geladen und für Inferenz oder weitere Trainingsschritte verwendet werden:
+\begin{lstlisting}
+from stable_baselines3 import DQN
+model = DQN.load("models/overtake_dqn.zip")
+\end{lstlisting}
+
 \section{Gesamt-Architektur}
