@@ -7,11 +7,13 @@
 Hier wird die Struktur und Funktionalität des Projekts, das ein Reinforcement-Learning-Modell (RL) für Überholszenarien trainiert, speichert und nutzt beschrieben. Die Hauptkomponenten des Projekts sind in mehreren Python-Dateien organisiert.
 
 \texttt{src/envs/overtake\_env.py}
-Diese Datei definiert die Umgebung für das Überholszenario. Sie basiert auf einer Kernumgebung und erweitert diese um spezifische Logik für das Training eines RL-Agenten.
+Diese Datei definiert die Umgebung für das Überholszenario, bei dem das VUT zum Überholen des vom Modell gesteuerten Fahrzeugs angeregt werden soll. Sie basiert auf einer Kernumgebung und erweitert diese um spezifische Logik für das Training eines RL-Agenten.
+Analog existiert die Datei \texttt{src/envs/intersection\_env.py}, bei dem eine Umgebung für ein Kreuzungsszenario definiert wird.
 
 \begin{itemize}
+    \item \texttt{\_\_init\_\_(render\_mode, **config\_overrides)}: Initialisiert die Umgebung mit dem übergebenen Rendermodus. Zusätzlich kann die Konfiguration der Umgebung über den \texttt{config\_overrides} Parameter überschrieben werden.
     \item \texttt{reset(**kwargs)}: Setzt die Umgebung zurück, initialisiert die Position und Geschwindigkeit des Agenten sowie des zu überholenden Fahrzeugs (VUT).
-    \item \texttt{step(action)}: Führt einen Schritt in der Umgebung aus, basierend auf der Aktion des Agenten. Berechnet Belohnungen und überprüft, ob die Episode beendet ist.
+    \item \texttt{step(action)}: Führt einen Schritt in der Umgebung aus, basierend auf der Aktion des Agenten. Berechnet Belohnungen anhand des Zustandes der Simulation, unter anderem der Position der Fahrzeuge im Vergleich zueinander. Abschließen wird überprüft, ob die Episode beendet ist. 
     \item \texttt{render()}: Rendert die Umgebung.
 \end{itemize}
 
@@ -29,15 +31,15 @@ Diese Datei ist für das Training des RL-Modells verantwortlich.
 
 \begin{itemize}
     \item \texttt{make\_env(rank: int)}: Erstellt eine Instanz der Überholumgebung für das Training.
-    \item \texttt{RenderCallback}: Ein Callback, der die Umgebung während des Trainings in regelmäßigen Abständen rendert.
-    \item \texttt{main()}: Führt das Training des RL-Modells durch. Es initialisiert das Modell, trainiert es mit der \texttt{DQN}-Methode und speichert das trainierte Modell.
+    \item \texttt{RenderCallback}: Eine Callback-Klasse, der die Umgebung während des Trainings in regelmäßigen Abständen rendert. Ihre \texttt{\_on\_step()} Methode wird vom Modell während des Trainings aufgerufen um zu bestimmen ob die aktuelle Episode gerendert werden soll.
+    \item \texttt{main()}: Führt das Training des RL-Modells durch. Es initialisiert das Modell und definiert die Traingsumgebung, trainiert es mit der \texttt{DQN}-Methode und speichert das trainierte Modell.
 \end{itemize}
 
 \subsection{Trainieren des Modells}
 Das Training erfolgt in der Datei \texttt{train\_overtake\_agent.py}. Die Hauptschritte sind:
 \begin{enumerate}
-    \item Initialisierung der Umgebung mit \texttt{DummyVecEnv}.
-    \item Definition des RL-Modells mit \texttt{DQN}.
+    \item Initialisierung der Umgebung mit \texttt{DummyVecEnv}, welchem das zu lernende Szenario übergeben wird.
+    \item Definition des RL-Modells mit \texttt{DQN}. Dabei werden diverse Parameter wie der Diskontierungsfaktor für das Lernen des Modells festgelegt.
     \item Start des Trainings mit \texttt{model.learn()}.
 \end{enumerate}
 
