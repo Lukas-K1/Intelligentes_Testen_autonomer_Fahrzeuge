@@ -1,10 +1,29 @@
 \chapter{Grundlagen}
 
-\section{Testtypen beim autonomen Fahren}
-\section{Test-Szenarien}
-\section{Behavioral Programming}
-\section{OpenScenario}
-\section{Simulations-Engines}
+\section{Testumgebungen im autonomen Fahren}
+\section{Klassifikation von Testszenarien im autonomen Fahren}
+\section{OpenSCENARIO als Standard zur Beschreibung von Testszenarien}
+\section{Eingesetzte Simulations-Engines im Rahmen dieser Arbeit}
+Simulationsumgebungen sind ein zentrales Werkzeug im Bereich des autonomen Fahrens. Sie ermöglichen es, Verkehrssituationen unter kontrollierten Bedingungen nachzustellen und die entwickelten Verfahren zu testen. Abhängig vom jeweiligen Einsatzgebiet unterscheiden sich die Umgebungen vor allem im Grad der Abstraktion, in den bereitgestellten Funktionen und im benötigten Rechenaufwand. In den folgenden Abschnitten werden mit HighwayEnv sowie SUMO und dem dazugehörigen TraCI drei Umgebungen vorgestellt, die in unserem Projekt verwendet werden.
 \subsection{HighwayEnv}
-\subsection{Sumo}
+HighwayEnv ist eine Open-Source-Simulationsumgebung für autonomes Fahren, welches auf der Basis von Gymnasium beziehungsweise OpenAI Gym entwickelt wurde. Der Fokus liegt auf einer schnellen abstrahierten Simulation auf mehrspurigen Straßen und Autobahnen. Das Ziel dieser Simulationsumgebung ist die Entwicklung, Training und Evaluierung von Reinforcement-Learning-Algorithmen und Planungsverfahren im Bereich des autonomen Fahrens.
 
+Technisch ist es mit Python implementiert und folgt einem modularen Aufbau, welche sich an der klassichen Agent-Environment-Schnittstelle aus dem Bereich des Reinforcement-Learnings bedient. Die einzelnen Szenarien werden durch Environment-Klassen definiert, etwas highway-v0 (ein klassisches Autobahn-Szenario) oder roundabout-v0 (ein Kreisverkehr). Damit eine effiziente Simulation stattfinden kann nutzt es mittels einem kinematischen Modells ein vereinfachte Fahrzeugdynamiken.
+
+Bei der Fahrzeugmodellierung beschränkt sich HighwayEnv auf wesentliche Parameter, wie Position, Geschwindigkeit und Heading. Die Umgebungsmodellierung bietet mehrspurige Straßen, Fahrspurwechsel sowie unterschiedliche Verkehrsdichten. Ein Agent kann beschleunigen, bremsen, die Spur wechseln oder seine aktuelle Bewegung beibehalten. Die im Reinfocement-Learning benötigte Belohnungsfunktion kann je nach Zielstellung beliebig angepasst werden, z.B. auf Sicherheit oder Effizienz. 
+
+Der Fokus von HighwayEnv liegt vor allem auf abstrakten Szenarien und nicht hochrealistischen Simulationen. Es ist somit kein Ersatz für High-Fidelity-Simulatoren, wie CARLA. Zudem bietet es keine realistische Physik. Dadurch werden beispielsweise Fahrdynamiken oder Wetterbedingungen vernachlässigt. Der Vorteil von HighwayEnv liegt in den geringen Rechenkosten und ist somit geeignet für Experimente und Prototyping.
+\subsection{Sumo und Traci}
+Die Simulation of Urban MObility, kurz SUMO, ist ein Open-Source, mikroskopischer, straßenverkehrsbasierter Simulator, welcher vom Deutschen Zentrum für Luft- und Raumfahrt (DLR) entwickelt wird. Das Ziel ist es Verkehrsflüsse und - dynamiken in realistischen Straßennetzwerken zu simulieren. Es untsertützt Einzel- sowie Massensimulationen von Fahrzeugbewegungen in Städten, Autobahnen und Mischverkehr.
+
+Die Implementierungssprache ist im Kern C++. Zudem stehen Python-APIs zur Verfügung mit denen Erweiterungen möglich sind. Mikroskopisch bedeutet in diesem Fall, dass jedes Fahrzeug einzeln simuliert wird. Die Straßennetze können aus realen Karten, wie OpenStreetMap importiert werden, sodass eine hohe Flexibilität geboten ist. Des Weiteren werden verschiedene Fahrzeugtypen von LKWs und Bussen über den PKW bis hin zum Fahrrad oder Fußgänger.
+
+Für die Fahrdynamik werden Car-Following-Modelle wie das Krauß-Modell genutzt. Darüber hinaus finden Lane-Change-Modelle Anwendung. Innerhalb der Verkehrssteuerung können Amplen, Zuflussregelungen oder auch Stauszenarien simuliert werden. Des weiteren gibt es eine eingebaute Routenplanung sodass Fahrzeuge entweder feste Routen folgen oder auf Basis von dynamischen Routing-Algorithmen gesteuert werden können. Im Bereich der Auswertungen werden verschiedene detaillierte Statistiken im Bezug auf Reisezeiten, Emissionen oder Staus geliefert.
+
+Die Einsatzbereiche von SUMO sind reichen von der Verkehrsforschung, wobei Verkehrsflüsse, Engpässe oder Infrastrukturmaßnahmen untersucht werden bis hin zur Stadtplanung und Mobilitätskonzepten bei denen Szenarien wie Car-Sharing oder ÖPNV simuliert werden. Zudem kann es auch im Bereich des Autonomen Fahrens als Testumgebung für Entscheidungs- und Koordinationsstrategien dienen.
+
+Im Gegensatz zu HighwayEnv benötigt SUMO bei sehr großen Netzen eine hohe Rechenlast. Es bietet zudem auch keine High-Fidelity, da auch hier ein vereinfachtes Fahrzeugmodell verwendet wird.
+
+Mit dem Traffic Control Interface (TraCI) bietet das DLR eine Client-Server-Schnittstelle zur Echtzeitsteuerung und Abfrage von SUMO-Simulationen. Dies erlaubt die dynamische Interaktion mit einer laufenden SUMO-Simulation. Dabei kann ein lesender Zugriff zur Abfrage von Zuständen etwa der Position, Geschwindigkeit und Ampelphasen geschehen, aber auch eine Manipulation der Simulation indem beispielsweise Fahrzeuge hinzugefügt oder Routen verändert werden. Dies erlaubt die Einbindung von externen Steuerungsalogrithmen z.B. Reinforcement-Learning oder Verkehrsmanagementsysteme.
+
+\section{Behavioral Programming als Programmierparadigma}
