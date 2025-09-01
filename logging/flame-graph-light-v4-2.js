@@ -485,16 +485,30 @@ class FlameGraphAnalyzer {
        .on('click', (event, d) => this.selectEvent(d, event.shiftKey));
   }
 
-  renderAxis() {
-    const timeRange = this.getTimeRange();
+// Die Achse beginnt bei 0.5s und zählt ab dort
+renderAxis() {
+  const timeRange = this.getTimeRange();
 
-    this.chartGroup.append('g')
-      .attr('class', 'axis')
-      .attr('transform', `translate(0, ${this.dimensions.innerHeight})`)
-      .call(d3.axisBottom(this.scales.x)
-        .tickFormat(d => `${((d - timeRange.start) / 1000).toFixed(1)}s`)
-        .ticks(Math.floor(this.dimensions.totalWidth / 100)));
-  }
+  this.chartGroup.append('g')
+    .attr('class', 'axis axis-top')
+    .attr('transform', `translate(0, -15)`)
+    .call(
+      d3.axisTop(this.scales.x)
+        .tickFormat(d => `${(d / 1000).toFixed(1)}s`) // Start bei 0.5s
+        .ticks(Math.ceil((timeRange.end - timeRange.start) / 500))
+    );
+
+  this.chartGroup.append('g')
+    .attr('class', 'axis')
+    .attr('transform', `translate(0, ${this.dimensions.innerHeight})`)
+    .call(
+      d3.axisBottom(this.scales.x)
+        .tickFormat(d => `${((d / 1000) - 0.5).toFixed(1)}s`)
+        .ticks(Math.floor(this.dimensions.totalWidth / 100))
+    );
+}
+
+
 
   renderLabels() {
     const labelsContainer = this.elements.labelsContainer;
