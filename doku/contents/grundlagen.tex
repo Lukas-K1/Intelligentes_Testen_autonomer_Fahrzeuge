@@ -1,8 +1,22 @@
 \chapter{Grundlagen}
 
 \section{Testumgebungen im autonomen Fahren}
+\begin{itemize}
+    \item kurze Abgrenzung VIL, HIL, SIL
+    \item zur Einordung, welche unterschiedlichen Testebenen es gibt
+\end{itemize}
 \section{Klassifikation von Testszenarien im autonomen Fahren}
+\begin{itemize}
+    \item Abgrenzung zwischen konkreten und abstrakten Szenarios
+    \item am Beste mittels eines Beispiels z.B. Überhol-Manöver beschreiben
+\end{itemize}
 \section{OpenSCENARIO als Standard zur Beschreibung von Testszenarien}
+\begin{itemize}
+    \item OpenScenario 1.x Standard (XML-basiert) 
+    \item OpenScenario DSL 
+    \item jeweils Beispiel zeigen, wie so etwas aussehen könnte
+    \item Herausforderungen herausstellen
+\end{itemize}
 \section{Eingesetzte Simulations-Engines im Rahmen dieser Arbeit}
 Simulationsumgebungen sind ein zentrales Werkzeug im Bereich des autonomen Fahrens. Sie ermöglichen es, Verkehrssituationen unter kontrollierten Bedingungen nachzustellen und die entwickelten Verfahren zu testen. Abhängig vom jeweiligen Einsatzgebiet unterscheiden sich die Umgebungen vor allem im Grad der Abstraktion, in den bereitgestellten Funktionen und im benötigten Rechenaufwand. In den folgenden Abschnitten werden mit HighwayEnv sowie SUMO und dem dazugehörigen TraCI drei Umgebungen vorgestellt, die in unserem Projekt verwendet werden.
 \subsection{HighwayEnv}
@@ -27,3 +41,10 @@ Im Gegensatz zu HighwayEnv benötigt SUMO bei sehr großen Netzen eine hohe Rech
 Mit dem Traffic Control Interface (TraCI) bietet das DLR eine Client-Server-Schnittstelle zur Echtzeitsteuerung und Abfrage von SUMO-Simulationen. Dies erlaubt die dynamische Interaktion mit einer laufenden SUMO-Simulation. Dabei kann ein lesender Zugriff zur Abfrage von Zuständen etwa der Position, Geschwindigkeit und Ampelphasen geschehen, aber auch eine Manipulation der Simulation indem beispielsweise Fahrzeuge hinzugefügt oder Routen verändert werden. Dies erlaubt die Einbindung von externen Steuerungsalogrithmen z.B. Reinforcement-Learning oder Verkehrsmanagementsysteme.
 
 \section{Behavioral Programming als Programmierparadigma}
+\begin{itemize}
+    \item kurze Beschreibung des Programmierparadigma und welche Ideen dahinter stecken
+    \item Besonderheiten herausstellen - Fokus auf Verhalten statt Kontrolle
+    \item B-Threads
+    \item Ereignisgesteuerte Synchronisation
+    \item Modularität und Erweiterbarkeit
+\end{itemize}

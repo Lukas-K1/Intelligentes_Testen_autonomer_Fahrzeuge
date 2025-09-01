@@ -1,14 +1,54 @@
 \chapter{Umsetzung}
 
 \section{Gesamt-Architektur}
+\begin{itemize}
+    \item hier ein Bild von der Gesamtarchitektur einfügen
+    \item sprich BProgram zentral in der Mitte, daneben Simulation-Engines
+    \item Logging wird in konkreten Szeanrien genutzt - Visualisierung nutzt Daten aus dem Logger
+    \item RL nutzt auch BProgram? -> aktuell noch nicht, aber sollte es eigentlich
+\end{itemize}
 \section{Simulationsumgebungen}
 \subsection{HighwayEnv}
+\subsubsection{Konfiguration von HighwayEnv}
+\begin{itemize}
+    \item z.B. Multi-Agent-setting
+    \item und andere Besonderheiten, die wir in Q1 erarbeitet haben
+\end{itemize}
+\subsubsection{Integration in das BProgram}
+\begin{itemize}
+    \item B-Thread für HighwayEnv, wie aufgebaut und warum?
+\end{itemize}
 \subsubsection{VUT-Ansätze}
-\subsubsection{Ansätze zur Observation-Kapselung}
+\begin{itemize}
+    \item Training eines VUT, um es als Testfahrzeug für unsere Testszenarien zu nutzen
+\end{itemize}
+\subsubsection{Ansätze zum Zugriff auf Fahrzeuginformationen}
+\begin{itemize}
+    \item Observation-Wrapper-Ansatz
+    \item Vehicle-Based Ansatz
+    \item Vergleich der beiden Ansätze
+\end{itemize}
 \subsection{Sumo}
-\subsubsection{SumoEnv}
+\begin{itemize}
+    \item Warum SUMO anstelle von HighwayEnv?
+\end{itemize}
+\subsubsection{SumoEnv zur Einbindung in das BProgram}
+\begin{itemize}
+    \item Klasse SumoEnv erklären
+    \item implementiert Gym Env-Interface, wie auch HighwayEnv
+    \item zur einfacheren Einbindung in unsere bestehende Arbeit
+\end{itemize}
 \subsubsection{Abbildung der Fahrzeugeigenschaften}
+\begin{itemize}
+    \item da sich das Vehicle-Konstrukt als praktikabler herausgestellt hat wurde es analog auf Sumo übertragen
+    \item somit muss in die bestehenden Szenarien nur die Fahrzeug-Klassen anders instanziiert werden, der Rest bleibt gleich
+\end{itemize}
 \section{Modellierung von Szenarien mit BPpy}
+\begin{itemize}
+    \item Erklärung der einzelnen BThreads -> Simulation, abstraktes Szenario, konkretes Szenario
+    \item am Beispiel von follow-behind-Szenario
+\end{itemize}
+
 \section{Visualisierung von ausgeführten konkreten Szeanrien}
 \section{Reinforcement Learning}
 Hier wird die Struktur und Funktionalität des Projekts, das ein Reinforcement-Learning-Modell (RL) für Überholszenarien trainiert, speichert und nutzt beschrieben. Die Hauptkomponenten des Projekts sind in mehreren Python-Dateien organisiert.
