@@ -5,6 +5,18 @@ Simulationen stellen daher einen unverzichtbaren Baustein in der Validierung aut
 
 Vor diesem Hintergrund ist die Entwicklung neuer, flexiblerer Ansätze zu automatisierten Szenariengenerierung von zentraler Bedeutung. Behavioral Programming bietet hierfür eine attraktive Grundlage. Es erlaubt eine modulare Modellierung von Szenarien und bildet konkurrierende Verhaltensweisen auf natürliche Weise ab. Ergänzend eröffent Reinforcement Learning die Möglichkeit, aus abstrakten Szenariobeschreibungen, etwa ein Auto überholt das VUT und bremst anschließend, konkrete, ausführbare Szenarien zu generieren, die den abstrakten Vorgaben genügen.
 
-Dieses Projekt verfolgt das Ziel, die Kombination von Behavioral Programming und Reinforcement Learning als neuartigen Ansatz zur automatisierten Szenariengenerierung zu untersuchen. Dabei sollen nicht nur Methoden zur Modellierung abstrakter und konkreter Szenarien entwickelt werden, sondern auch Verfahren, wie die ausgeführten Szenarien geloggt und visuell aufbereitet werden können, um Test-Engineers eine transparente Analyse zu ermöglichen.
+Dieses Projekt verfolgt das Ziel, die Kombination von Behavioral Programming und Reinforcement Learning als neuartigen Ansatz zur automatisierten Szenariengenerierung zu untersuchen. Dabei sollen nicht nur Methoden zur Modellierung abstrakter und konkreter Szenarien entwickelt werden, sondern auch Verfahren, wie die ausgeführten Szenarien geloggt und visuell aufbereitet werden können, um Test-Engineers eine transparente Analyse zu ermöglichen. Vor diesem Hintergrund ergibt sich die zentrale Forschungsfrage: 
+
+\begin{quote}
+\textbf{Wie kann BPpy zur Modellierung ausführbarer Testszenarien im autonomen Fahren eingesetzt werden ?}
+\end{quote}
+
+Zur Beantwortung dieser Frage weden folgende Unterfragen untersucht:
+\begin{itemize}
+    \item Wie können Szenarien in BPpy modelliert werden und welche grundsätzlichen Unterschiede bestehen im Vergleich zu OpenSCENARIO?
+    \item Welche Möglichkeiten der Komposition bietet BPpy für Szenarien, etwa sequenziell oder parallel?
+    \item Wie kann BPpy in Kombination mit RL-Agenten eingesetzt werden, sodass auf Basis abstrakter Szenarien konkrete Testszenarien generiert werden?
+    \item Wie können ausgeführte Szenarien geloggt und visualisiert werden, um eine transparente Analyse zu ermöglichen?
+\end{itemize}
 
 Das Vorhaben versteht sich als Machbarkeitsstudie. Es geht nicht darum, ein industrietaugliches Framework zu entwicklen, sondern vielmehr um die grundlegende Frage, ob sich durch die Kombination von Behavioral Programming und Reinforcement Learning ein flexibler, automatisierbarer Ansatz zur Generierung konkreter Testszenarien aus abstrakten Vorgaben realisieren lässt.
