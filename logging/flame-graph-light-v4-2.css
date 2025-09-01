@@ -434,11 +434,37 @@ html, body {
 }
 
 /* ======== Analysis Panel ======== */
+.toggle-btn {
+  background: var(--accent-blue);
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 0px;
+  transition: background 0.3s;
+}
+
+.toggle-btn:hover {
+  background: #0056b3;
+}
+
+/* The panel container */
 .analysis-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+  background: #f1f1f1;
+  border-radius: 8px;
+  padding: 0 15px; /* no vertical padding initially */
   flex: 1;
-  min-height: 200px;
   background: var(--bg-surface);
   display: flex;
+}
+
+.analysis-panel.open {
+  padding: 15px;
+  max-height: 700px;
 }
 
 .analysis-tabs {

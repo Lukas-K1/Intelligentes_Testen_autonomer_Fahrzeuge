@@ -1266,6 +1266,16 @@ renderAxis() {
   }
 }
 
+const button = document.querySelector(".toggle-btn");
+const panel = document.querySelector(".analysis-panel");
+
+button.addEventListener("click", () => {
+  panel.classList.toggle("open");
+  button.textContent = panel.classList.contains("open")
+    ? "Hide Analysis Panel"
+    : "Show Analysis Panel";
+});
+
 // Initialize application
 document.addEventListener('DOMContentLoaded', () => {
   try {
