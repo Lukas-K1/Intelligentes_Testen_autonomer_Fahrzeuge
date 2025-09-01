@@ -42,45 +42,6 @@ class FlameGraphAnalyzer {
     };
   }
 
-  toggleCategory(category) {
-    const chip = document.querySelector(`[data-category="${category}"]`);
-
-    if (this.state.activeCategories.has(category)) {
-      this.state.activeCategories.delete(category);
-      chip.classList.remove('active');
-    } else {
-      this.state.activeCategories.add(category);
-      chip.classList.add('active');
-    }
-
-    this.filterEvents();
-  }
-
-  toggleActor(actor) {
-    const chip = document.querySelector(`[data-actor="${actor}"]`);
-
-    console.log("Toggling actor:", actor, this.state.activeActors);
-
-    if (this.state.activeActors.has(actor)) {
-      this.state.activeActors.delete(actor);
-      chip.classList.remove('active');
-    } else {
-      this.state.activeActors.add(actor);
-      chip.classList.add('active');
-    }
-
-    this.filterEvents();
-  }
-
-  filterEvents() {
-    this.state.filteredSpans = this.state.spans.filter((span) =>
-      // Is it unsafe without this.state.activeActors.size === 0 ?
-      this.state.activeActors.has(span.actor) && this.state.activeCategories.has(span.category)
-    );
-    console.log("Filtered spans:", this.state.filteredSpans);
-    this.render();
-  }
-
   initializeElements() {
     this.elements = {
       chartSection: document.getElementById('chart-section'),
@@ -125,17 +86,17 @@ class FlameGraphAnalyzer {
     this.buttons.zoomOut.addEventListener('click', () => this.zoom(0.8));
     this.buttons.zoomFit.addEventListener('click', () => this.zoomToFit());
 
-    console.log("Event listeners set up");
+    // console.log("Event listeners set up");
 
     // Category filters
     document.querySelectorAll('.category-filter-chip').forEach(chip => {
-      console.log(chip);
+      // console.log(chip);
       chip.addEventListener('click', () => this.toggleCategory(chip.dataset.category));
     });
 
     // Actor filters
     document.querySelectorAll('.actor-filter-chip').forEach(chip => {
-      console.log(chip);
+      // console.log(chip);
       chip.addEventListener('click', () => this.toggleActor(chip.dataset.actor));
     });
 
@@ -237,50 +198,50 @@ class FlameGraphAnalyzer {
     // Enhanced sample data with more realistic scenarios
     this.state.rawEvents = [
       //TODO: Data starts here
-      // Car 1 - Complex overtaking maneuver
-      { timestamp: "0.0", event_id: "car1-overtake", display_name: "Car 1 – Overtake Planning", category: "foo", actor: "Car 1" },
-      { timestamp: "0.1", event_id: "car1-radar-check", display_name: "Car 1 – Radar Scan", category: "sensor", actor: "Car 1" },
-      { timestamp: "0.2", event_id: "car1-camera-check", display_name: "Car 1 – Camera Analysis", category: "sensor", actor: "Car 1" },
-      { timestamp: "0.3", event_id: "car1-radar-check", display_name: "Car 1 – Radar Complete", category: "sensor", actor: "Car 1" },
-      { timestamp: "0.4", event_id: "car1-camera-check", display_name: "Car 1 – Camera Complete", category: "sensor", actor: "Car 1" },
-      { timestamp: "0.5", event_id: "car1-accelerate", display_name: "Car 1 – Begin Acceleration", category: "control", actor: "Car 1" },
-      { timestamp: "1.0", event_id: "car1-signal-left", display_name: "Car 1 – Left Signal On", category: "safety", actor: "Car 1" },
-      { timestamp: "1.2", event_id: "car1-lane-change-left", display_name: "Car 1 – Lane Change Left", category: "navigation", actor: "Car 1" },
-      { timestamp: "1.5", event_id: "car1-signal-left", display_name: "Car 1 – Left Signal Off", category: "safety", actor: "Car 1" },
-      { timestamp: "1.8", event_id: "car1-lane-change-left", display_name: "Car 1 – In Left Lane", category: "navigation", actor: "Car 1" },
-      { timestamp: "2.0", event_id: "car1-accelerate", display_name: "Car 1 – Max Acceleration", category: "control", actor: "Car 1" },
-      { timestamp: "2.5", event_id: "car1-passing", display_name: "Car 1 – Passing Vehicle", category: "maneuver", actor: "Car 1" },
-      { timestamp: "3.5", event_id: "car1-passing", display_name: "Car 1 – Pass Complete", category: "maneuver", actor: "Car 1" },
-      { timestamp: "3.6", event_id: "car1-signal-right", display_name: "Car 1 – Right Signal On", category: "safety", actor: "Car 1" },
-      { timestamp: "3.8", event_id: "car1-lane-change-right", display_name: "Car 1 – Lane Change Right", category: "navigation", actor: "Car 1" },
-      { timestamp: "4.0", event_id: "car1-signal-right", display_name: "Car 1 – Right Signal Off", category: "safety", actor: "Car 1" },
-      { timestamp: "4.2", event_id: "car1-lane-change-right", display_name: "Car 1 – Back in Lane", category: "navigation", actor: "Car 1" },
-      { timestamp: "4.5", event_id: "car1-overtake", display_name: "Car 1 – Overtake Complete", category: "maneuver", actor: "Car 1" },
+      // Car1 - Complex overtaking maneuver
+      { timestamp: "0.0", event_id: "car1-overtake", display_name: "Car1 – Overtake Planning", category: "foo", actor: "Car1" },
+      { timestamp: "0.1", event_id: "car1-radar-check", display_name: "Car1 – Radar Scan", category: "sensor", actor: "Car1" },
+      { timestamp: "0.2", event_id: "car1-camera-check", display_name: "Car1 – Camera Analysis", category: "sensor", actor: "Car1" },
+      { timestamp: "0.3", event_id: "car1-radar-check", display_name: "Car1 – Radar Complete", category: "sensor", actor: "Car1" },
+      { timestamp: "0.4", event_id: "car1-camera-check", display_name: "Car1 – Camera Complete", category: "sensor", actor: "Car1" },
+      { timestamp: "0.5", event_id: "car1-accelerate", display_name: "Car1 – Begin Acceleration", category: "control", actor: "Car1" },
+      { timestamp: "1.0", event_id: "car1-signal-left", display_name: "Car1 – Left Signal On", category: "safety", actor: "Car1" },
+      { timestamp: "1.2", event_id: "car1-lane-change-left", display_name: "Car1 – Lane Change Left", category: "navigation", actor: "Car1" },
+      { timestamp: "1.5", event_id: "car1-signal-left", display_name: "Car1 – Left Signal Off", category: "safety", actor: "Car1" },
+      { timestamp: "1.8", event_id: "car1-lane-change-left", display_name: "Car1 – In Left Lane", category: "navigation", actor: "Car1" },
+      { timestamp: "2.0", event_id: "car1-accelerate", display_name: "Car1 – Max Acceleration", category: "control", actor: "Car1" },
+      { timestamp: "2.5", event_id: "car1-passing", display_name: "Car1 – Passing Vehicle", category: "maneuver", actor: "Car1" },
+      { timestamp: "3.5", event_id: "car1-passing", display_name: "Car1 – Pass Complete", category: "maneuver", actor: "Car1" },
+      { timestamp: "3.6", event_id: "car1-signal-right", display_name: "Car1 – Right Signal On", category: "safety", actor: "Car1" },
+      { timestamp: "3.8", event_id: "car1-lane-change-right", display_name: "Car1 – Lane Change Right", category: "navigation", actor: "Car1" },
+      { timestamp: "4.0", event_id: "car1-signal-right", display_name: "Car1 – Right Signal Off", category: "safety", actor: "Car1" },
+      { timestamp: "4.2", event_id: "car1-lane-change-right", display_name: "Car1 – Back in Lane", category: "navigation", actor: "Car1" },
+      { timestamp: "4.5", event_id: "car1-overtake", display_name: "Car1 – Overtake Complete", category: "maneuver", actor: "Car1" },
 
       // Car 2 - Emergency braking scenario
-      { timestamp: "2.0", event_id: "car2-cruise", display_name: "Car 2 – Cruise Control", category: "control", actor: "Car 2" },
-      { timestamp: "3.0", event_id: "car2-obstacle-detect", display_name: "Car 2 – Obstacle Detected", category: "sensor", actor: "Car 2" },
-      { timestamp: "3.1", event_id: "car2-emergency-brake", display_name: "Car 2 – Emergency Brake", category: "safety", actor: "Car 2" },
-      { timestamp: "3.2", event_id: "car2-abs-active", display_name: "Car 2 – ABS Activated", category: "control", actor: "Car 2" },
-      { timestamp: "3.5", event_id: "car2-obstacle-detect", display_name: "Car 2 – Obstacle Avoided", category: "sensor", actor: "Car 2" },
-      { timestamp: "3.8", event_id: "car2-abs-active", display_name: "Car 2 – ABS Released", category: "control", actor: "Car 2" },
-      { timestamp: "4.0", event_id: "car2-emergency-brake", display_name: "Car 2 – Brake Released", category: "safety", actor: "Car 2" },
-      { timestamp: "4.5", event_id: "car2-cruise", display_name: "Car 2 – Resume Cruise", category: "control", actor: "Car 2" },
+      { timestamp: "2.0", event_id: "Car 2-cruise", display_name: "Car 2 – Cruise Control", category: "control", actor: "Car 2" },
+      { timestamp: "3.0", event_id: "Car 2-obstacle-detect", display_name: "Car 2 – Obstacle Detected", category: "sensor", actor: "Car 2" },
+      { timestamp: "3.1", event_id: "Car 2-emergency-brake", display_name: "Car 2 – Emergency Brake", category: "safety", actor: "Car 2" },
+      { timestamp: "3.2", event_id: "Car 2-abs-active", display_name: "Car 2 – ABS Activated", category: "control", actor: "Car 2" },
+      { timestamp: "3.5", event_id: "Car 2-obstacle-detect", display_name: "Car 2 – Obstacle Avoided", category: "sensor", actor: "Car 2" },
+      { timestamp: "3.8", event_id: "Car 2-abs-active", display_name: "Car 2 – ABS Released", category: "control", actor: "Car 2" },
+      { timestamp: "4.0", event_id: "Car 2-emergency-brake", display_name: "Car 2 – Brake Released", category: "safety", actor: "Car 2" },
+      { timestamp: "4.5", event_id: "Car 2-cruise", display_name: "Car 2 – Resume Cruise", category: "control", actor: "Car 2" },
 
-      // Traffic light interaction
+      // Traffic Light interaction
       { timestamp: "5.0", event_id: "traffic-light-1", display_name: "Traffic Light – Yellow", category: "infrastructure", actor: "Traffic Light" },
-      { timestamp: "5.2", event_id: "car1-decelerate", display_name: "Car 1 – Begin Deceleration", category: "control", actor: "Car 1" },
+      { timestamp: "5.2", event_id: "Car 1-decelerate", display_name: "Car1 – Begin Deceleration", category: "control", actor: "Car1" },
       { timestamp: "6.0", event_id: "traffic-light-1", display_name: "Traffic Light – Red", category: "infrastructure", actor: "Traffic Light" },
-      { timestamp: "6.5", event_id: "car1-stop", display_name: "Car 1 – Full Stop", category: "control", actor: "Car 1" },
-      { timestamp: "7.0", event_id: "car1-decelerate", display_name: "Car 1 – Stopped", category: "control", actor: "Car 1" },
-      { timestamp: "8.0", event_id: "car1-stop", display_name: "Car 1 – Waiting", category: "control", actor: "Car 1" },
+      { timestamp: "6.5", event_id: "car1-stop", display_name: "Car1 – Full Stop", category: "control", actor: "Car1" },
+      { timestamp: "7.0", event_id: "car1-decelerate", display_name: "Car1 – Stopped", category: "control", actor: "Car1" },
+      { timestamp: "8.0", event_id: "car1-stop", display_name: "Car1 – Waiting", category: "control", actor: "Car1" },
 
       // Intersection navigation
       { timestamp: "10.0", event_id: "traffic-light-2", display_name: "Traffic Light – Green", category: "infrastructure", actor: "Traffic Light" },
-      { timestamp: "10.2", event_id: "car1-intersection", display_name: "Car 1 – Enter Intersection", category: "navigation", actor: "Car 1" },
-      { timestamp: "10.5", event_id: "car1-turn-left", display_name: "Car 1 – Left Turn", category: "maneuver", actor: "Car 1" },
-      { timestamp: "11.5", event_id: "car1-turn-left", display_name: "Car 1 – Turn Complete", category: "maneuver", actor: "Car 1" },
-      { timestamp: "12.0", event_id: "car1-intersection", display_name: "Car 1 – Exit Intersection", category: "navigation", actor: "Car 1" },
+      { timestamp: "10.2", event_id: "car1-intersection", display_name: "Car1 – Enter Intersection", category: "navigation", actor: "Car1" },
+      { timestamp: "10.5", event_id: "car1-turn-left", display_name: "Car1 – Left Turn", category: "maneuver", actor: "Car1" },
+      { timestamp: "11.5", event_id: "car1-turn-left", display_name: "Car1 – Turn Complete", category: "maneuver", actor: "Car1" },
+      { timestamp: "12.0", event_id: "car1-intersection", display_name: "Car1 – Exit Intersection", category: "navigation", actor: "Car1" },
       { timestamp: "12.5", event_id: "traffic-light-2", display_name: "Traffic Light – Yellow", category: "infrastructure", actor: "Traffic Light" }
     ];
 
@@ -296,20 +257,20 @@ class FlameGraphAnalyzer {
   }
 
   initializeCategories() {
-    console.log(this.state.rawEvents);
+    // console.log(this.state.rawEvents);
     const categories = new Set(this.state.rawEvents.map((event) => event.category));
-    console.log(categories);
+    // console.log(categories);
     this.state.activeCategories = new Set(categories); // Initially, all categories are active
-    console.log(this.state.activeCategories);
+    // console.log(this.state.activeCategories);
     this.state.categories = Array.from(categories); // Convert to array for rendering
   }
 
   initializeActors() {
-    console.log(this.state.rawEvents);
+    // console.log(this.state.rawEvents);
     const actors = new Set(this.state.rawEvents.map((event) => event.actor));
-    console.log(actors);
+    // console.log(actors);
     this.state.activeActors = new Set(actors); // Initially, all actors are active
-    console.log(this.state.activeActors);
+    // console.log(this.state.activeActors);
     this.state.actors = Array.from(actors); // Convert to array for rendering
   }
 
@@ -317,7 +278,7 @@ class FlameGraphAnalyzer {
     const filterGroup = document.getElementById('category-filter-group');
     filterGroup.innerHTML = '<span class="category-filter-label">Categories:</span>'; // Clear existing buttons
 
-    console.log(this.state.categories);
+    // console.log(this.state.categories);
     this.state.categories.forEach((category) => {
       const button = document.createElement('span');
       button.className = `category-filter-chip category-${category} active`;
@@ -331,7 +292,7 @@ class FlameGraphAnalyzer {
     const actorFilterGroup = document.getElementById('actor-filter-group');
     actorFilterGroup.innerHTML = '<span class="actor-filter-label">Actors:</span>'; // Clear existing buttons
 
-    console.log(this.state.actors);
+    // console.log(this.state.actors);
     this.state.actors.forEach((actor) => {
       const button = document.createElement('span');
       button.className = `actor-filter-chip actor-${actor} active`;
@@ -351,6 +312,8 @@ class FlameGraphAnalyzer {
 
       const eventId = event.event_id;
 
+      // console.log("316: " + event.actor)
+
       if (!openEvents.has(eventId)) {
         openEvents.set(eventId, {
           start: timestamp,
@@ -360,6 +323,7 @@ class FlameGraphAnalyzer {
         });
       } else {
         const openEvent = openEvents.get(eventId);
+        // console.log("326: " + openEvent.actor)
         spans.push({
           id: `${eventId}-${openEvent.start}`,
           event_id: eventId,
@@ -367,7 +331,8 @@ class FlameGraphAnalyzer {
           end: timestamp,
           duration: timestamp - openEvent.start,
           display_name: openEvent.display_name,
-          category: openEvent.category
+          category: openEvent.category,
+          actor: event.actor
         });
         openEvents.delete(eventId);
       }
@@ -649,21 +614,38 @@ class FlameGraphAnalyzer {
   }
 
   handleSearch(query) {
+    console.log("613")
     const searchTerm = query.toLowerCase().trim();
+
+    console.log(this.state.activeActors)
+    console.log(this.state.activeActors.has("Car1"))
+    console.log(this.state.activeActors.has(this.state.spans[0].actor))
+    // console.log(this.state.spans[0])
+    console.log(this.state.spans[0].actor)
+    console.log(this.state.activeCategories.has(this.state.spans[0].category) &&
+        this.state.activeActors.has(this.state.spans[0].actor) && (
+          this.state.spans[0].display_name.toLowerCase().includes(searchTerm) ||
+          this.state.spans[0].event_id.toLowerCase().includes(searchTerm) ||
+          this.state.spans[0].category.toLowerCase().includes(searchTerm)
+        ))
 
     if (!searchTerm) {
       this.state.filteredSpans = this.state.spans.filter(span =>
-        this.state.activeCategories.has(span.category)
+        this.state.activeCategories.has(span.category) &&
+        this.state.activeActors.has(span.actor)
       );
     } else {
       this.state.filteredSpans = this.state.spans.filter(span =>
-        this.state.activeCategories.has(span.category) && (
+        this.state.activeCategories.has(span.category) &&
+        this.state.activeActors.has(span.actor) && (
           span.display_name.toLowerCase().includes(searchTerm) ||
           span.event_id.toLowerCase().includes(searchTerm) ||
           span.category.toLowerCase().includes(searchTerm)
         )
       );
     }
+
+    console.log(this.state.filteredSpans)
 
     this.updateEventCount();
     this.render();
@@ -716,6 +698,7 @@ class FlameGraphAnalyzer {
   updateEventCount() {
     const total = this.state.spans.length;
     const filtered = this.state.filteredSpans.length;
+    console.log(this.state.filteredSpans.length)
     this.elements.eventCount.textContent = total.toString();
     this.elements.visibleEvents.textContent =
       filtered === total ? `${total} visible` : `${filtered} visible`;
@@ -1137,6 +1120,7 @@ class FlameGraphAnalyzer {
         id: span.event_id,
         name: span.display_name,
         category: span.category,
+        actor: span.actor,
         start: span.start / 1000,
         end: span.end / 1000,
         duration: span.duration / 1000
@@ -1275,8 +1259,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.flameGraphAnalyzer = analyzer; // For debugging
 
     // Show welcome message
-    analyzer.log('info', 'Flame Graph Analyzer initialized successfully');
-    analyzer.log('info', 'Import your data or use the sample dataset to begin analysis');
+    // analyzer.log('info', 'Flame Graph Analyzer initialized successfully');
+    // analyzer.log('info', 'Import your data or use the sample dataset to begin analysis');
 
   } catch (error) {
     console.error('Failed to initialize application:', error);
