@@ -50,10 +50,27 @@
     \item somit muss in die bestehenden Szenarien nur die Fahrzeug-Klassen anders instanziiert werden, der Rest bleibt gleich
 \end{itemize}
 \section{Modellierung von Szenarien mit BPpy}
+Für die Modellierung von Szenarien wurde BPpy genutzt. Hierbei wurden verschiedene BThreads erstellt, die unterschiedliche Aspekte der Szenarien abbilden.
+Einzelne BThreads bilden bestimmte Funktionalitäten und Teilszenarien ab, die dann in Kombination ein vollständiges, konkretes Szenario ergeben. So können die Funktionalitäten insgesamt besser strukturiert und wiederverwendet werden.
+Die BThreads werden aber außer für einzelne Funktionalitäten auch für die Simulation und Abstraktion von Szenarien genutzt, sowie gebündelt um ein konrektes Szenario wie ein Überholmanöver abzubilden.
+So gibt es BThreads, die ein abstraktes Szenario modellieren, also die grundlegende Anforderungen an das Szenario definieren, ohne sich auf eine konkrete Implementierung festzulegen. Diese abstrakten Szenarien werden dann im BProgram mit ausgeführt um zu überprüfen, dass die Anforderungen an das Szenario erfüllt werden.
+Dabei werden konkrete Angaben überprüft, wie z.B. das sich bestimmte Fahrzeugpositionen verändert haben, oder in welcher Fahrbahn sich die Fahrzeuge im Vergleich zueinander befinden.
+Dazu kann dann geloggt werden, ob die Anforderungen erfüllt wurden, und wenn nicht, welche Anforderungen nicht erfüllt wurden.
+
+Der Simulations-Thread hat die Aufgabe, die Simulation zu steuern und sicherzustellen, dass die Szenarien in der Simulationsumgebung korrekt ausgeführt werden. Er sorgt dafür, dass die Fahrzeuge entsprechend den definierten Szenarien agieren und interagieren.
+Dabei erhält der Simulations-Thread Informationen von den anderen BThreads, um die Simulation entsprechend anzupassen und zu steuern. Z.B. werden in diesem Thread Aktionen der Fahrzeuge ausgeführt, die von anderen BThreads definiert wurden.
+Dieser Thread dient insbesondere der korrekten Übersetzung der Aktionen für die jeweilige Simulationsumgebung, die in diesem Integrationsprojekt entweder HighwayEnv oder Sumo sein kann.
+In diesem Thread wird auch auf Kollisionen und andere terminierende Ereignisse geprüft, um die Simulation entsprechend zu beenden oder anzupassen.
+
+Das konkrete Szenario wird durch die Kobination von verschiedenen BThreads modelliert, die zusammen die vollständige Logik und Anforderungen des Szenarios abbilden. Dabei wird spezifische Logik implementiert, die nur für dieses Szenario relevant ist und meist in weitere Methoden ausgelagert.
+Die entsprechende Logik wird dann im relevanten BThread aufgerufen, um den Teil des Szenarios zu steuern. Dabei können mehrere BThreads auch zu einem konkreten Szenario gehören, um verschiedene Aspekte abzudecken.
+Diese Threads können über ein Paralleitätskonstrukt parallel ausgeführt werden, um die gleichzeitige Ausführung verschiedener Aspekte des Szenarios zu ermöglichen. Spezifische Logik wird in den einzelnen BThreads per \teexttt{yield from} aufgerufen, um diese anzuwenden.
 \begin{itemize}
     \item Erklärung der einzelnen BThreads -> Simulation, abstraktes Szenario, konkretes Szenario
     \item am Beispiel von follow-behind-Szenario
 \end{itemize}
+
+Die Aufteilung und Aufgaben der einzelnen BThreads wird jetzt noch einmal an einem konkreten Beispiel, dem Follow-Behind-Szenario, erläutert.
 
 \section{Visualisierung von ausgeführten konkreten Szeanrien}
 \section{Reinforcement Learning}
