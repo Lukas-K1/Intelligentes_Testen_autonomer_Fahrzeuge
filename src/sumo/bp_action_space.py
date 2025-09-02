@@ -1,5 +1,5 @@
-from gymnasium.spaces import Discrete
 import numpy as np
+from gymnasium.spaces import Discrete
 
 
 class BPActionSpace(Discrete):
@@ -13,6 +13,7 @@ class BPActionSpace(Discrete):
         A list of possible events in the BProgram.
 
     """
+
     def __init__(self, event_list):
         """
         Initializes the BPActionSpace.
@@ -53,21 +54,31 @@ class BPActionSpace(Discrete):
         """
         if isinstance(x, int):
             as_int = x
-        elif isinstance(x, (np.generic, np.ndarray)) and (x.dtype.char in np.typecodes['AllInteger'] and x.shape == ()):
+        elif isinstance(x, (np.generic, np.ndarray)) and (
+            x.dtype.char in np.typecodes["AllInteger"] and x.shape == ()
+        ):
             as_int = int(x)
         else:
             return False
-        print(f" as_int: {as_int}") # gives 2
-        print(f" self._possible_actions(): {self._possible_actions()}") # gives [v1_action == LANE_LEFT, v1_action == IDLE, v1_action == LANE_RIGHT, v1_action == FASTER, v1_action == SLOWER]
+        print(f" as_int: {as_int}")  # gives 2
+        print(
+            f" self._possible_actions(): {self._possible_actions()}"
+        )  # gives [v1_action == LANE_LEFT, v1_action == IDLE, v1_action == LANE_RIGHT, v1_action == FASTER, v1_action == SLOWER]
         # return as_int in self._possible_actions()
-        return 0 < as_int < len(self._possible_actions())-1
+        return 0 < as_int < len(self._possible_actions()) - 1
 
     def __repr__(self):
         return "BPActionSpace(%d)" % self.n
 
     def __eq__(self, other):
-        return isinstance(other, BPActionSpace) and self.bprogram == other.bprogram and self.event_list == other.event_list
+        return (
+            isinstance(other, BPActionSpace)
+            and self.bprogram == other.bprogram
+            and self.event_list == other.event_list
+        )
 
     def _possible_actions(self):
-        possible_events = self.bprogram.event_selection_strategy.selectable_events(self.bprogram.tickets)
+        possible_events = self.bprogram.event_selection_strategy.selectable_events(
+            self.bprogram.tickets
+        )
         return [k for k, v in enumerate(self.event_list) if v in possible_events]
