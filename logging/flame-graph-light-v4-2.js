@@ -561,8 +561,8 @@ renderAxis() {
     .attr('transform', `translate(0, -15)`)
     .call(
       d3.axisTop(this.scales.x)
-        .tickFormat(d => `${(d / 1000).toFixed(1)}s`) // Start bei 0.5s
-        .ticks(Math.ceil((timeRange.end - timeRange.start) / 500))
+        .tickFormat(d => `${(d / 1000).toFixed(1)}s`)
+        .ticks(Math.floor(this.dimensions.totalWidth / 100))
     );
 
   this.chartGroup.append('g')
