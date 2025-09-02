@@ -40,11 +40,49 @@ Im Gegensatz zu HighwayEnv benötigt SUMO bei sehr großen Netzen eine hohe Rech
 
 Mit dem Traffic Control Interface (TraCI) bietet das DLR eine Client-Server-Schnittstelle zur Echtzeitsteuerung und Abfrage von SUMO-Simulationen. Dies erlaubt die dynamische Interaktion mit einer laufenden SUMO-Simulation. Dabei kann ein lesender Zugriff zur Abfrage von Zuständen etwa der Position, Geschwindigkeit und Ampelphasen geschehen, aber auch eine Manipulation der Simulation indem beispielsweise Fahrzeuge hinzugefügt oder Routen verändert werden. Dies erlaubt die Einbindung von externen Steuerungsalogrithmen z.B. Reinforcement-Learning oder Verkehrsmanagementsysteme.
 
-\section{Behavioral Programming als Programmierparadigma}
+\section{Behavioral Programming Paradigma}\label{sec:behavioral-programming}
+Behavioral Programming (BP) ist ein sprachunabhängiges Programmierparadigma zur Entwicklung reaktiver Systeme\cite{Harel2012}.
+Dabei steht die inkrementelle Spezifikation von Verhalten im Vordergrund, während klassische Kontrollflussentscheidungen in den Hintergrund treten\cite{Harel2012}.
+BP wurde ursprünglich im Kontext der szenarienbasierten Programmierung entwickelt und später auch in Umgebungen wie Java (als \emph{BPJ}-Framework) und Python (als \emph{BPpy}) umgesetzt\cite{Harel2010}.
+Die zentralen Bausteine dieses Paradigmas sind sogenannte \emph{Behavior Threads} (B-Threads), welche einzelne Verhaltensaspekte kapseln und nebenläufig ausgeführt werden\cite{Harel2010}.
+Alle B-Threads kommunizieren ausschließlich über \emph{Ereignisse} und werden an definierten Synchronisationspunkten vom Laufzeitsystem koordiniert\cite{Harel2012}.
+
+\subsection{Fokus auf Verhalten statt Kontrolle}\label{subsec:fokus-auf-verhalten-statt-kontrolle}
+In BP wird jeder Systemaspekt als separates Verhalten (in einem eigenen B-Thread) implementiert, anstatt einen zentralen Ablaufplan zu programmieren.
+Dadurch ergibt sich eine \emph{indirekte Steuerung}: Anstatt dass ein Modul direkt ein anderes aufruft oder steuert, beeinflussen sich die Verhaltensmodule nur über das Anbieten oder Verhindern von Ereignissen\cite{Harel2012}.
+Dieses Prinzip erlaubt eine natürlichere Beschreibung von Anforderungen, das heißt es wird spezifiziert, was geschehen oder unterbleiben soll, ohne die Ausführung in Form von detailliertem Kontrollfluss explizit zu kodieren\cite{Harel2012}.
+Die Auswahl des nächsten Systemschritts (Ereignisses) erfolgt zur Laufzeit durch das BP-Laufzeitsystem, das aus den von allen B-Threads vorgeschlagenen und gegebenenfalls gesperrten Ereignissen ein zulässiges Ereignis bestimmt und ausführt\cite{Harel2012}.
+BP verlagert den Schwerpunkt der Programmierung somit von der Implementierung von Steuerungslogik hin zur Spezifikation von erwünschtem oder verbotenem Verhalten.
+
+\subsection{B-Threads und ereignisgesteuerte Synchronisation}\label{subsec:b-threads-und-ereignisgesteuerte-synchronisation}
+Ein B-Thread ist eine in sich geschlossene Verhaltenskomponente, typischerweise implementiert als unabhängiger Prozess (Thread, Coroutine o. Ä.), der wiederholt Ereignisse abgibt oder auf Ereignisse wartet.
+Die Koordination aller B-Threads erfolgt an expliziten \emph{Synchronisationspunkten}.
+Jeder B-Thread ruft eine Synchronisationsoperation (etwa \emph{sync}) auf, wobei er drei Kategorien von Ereignissen deklariert\cite{Harel2010}:
 \begin{itemize}
-    \item kurze Beschreibung des Programmierparadigma und welche Ideen dahinter stecken
-    \item Besonderheiten herausstellen - Fokus auf Verhalten statt Kontrolle
-    \item B-Threads
-    \item Ereignisgesteuerte Synchronisation
-    \item Modularität und Erweiterbarkeit
+  \item \textbf{Gewünschte Ereignisse} (\emph{requested events}): Ereignisse, die der Thread vorschlägt und bei deren Auftreten er fortgesetzt werden möchte.
+  \item \textbf{Erwartete Ereignisse} (\emph{waited-for events}): Ereignisse, auf die der Thread passiv wartet.
+  \item \textbf{Blockierte Ereignisse} (\emph{blocked events}): Ereignisse, die der Thread momentan verhindern möchte.
 \end{itemize}
+
+Sobald alle aktiven B-Threads ihren Synchronisationspunkt erreicht haben, sammelt das Laufzeitsystem alle vorgeschlagenen Ereignisse und wählt eines davon aus, das von mindestens einem B-Thread vorgeschlagen und von keinem B-Thread blockiert wurde\cite{Harel2012}.
+Das ausgewählte Ereignis wird anschließend ausgelöst; alle B-Threads, die dieses Ereignis vorgeschlagen oder darauf gewartet haben, werden aufgeweckt und setzen ihre Ausführung bis zum nächsten Synchronisationspunkt fort\cite{Harel2012}.
+B-Threads, die das Ereignis weder angefordert noch erwartet hatten, bleiben solange pausiert\cite{Harel2012}.
+Falls mehrere vorgeschlagene Ereignisse gleichzeitig ausführbar sind, kann je nach Implementierung ein Prioritätenschema oder eine feste Rangfolge zur Anwendung kommen, um ein deterministisches Verhalten zu gewährleisten\cite{Harel2012}.
+Anschließend erfolgt die nächste Synchronisation aller Threads, und der Zyklus wiederholt sich.
+Dieses ereignisgesteuerte Synchronisationsverfahren stellt sicher, dass sich unabhängige Teilverhalten konsistent zu einem Gesamtablauf verweben, ohne dass eine zentrale Steuerlogik die einzelnen Schritte vorgibt.
+
+\subsection{Modularität und Erweiterbarkeit}\label{subsec:modularitat-und-erweiterbarkeit}
+Ein Hauptvorteil von BP ist die \emph{hohe Modularität} der Verhaltensbeschreibung und die einfache Erweiterbarkeit von Systemfunktionalität.
+Neue Anforderungen können als zusätzliche B-Threads implementiert werden, was eine \emph{inkrementelle Entwicklung} ermöglicht, bei der bestehender Code kaum oder gar nicht geändert werden muss\cite{Harel2012}.
+\newline
+Das Hinzufügen oder Entfernen von Verhaltensmodulen entspricht dem Ein- oder Ausschalten von Szenarien, ohne unbeabsichtigte Seiteneffekte auf den übrigen Ablauf.
+\newline
+\newline
+Alle Module interagieren ausschließlich über das gemeinsame Ereignis-Vokabular und kennen einander nicht direkt\cite{Harel2010}.
+So kann beispielsweise in einem einfachen Wassermisch-System ein zusätzliches Verhalten (Interleave, abwechselndes Heiß- und Kalt-Zapfen) durch einen neuen B-Thread realisiert werden, der abwechselnd auf das eine Ereignis wartet und das andere blockiert, ohne die bestehenden B-Threads zu verändern\cite{Harel2012}.
+\newline
+\newline
+BP unterstützt damit auch Konzepte wie die merkmalsorientierte Entwicklung (Feature-Oriented Development) und Produktlinien: Unterschiedliche Ausprägungen eines Systems können durch Konfiguration der Menge der aktiven B-Threads erzeugt werden\cite{Harel2012}.
+Im Vergleich zu objektorientierten oder aspektorientierten Ansätzen vermeidet BP die strikte Trennung zwischen Basis- und Erweiterungslogik; stattdessen wirken alle Verhaltensmodule gleichberechtigt zusammen\cite{Harel2012}.
+Darüber hinaus lässt sich BP mit anderen Programmierparadigmen kombinieren.
+B-Threads teilen keinen gemeinsamen Zustand, sondern koordinieren sich ausschließlich indirekt über Ereignisse, was eine lose Kopplung impliziert\cite{Harel2012}.
