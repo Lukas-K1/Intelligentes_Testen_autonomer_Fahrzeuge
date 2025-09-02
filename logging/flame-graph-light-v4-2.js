@@ -503,7 +503,7 @@ renderAxis() {
     .attr('transform', `translate(0, ${this.dimensions.innerHeight})`)
     .call(
       d3.axisBottom(this.scales.x)
-        .tickFormat(d => `${((d / 1000) - 0.5).toFixed(1)}s`)
+        .tickFormat(d => `${((d / 1000)).toFixed(1)}s`)
         .ticks(Math.floor(this.dimensions.totalWidth / 100))
     );
 }
