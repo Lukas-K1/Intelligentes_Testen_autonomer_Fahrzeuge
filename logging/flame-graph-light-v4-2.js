@@ -196,7 +196,7 @@ class FlameGraphAnalyzer {
 
   initializeData() {
     // Enhanced sample data with more realistic scenarios
-    this.state.rawEvents = [
+    this.state.rawEventsOld = [
       //TODO: Data starts here
       // Car1 - Complex overtaking maneuver
       { timestamp: "0.0", event_id: "car1-overtake", display_name: "Car1 – Overtake Planning", category: "foo", actor: "Car1" },
@@ -243,6 +243,40 @@ class FlameGraphAnalyzer {
       { timestamp: "11.5", event_id: "car1-turn-left", display_name: "Car1 – Turn Complete", category: "maneuver", actor: "Car1" },
       { timestamp: "12.0", event_id: "car1-intersection", display_name: "Car1 – Exit Intersection", category: "navigation", actor: "Car1" },
       { timestamp: "12.5", event_id: "traffic-light-2", display_name: "Traffic Light – Yellow", category: "infrastructure", actor: "Traffic Light" }
+    ];
+
+    // New data including layer:
+    this.state.rawEvents = [
+      //TODO: New data starts here
+      // Car1 - Complex overtaking maneuver
+      { timestamp: "0.0", event_id: "car1-overtake", display_name: "Car1 – Overtake", category: "foo", actor: "Car1", layer: "scenario" },
+      { timestamp: "20.0", event_id: "car1-overtake", display_name: "Car1 – Overtake", category: "foo", actor: "Car1", layer: "scenario" },
+      { timestamp: "0.5", event_id: "car1-accelerate", display_name: "Car1 – Accelerate", category: "sensor", actor: "Car1", layer: "selection" },
+      { timestamp: "3.5", event_id: "car1-accelerate", display_name: "Car1 – Accelerate", category: "sensor", actor: "Car1", layer: "selection" },
+      { timestamp: "4.0", event_id: "car1-switch-lane-left", display_name: "Car1 – Switch Lane (left)", category: "sensor", actor: "Car1", layer: "selection" },
+      { timestamp: "6.0", event_id: "car1-switch-lane-left", display_name: "Car1 – Switch Lane (left)", category: "sensor", actor: "Car1", layer: "selection" },
+      { timestamp: "10.0", event_id: "car1-switch-lane-right", display_name: "Car1 – Switch Lane (right)", category: "sensor", actor: "Car1", layer: "selection" },
+      { timestamp: "13.0", event_id: "car1-switch-lane-right", display_name: "Car1 – Switch Lane (right)", category: "sensor", actor: "Car1", layer: "selection" },
+      { timestamp: "14.0", event_id: "car1-ride-into-sunset", display_name: "Car1 – Ride into sunset", category: "sensor", actor: "Car1", layer: "selection" },
+      { timestamp: "20.0", event_id: "car1-ride-into-sunset", display_name: "Car1 – Ride into sunset", category: "sensor", actor: "Car1", layer: "selection" },
+
+      { timestamp: "0.5", event_id: "car1-increase-speed", display_name: "Car1 – Increase Speed", category: "sensor", actor: "Car1", layer: "simulation" },
+      { timestamp: "2.5", event_id: "car1-increase-speed", display_name: "Car1 – Increase Speed", category: "sensor", actor: "Car1", layer: "simulation" },
+
+      // Car2 - Complex overtaking maneuver
+      { timestamp: "0.0", event_id: "car2-overtake", display_name: "Car2 – Overtake", category: "foo", actor: "Car2", layer: "scenario" },
+      { timestamp: "20.0", event_id: "car2-overtake", display_name: "Car2 – Overtake", category: "foo", actor: "Car2", layer: "scenario" },
+      { timestamp: "0.5", event_id: "car2-accelerate", display_name: "Car2 – Accelerate", category: "sensor", actor: "Car2", layer: "selection" },
+      { timestamp: "3.5", event_id: "car2-accelerate", display_name: "Car2 – Accelerate", category: "sensor", actor: "Car2", layer: "selection" },
+      { timestamp: "4.0", event_id: "car2-switch-lane-left", display_name: "Car2 – Switch Lane (left)", category: "sensor", actor: "Car2", layer: "selection" },
+      { timestamp: "6.0", event_id: "car2-switch-lane-left", display_name: "Car2 – Switch Lane (left)", category: "sensor", actor: "Car2", layer: "selection" },
+      { timestamp: "10.0", event_id: "car2-switch-lane-right", display_name: "Car2 – Switch Lane (right)", category: "sensor", actor: "Car2", layer: "selection" },
+      { timestamp: "13.0", event_id: "car2-switch-lane-right", display_name: "Car2 – Switch Lane (right)", category: "sensor", actor: "Car2", layer: "selection" },
+      { timestamp: "14.0", event_id: "car2-ride-into-sunset", display_name: "Car2 – Ride into sunset", category: "sensor", actor: "Car2", layer: "selection" },
+      { timestamp: "20.0", event_id: "car2-ride-into-sunset", display_name: "Car2 – Ride into sunset", category: "sensor", actor: "Car2", layer: "selection" },
+
+      { timestamp: "0.5", event_id: "car2-increase-speed", display_name: "Car2 – Increase Speed", category: "sensor", actor: "Car2", layer: "simulation" },
+      { timestamp: "2.5", event_id: "car2-increase-speed", display_name: "Car2 – Increase Speed", category: "sensor", actor: "Car2", layer: "simulation" },
     ];
 
     this.processEventData();
@@ -332,7 +366,8 @@ class FlameGraphAnalyzer {
           duration: timestamp - openEvent.start,
           display_name: openEvent.display_name,
           category: openEvent.category,
-          actor: event.actor
+          actor: event.actor,
+          layer: event.layer
         });
         openEvents.delete(eventId);
       }
@@ -467,23 +502,55 @@ class FlameGraphAnalyzer {
       .attr('y2', this.dimensions.innerHeight);
   }
 
-  renderBars() {
-    const bars = this.chartGroup.selectAll('.flame-bar')
-      .data(this.state.filteredSpans)
-      .join('rect')
-      .attr('class', d => `flame-bar ${this.state.selectedEvents.has(d.id) ? 'selected' : ''}`)
-      .attr('x', d => this.scales.x(d.start))
-      .attr('y', (d, i) => this.scales.y(i))
-      .attr('width', d => Math.max(2, this.scales.x(d.end) - this.scales.x(d.start)))
-      .attr('height', this.scales.y.bandwidth())
-      .attr('fill', d => this.scales.color(d.category))
-      .attr('opacity', 0.8);
+renderBars() {
+  const groups = this.groupSpansByActorAndLayer(this.state.filteredSpans);
+  console.log(groups);
+  let y = 0;
+  groups.forEach((group, groupIdx) => {
+    group.spans.forEach(span => {
+      this.chartGroup.append('rect')
+        .attr('class', 'flame-bar')
+        .attr('x', this.scales.x(span.start))
+        .attr('y', y)
+        .attr('width', Math.max(2, this.scales.x(span.end) - this.scales.x(span.start)))
+        .attr('height', this.config.barHeight * 0.8)
+        .attr('fill', this.scales.color(span.category))
+        .attr('opacity', 0.8)
+        .on('mouseover', (event) => this.showTooltip(event, span))
+        .on('mouseout', () => this.hideTooltip());
 
-    bars.on('mouseover', (event, d) => this.showTooltip(event, d))
-       .on('mousemove', (event) => this.updateTooltipPosition(event))
-       .on('mouseout', () => this.hideTooltip())
-       .on('click', (event, d) => this.selectEvent(d, event.shiftKey));
-  }
+      this.chartGroup.append('text')
+        .attr('x', this.scales.x(span.start) + 5)
+        .attr('y', y + (this.config.barHeight * 0.5))
+        .attr('dy', '.35em')
+        .attr('fill', '#fff')
+        .attr('font-size', '14px')
+        .attr('pointer-events', 'none')
+        .text(span.display_name);
+    });
+    y += this.config.barHeight;
+  });
+}
+
+  groupSpansByActorAndLayer(spans) {
+  const groups = {};
+  spans.forEach(span => {
+    const key = `${span.actor}::${span.layer}`;
+    if (!groups[key]) {
+      groups[key] = { actor: span.actor, layer: span.layer, spans: [] };
+    }
+    groups[key].spans.push(span);
+  });
+  console.log(groups);
+    return Object.values(groups).sort((a, b) => {
+    // TODO: Fix sorting to account for correct order of layers
+    if (a.actor < b.actor) return -1;
+    if (a.actor > b.actor) return 1;
+    if (a.layer < b.layer) return -1;
+    if (a.layer > b.layer) return 1;
+    return 0;
+  });
+}
 
 // Die Achse beginnt bei 0.5s und zählt ab dort
 renderAxis() {
@@ -508,35 +575,22 @@ renderAxis() {
     );
 }
 
-
-
-  renderLabels() {
-    const labelsContainer = this.elements.labelsContainer;
-
-    this.state.filteredSpans.forEach((span, index) => {
-      const labelDiv = document.createElement('div');
-      labelDiv.className = 'row-label';
-      labelDiv.style.height = `${this.config.barHeight}px`;
-      labelDiv.dataset.eventId = span.id;
-
-      labelDiv.innerHTML = `
-        <div class="row-label-content">
-          <span>${span.display_name}</span>
-          <span class="event-category category-${span.category}">${span.category}</span>
-        </div>
-        <span class="event-duration">${(span.duration / 1000).toFixed(2)}s</span>
-      `;
-
-      if (this.state.selectedEvents.has(span.id)) {
-        labelDiv.classList.add('highlighted');
-      }
-
-      labelDiv.addEventListener('click', (e) => this.selectEvent(span, e.shiftKey));
-      labelsContainer.appendChild(labelDiv);
-    });
-
-    labelsContainer.style.height = `${this.dimensions.totalHeight}px`;
-  }
+renderLabels() {
+  const groups = this.groupSpansByActorAndLayer(this.state.filteredSpans);
+  const labelsContainer = this.elements.labelsContainer;
+  labelsContainer.innerHTML = '';
+  groups.forEach(group => {
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'row-label';
+    labelDiv.innerHTML = `
+      <div class="row-label-content">
+        <span>${group.actor}</span>
+        <span style="color: #888;">${group.layer}</span>
+      </div>
+    `;
+    labelsContainer.appendChild(labelDiv);
+  });
+}
 
   showTooltip(event, data) {
     const tooltip = this.elements.tooltip;
@@ -1135,6 +1189,7 @@ renderAxis() {
         name: span.display_name,
         category: span.category,
         actor: span.actor,
+        layer: span.layer,
         start: span.start / 1000,
         end: span.end / 1000,
         duration: span.duration / 1000
