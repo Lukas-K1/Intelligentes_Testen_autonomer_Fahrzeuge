@@ -8,7 +8,10 @@ from stable_baselines3 import DQN
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import DummyVecEnv
 
+from envs.intersection_env import IntersectionScenarioEnv
+
 SEED = 42
+behavior_aggressive = "aggressive"
 
 np.random.seed(SEED)
 torch.manual_seed(SEED)
@@ -18,7 +21,8 @@ if torch.cuda.is_available():
 def make_env(rank: int):
     """Funktion zum Erstellen einer einzelnen Umgebung."""
     def _init():
-        env = IntersectionCutOffScenarioEnv(render_mode="human")
+        # env = IntersectionCutOffScenarioEnv(render_mode="human")
+        env = IntersectionScenarioEnv(render_mode="human", behavior=behavior_aggressive)
         obs, info = env.reset()
         return env
     return _init
@@ -49,7 +53,8 @@ if __name__ == "__main__":
     print(f"Training auf Gerät: {device}")
 
     # Umgebung einrichten
-    env = DummyVecEnv([lambda: IntersectionCutOffScenarioEnv(render_mode="human")])
+    # env = DummyVecEnv([lambda: IntersectionCutOffScenarioEnv(render_mode="human")])
+    env = DummyVecEnv([lambda: IntersectionScenarioEnv(render_mode="human", behavior=behavior_aggressive)])
 
     # Modell initialisieren
     model = DQN(

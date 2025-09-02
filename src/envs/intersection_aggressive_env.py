@@ -145,8 +145,13 @@ class IntersectionCutOffScenarioEnv(gym.Env):
             else:
                 reward -= 0.01  # kleine Schrittstrafe
 
+        # 5) Crash or timeout
         self._steps += 1
-        if self._steps >= self.base_env.config["duration"] * self.base_env.config["simulation_frequency"]:
+        if info.get("crashed", False):
+            reward -= 1.0
+            terminated = True
+        max_steps = self.base_env.config["duration"] * self.base_env.config["simulation_frequency"]
+        if self._steps >= max_steps:
             terminated = True
 
         return obs, reward, terminated, truncated, info

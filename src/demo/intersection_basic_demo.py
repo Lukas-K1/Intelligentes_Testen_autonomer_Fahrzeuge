@@ -1,11 +1,12 @@
 import time
 
+from envs.intersection_env import IntersectionScenarioEnv
 from src.envs.overtake_env import CutOffScenarioEnv
 from stable_baselines3 import DQN
 
 if __name__ == "__main__":
     # Umgebung vorbereiten
-    env = CutOffScenarioEnv(render_mode="rgb_array")
+    env = IntersectionScenarioEnv(render_mode="rgb_array")
     obs, _ = env.reset()
 
     # Modell laden

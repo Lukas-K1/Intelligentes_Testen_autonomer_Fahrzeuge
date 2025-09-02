@@ -14,10 +14,10 @@ class IntersectionScenarioEnv(gym.Env):
       2 = VUT überholt      (dist ≥ 20m und Spur ≠ Agent) → Erfolg
     Abbruch: VUT bleibt >5m hinter Agent in derselben Spur länger als 5s.
     """
-
+    behavior = "default"
     metadata = {"render_modes": ["human", "rgb_array"]}
 
-    def __init__(self, render_mode: Optional[str] = None):
+    def __init__(self, render_mode: Optional[str] = None, behavior: str = "default"):
         cfg = {
             "lanes_count": 2,
             "vehicles_count": 0,
@@ -30,7 +30,7 @@ class IntersectionScenarioEnv(gym.Env):
         # Use the intersection-v0 environment from highway-env
         self._core_env = gym.make("intersection-v0", render_mode=render_mode, config=cfg)
         self.base_env = self._core_env.unwrapped
-
+        self.behavior = behavior
         # Use highway-env’s own RNG for consistent randomizations
         self.np_random = self.base_env.road.np_random
 
@@ -128,35 +128,68 @@ class IntersectionScenarioEnv(gym.Env):
 
         agent_y = agent.position[1]
         vut_y = self.vut.position[1]
-
-        # Phase 0: Annäherung – beide fahren auf die Kreuzung zu
-        if self.phase == 0:
-            if abs(agent_x - vut_x) < 10 and abs(agent_y - vut_y) < 10:
-                # Beide nahe an Kreuzung → kritische Situation
-                reward -= 0.2
-            if agent_x > vut_x and agent_y > vut_y:
-                # Agent kommt "zuerst" an Kreuzung
-                reward += 0.2
-                self.phase = 1
-
-        # Phase 1: Kreuzungspassage
-        elif self.phase == 1:
-            if agent_x > vut_x + 5 and agent_y > vut_y + 5:
-                # Agent hat die Kreuzung klar passiert, ohne Kollision
+        # 4) Phase logic
+        if self.behavior == "default":
+            # Default behavior: just reward for passing the intersection safely
+            if agent_x > 100 and agent_y > 0:
                 reward += 1.0
-                self.phase = 2
                 terminated = True
             elif info.get("crashed", False):
-                # Kollision → starker Malus
                 reward -= 1.0
                 terminated = True
             else:
-                # kleine Schritt-Strafe, um zügiges Verhalten zu fördern
                 reward -= 0.01
+        elif self.behavior == "normal":
+            # Phase 0: Annäherung – beide fahren auf die Kreuzung zu
+            if self.phase == 0:
+                if abs(agent_x - vut_x) < 10 and abs(agent_y - vut_y) < 10:
+                    # Beide nahe an Kreuzung → kritische Situation
+                    reward -= 0.2
+                if agent_x > vut_x and agent_y > vut_y:
+                    # Agent kommt "zuerst" an Kreuzung
+                    reward += 0.2
+                    self.phase = 1
 
-        # Phase 2: fertig → Erfolg
-        elif self.phase == 2:
-            reward += 0.0  # nichts weiter
+            # Phase 1: Kreuzungspassage
+            elif self.phase == 1:
+                if agent_x > vut_x + 5 and agent_y > vut_y + 5:
+                    # Agent hat die Kreuzung klar passiert, ohne Kollision
+                    reward += 1.0
+                    self.phase = 2
+                    terminated = True
+                elif info.get("crashed", False):
+                    # Kollision → starker Malus
+                    reward -= 1.0
+                    terminated = True
+                else:
+                    # kleine Schritt-Strafe, um zügiges Verhalten zu fördern
+                    reward -= 0.01
+
+            # Phase 2: fertig → Erfolg
+            elif self.phase == 2:
+                reward += 0.0  # nichts weiter
+        elif self.behavior == "aggressive":
+            # === Kreuzungslogik ===
+            # Phase 0: beide nähern sich Kreuzung
+            if self.phase == 0:
+                if abs(agent_y) < 5 and abs(vut_x) < 5:
+                    # beide gleichzeitig in Kreuzung -> Risiko
+                    reward -= 0.3
+                elif agent_y > -5:
+                    # Agent fährt in Kreuzung hinein
+                    self.phase = 1
+
+            # Phase 1: Durchfahrt
+            if self.phase == 1:
+                if agent_y > 20:
+                    # Agent hat Kreuzung klar überquert
+                    reward += 1.0  # Erfolg: Vorfahrt genommen
+                    terminated = True
+                elif info.get("crashed", False):
+                    reward -= 1.0  # Unfall
+                    terminated = True
+                else:
+                    reward -= 0.01  # kleine Schrittstrafe
 
 
         # 5) Crash or timeout
@@ -165,6 +198,17 @@ class IntersectionScenarioEnv(gym.Env):
             reward -= 1.0
             terminated = True
         max_steps = self.base_env.config["duration"] * self.base_env.config["simulation_frequency"]
+        min_steps = self.base_env.config["simulation_frequency"] * 5  # mindestens 5 Sekunden
+        if self.phase == 0 and self._steps < min_steps:
+            # In Phase 0 darf nicht abgebrochen werden
+            pass
+        if self._steps >= min_steps and (self.phase == 0 or self.phase == 1):
+            # Abbruchbedingung nur in Phase 0 oder 1 nach mindestens 5s
+            if dist > 30 and current_lane == lane:
+                # VUT bleibt >10m hinter Agent in derselben Spur → Abbruch
+                reward -= 0.5
+                terminated = True
+            else: pass
         if self._steps >= max_steps:
             terminated = True
 

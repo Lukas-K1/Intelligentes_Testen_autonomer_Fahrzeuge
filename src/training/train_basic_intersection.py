@@ -18,7 +18,7 @@ if torch.cuda.is_available():
 def make_env(rank: int):
     """Funktion zum Erstellen einer einzelnen Umgebung."""
     def _init():
-        env = IntersectionScenarioEnv(render_mode="human")
+        env = IntersectionScenarioEnv(render_mode="human", behavior="normal")
         obs, info = env.reset()
         return env
     return _init
@@ -48,8 +48,10 @@ if __name__ == "__main__":
     device   = "cuda" if use_cuda else "cpu"
     print(f"Training auf Gerät: {device}")
 
+    behavior_normal = "normal"
+
     # Umgebung einrichten
-    env = DummyVecEnv([lambda: IntersectionScenarioEnv(render_mode="human")])
+    env = DummyVecEnv([lambda: IntersectionScenarioEnv(render_mode="human", behavior=behavior_normal)])
 
     # Modell initialisieren
     model = DQN(
