@@ -2,9 +2,11 @@ import warnings
 
 import gymnasium as gym
 from bppy import And, Bool, Implies, Int, Not, Or, false, is_true, true
-from bppy.gym import (BPActionSpace, BPEnv, BPObservationSpace,
+from bppy.gym import (BPEnv, BPObservationSpace,
                       SimpleBPObservationSpace)
 from bppy.utils.z3helper import *
+
+from src.sumo.bp_action_space import BPActionSpace
 
 
 class BPEnvSMT(BPEnv):
@@ -70,11 +72,17 @@ class BPEnvSMT(BPEnv):
         info : dict
             Additional information for debugging.
         """
+
+        print(f" selected action index is {action}")
+        print(f" action space is {self.action_space}")
+
         if self.bprogram is None:
             raise RuntimeError("You must call reset() before calling step()")
         if not self.action_space.contains(action):
             return self._state(), 0, True, None, {"message": "Last event is disabled"}
         additional_constraint = self.event_list[action]
+
+        print(f"additional_constraint is : {additional_constraint}")
         # print("action:", additional_constraint)
         model = self.bprogram.event_selection_strategy.select(
             self.bprogram.tickets + [{"request": additional_constraint}]

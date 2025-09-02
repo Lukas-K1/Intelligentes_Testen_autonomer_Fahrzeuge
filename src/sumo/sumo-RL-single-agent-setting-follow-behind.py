@@ -49,7 +49,7 @@ def wait_seconds(seconds):
     target_step_count = int(seconds / 0.05) + step_count
     while step_count < target_step_count:
         print(f"waited {(step_count - step_count_t0) * 0.05} seconds.")
-        yield sync(request=true)
+        yield sync(request=True)
 
 
 def seconds(steps):
@@ -70,7 +70,7 @@ def fall_behind(
     while not behind_vehicle.is_behind_by_x(in_front_vehicle, min_distance):
         # behind_vehicle must slow down, but only until it is 2.0 slower than in_front_vehicle
         if behind_vehicle.speed() + 2.0 > in_front_vehicle.speed():
-            yield sync(request=v1_action == SLOWER)
+            #yield sync(request= v1_action == SLOWER)
             yield sync(request=behind_vehicle.SLOWER())
         elif behind_vehicle.speed() - 2.0 < in_front_vehicle.speed():
             yield sync(request=behind_vehicle.FASTER())
@@ -166,12 +166,12 @@ def await_condition(
     step_count_t0 = step_count
     while seconds(step_count - step_count_t0) <= deadline_seconds:
         if condition_function():
-            return true
-        yield sync(waitFor=true, localReward=local_reward)
+            return BoolVal(True)
+        yield sync(waitFor=BoolVal(True), localReward=local_reward)
         print(
             f" +++  waited {seconds(step_count-step_count_t0)} seconds for condition."
         )
-    return false
+    return BoolVal(False)
 
 
 @thread
@@ -215,7 +215,7 @@ def sumo_env_bthread():
             traci.close()
             raise SystemExit()
 
-        e = yield sync(waitFor=true)
+        e = yield sync(waitFor=BoolVal(True))
 
         actions = []
         for vehicle in controllable_vehicles:
@@ -389,6 +389,8 @@ from itertools import product
 from z3 import And
 
 
+action_list = None
+
 def get_action_list():
     """
     Build the list of joint-action SMT conditions for all vehicles in `action_vars`.
@@ -399,6 +401,10 @@ def get_action_list():
           And(v1_action == LANE_LEFT, v2_action == IDLE),
           ... ]
     """
+    global action_list
+    if action_list != None:
+        return action_list
+
     num_vehicles = len(action_vars)
     if num_vehicles == 0:
         return []
@@ -417,6 +423,12 @@ def get_action_list():
         else:
             joint_actions.append(And(*combo))
 
+
+    print(f"joint_actions: {joint_actions}")
+    for a in joint_actions:
+        print(f"type of {a} is {type(a)}")
+
+    action_list = joint_actions
     return joint_actions
 
 
