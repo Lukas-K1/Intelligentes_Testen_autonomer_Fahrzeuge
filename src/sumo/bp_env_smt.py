@@ -2,8 +2,7 @@ import warnings
 
 import gymnasium as gym
 from bppy import And, Bool, Implies, Int, Not, Or, false, is_true, true
-from bppy.gym import (BPEnv, BPObservationSpace,
-                      SimpleBPObservationSpace)
+from bppy.gym import BPEnv, BPObservationSpace, SimpleBPObservationSpace
 from bppy.utils.z3helper import *
 
 from src.sumo.bp_action_space import BPActionSpace

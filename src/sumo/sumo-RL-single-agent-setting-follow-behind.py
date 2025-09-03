@@ -70,7 +70,7 @@ def fall_behind(
     while not behind_vehicle.is_behind_by_x(in_front_vehicle, min_distance):
         # behind_vehicle must slow down, but only until it is 2.0 slower than in_front_vehicle
         if behind_vehicle.speed() + 2.0 > in_front_vehicle.speed():
-            #yield sync(request= v1_action == SLOWER)
+            # yield sync(request= v1_action == SLOWER)
             yield sync(request=behind_vehicle.SLOWER())
         elif behind_vehicle.speed() - 2.0 < in_front_vehicle.speed():
             yield sync(request=behind_vehicle.FASTER())
@@ -388,8 +388,8 @@ from itertools import product
 
 from z3 import And
 
-
 action_list = None
+
 
 def get_action_list():
     """
@@ -422,7 +422,6 @@ def get_action_list():
             joint_actions.append(combo[0])
         else:
             joint_actions.append(And(*combo))
-
 
     print(f"joint_actions: {joint_actions}")
     for a in joint_actions:
