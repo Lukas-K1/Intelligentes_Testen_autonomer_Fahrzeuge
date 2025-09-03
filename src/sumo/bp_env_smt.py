@@ -16,7 +16,7 @@ class BPEnvSMT(BPEnv):
         observation_space=None,
         action_space=None,
         reward_function=None,
-        steps_per_episode=None
+        steps_per_episode=None,
     ):
         """
         Initializes the BPEnv environment.
@@ -37,7 +37,7 @@ class BPEnvSMT(BPEnv):
         self.metadata = {}
         self.bprogram = None
         self.bprogram_generator = bprogram_generator
-        #self.action_space = BPActionSpace(action_list)
+        # self.action_space = BPActionSpace(action_list)
         self.event_list = action_list
         self.reward_function = reward_function
         if self.reward_function is None:
@@ -77,9 +77,11 @@ class BPEnvSMT(BPEnv):
 
         print("")
         self.step_count += 1
-        print(f"### Called env.step() {self.step_count}, selected action (index) is {action}")
-        #print(f"### Called env.step() {self.count}, selected action (index) is {action}, type is {type(action)}")
-        #print(f" action space is {self.action_space}")
+        print(
+            f"### Called env.step() {self.step_count}, selected action (index) is {action}"
+        )
+        # print(f"### Called env.step() {self.count}, selected action (index) is {action}, type is {type(action)}")
+        # print(f" action space is {self.action_space}")
 
         if self.bprogram is None:
             raise RuntimeError("You must call reset() before calling step()")
@@ -87,8 +89,7 @@ class BPEnvSMT(BPEnv):
         #     return self._state(), 0, True, None, {"message": "Last event is disabled"}
         additional_constraint = self.event_list[action]
 
-        #print(f"additional_constraint is : {additional_constraint}")
-
+        # print(f"additional_constraint is : {additional_constraint}")
 
         # print("action:", additional_constraint)
         model = self.bprogram.event_selection_strategy.select(
@@ -96,8 +97,9 @@ class BPEnvSMT(BPEnv):
         )
 
         def is_done():
-            return (is_true(model.evaluate(self.done_flag))
-                    or (self.step_count > self.steps_per_episode))
+            return is_true(model.evaluate(self.done_flag)) or (
+                self.step_count > self.steps_per_episode
+            )
 
         done = is_done()
 
@@ -117,8 +119,6 @@ class BPEnvSMT(BPEnv):
             done = is_done()
 
         return self._state(), local_reward, done, done, {}
-
-
 
     def reset(self, seed=None, options=None):
         """
@@ -143,7 +143,7 @@ class BPEnvSMT(BPEnv):
         self.bprogram = self.bprogram_generator()
         # if isinstance(self.bprogram.event_selection_strategy, SolverBasedEventSelectionStrategy):
         #     raise NotImplementedError("SolverBasedEventSelectionStrategy is currently not supported")
-        #self.action_space.bprogram = self.bprogram
+        # self.action_space.bprogram = self.bprogram
         self.bprogram.setup()
         while not self._step_done():
             model = self.bprogram.event_selection_strategy.select(self.bprogram.tickets)

@@ -38,7 +38,9 @@ controllable_vehicles = [v1]
 vut: SumoVehicle = SumoVehicle("vut")
 
 config_path = "../../sumo-maps/autobahn/autobahn.sumocfg"
-driving_env = gym.make("SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1])
+driving_env = gym.make(
+    "SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1]
+)
 driving_env.reset()
 
 action_map = {LANE_LEFT: 0, IDLE: 1, LANE_RIGHT: 2, FASTER: 3, SLOWER: 4}
@@ -447,7 +449,7 @@ env = BPEnvSMT(
     action_list=get_action_list(),  # num_nonVUT_vehicles: number of agent-controlled vehicles, VUT is uncontrollable
     observation_space=SumoObservationSpace(dim=calc_dim()),
     reward_function=lambda rewards: sum(filter(None, rewards)),
-    steps_per_episode=500
+    steps_per_episode=500,
 )
 
 from gymnasium.spaces import Discrete
