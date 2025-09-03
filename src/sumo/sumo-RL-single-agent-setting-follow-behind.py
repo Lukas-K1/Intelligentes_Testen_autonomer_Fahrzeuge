@@ -38,8 +38,8 @@ controllable_vehicles = [v1]
 vut: SumoVehicle = SumoVehicle("vut")
 
 config_path = "../../sumo-maps/autobahn/autobahn.sumocfg"
-env = gym.make("SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1])
-env.reset()
+driving_env = gym.make("SumoEnv-v0", sumo_config_file=config_path, controllable_vehicles=[v1])
+driving_env.reset()
 
 action_map = {LANE_LEFT: 0, IDLE: 1, LANE_RIGHT: 2, FASTER: 3, SLOWER: 4}
 
@@ -227,7 +227,7 @@ def sumo_env_bthread():
         actions_tuple = tuple(actions)
 
         print(f"actions_tuple: {actions_tuple}")
-        obs, reward, truncated, terminated, _ = env.step(actions_tuple)
+        obs, reward, truncated, terminated, _ = driving_env.step(actions_tuple)
         print(f"OBSERVATION in step {step_count}: {obs}")
         step_count += 1
 
@@ -448,16 +448,12 @@ env = BPEnvSMT(
     action_list=get_action_list(),  # num_nonVUT_vehicles: number of agent-controlled vehicles, VUT is uncontrollable
     observation_space=SumoObservationSpace(dim=calc_dim()),
     reward_function=lambda rewards: sum(filter(None, rewards)),
+    steps_per_episode=500
 )
 
+from gymnasium.spaces import Discrete
 
-class ActionSpace(BPActionSpace):
-    def _possible_actions(self):
-        return get_action_list()
-
-
-env.action_space = ActionSpace(get_action_list())
-
+env.action_space = Discrete(len(env.event_list))
 
 import argparse
 import json

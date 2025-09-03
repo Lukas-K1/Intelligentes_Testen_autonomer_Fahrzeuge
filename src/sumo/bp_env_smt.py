@@ -17,6 +17,7 @@ class BPEnvSMT(BPEnv):
         observation_space=None,
         action_space=None,
         reward_function=None,
+        steps_per_episode=None
     ):
         """
         Initializes the BPEnv environment.
@@ -37,7 +38,7 @@ class BPEnvSMT(BPEnv):
         self.metadata = {}
         self.bprogram = None
         self.bprogram_generator = bprogram_generator
-        self.action_space = BPActionSpace(action_list)
+        #self.action_space = BPActionSpace(action_list)
         self.event_list = action_list
         self.reward_function = reward_function
         if self.reward_function is None:
@@ -49,6 +50,8 @@ class BPEnvSMT(BPEnv):
             )
         self.last_state = None
         self.done_flag = Bool("done")
+        self.step_count = 0
+        self.steps_per_episode = steps_per_episode
 
     def step(self, action):
         """
@@ -73,21 +76,32 @@ class BPEnvSMT(BPEnv):
             Additional information for debugging.
         """
 
-        print(f" selected action index is {action}")
-        print(f" action space is {self.action_space}")
+        print("")
+        self.step_count += 1
+        print(f"### Called env.step() {self.step_count}, selected action (index) is {action}")
+        #print(f"### Called env.step() {self.count}, selected action (index) is {action}, type is {type(action)}")
+        #print(f" action space is {self.action_space}")
 
         if self.bprogram is None:
             raise RuntimeError("You must call reset() before calling step()")
-        if not self.action_space.contains(action):
-            return self._state(), 0, True, None, {"message": "Last event is disabled"}
+        # if not self.action_space.contains(action):
+        #     return self._state(), 0, True, None, {"message": "Last event is disabled"}
         additional_constraint = self.event_list[action]
 
-        print(f"additional_constraint is : {additional_constraint}")
+        #print(f"additional_constraint is : {additional_constraint}")
+
+
         # print("action:", additional_constraint)
         model = self.bprogram.event_selection_strategy.select(
             self.bprogram.tickets + [{"request": additional_constraint}]
         )
-        done = is_true(model.evaluate(self.done_flag))
+
+        def is_done():
+            return (is_true(model.evaluate(self.done_flag))
+                    or (self.step_count > self.steps_per_episode))
+
+        done = is_done()
+
         self.bprogram.advance_bthreads(self.bprogram.tickets, model)
         local_reward = self._reward()
         # print("----------------------")
@@ -99,10 +113,13 @@ class BPEnvSMT(BPEnv):
             model = self.bprogram.event_selection_strategy.select(
                 self.bprogram.tickets + [{"block": additional_constraint}]
             )
-            done = is_true(model.evaluate(self.done_flag))
             self.bprogram.advance_bthreads(self.bprogram.tickets, model)
             # print(self._state().reshape((4, 4)))
+            done = is_done()
+
         return self._state(), local_reward, done, done, {}
+
+
 
     def reset(self, seed=None, options=None):
         """
@@ -122,11 +139,12 @@ class BPEnvSMT(BPEnv):
         info : dict
             Not used for this environment.
         """
+        print("### Called env.reset()")
         gym.Env.reset(self, seed=seed, options=options)
         self.bprogram = self.bprogram_generator()
         # if isinstance(self.bprogram.event_selection_strategy, SolverBasedEventSelectionStrategy):
         #     raise NotImplementedError("SolverBasedEventSelectionStrategy is currently not supported")
-        self.action_space.bprogram = self.bprogram
+        #self.action_space.bprogram = self.bprogram
         self.bprogram.setup()
         while not self._step_done():
             model = self.bprogram.event_selection_strategy.select(self.bprogram.tickets)
