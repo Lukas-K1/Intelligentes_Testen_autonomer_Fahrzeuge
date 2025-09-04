@@ -1,54 +1,90 @@
 \chapter{Umsetzung}
 
 \section{Gesamt-Architektur}
-\begin{itemize}
-    \item aktuelles Bild noch entsprechend aufbereiten
-    \item sprich BProgram zentral in der Mitte, daneben Simulation-Engines
-    \item Logging wird in konkreten Szeanrien genutzt - Visualisierung nutzt Daten aus dem Logger
-    \item RL nutzt auch BProgram? -> aktuell noch nicht, aber sollte es eigentlich
-\end{itemize}
+Die Architektur besteht aus drei Hauptkomponenten: den Simulations-Engines, der Logging- und Visualisierungskomponente sowie dem BProgram, in dem Szenarien modelliert und ausgeführt werden können. Das BProgram kann zur Ausführung unabhängig zwischen den beiden bereitgestellten Simulations-Engines wählen. Innerhalb des Projekts wurden zunächst konkrete Szenarios manuell implementiert. Im weiteren Verlauf wurde ein Ansatz entwickelt, um konkrete Szenarien automatisiert zu erlernen, sodass diese einem abstrakt definierten Szenario folgen. In den konkreten Szenarien kommt zudem ein Logger zum Einsatz, der Daten für die Visualisierung bereitstellt. Diese Gesamtarchitektur ist in Abbildung \ref{fig:architecture} dargestellt.
+
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.8\linewidth]{contents/figures/architecture.pdf}
-    \caption{Gesamtarchitekturp}
+    \includegraphics[width=0.95\linewidth]{contents/figures/fullArchitecture.pdf}
+    \caption{Gesamtarchitektur}
     \label{fig:architecture}
 \end{figure}
+
+Im Folgenden werden zunächst die beiden Simulations-Engines sowie die Hilfsklassen vorgestellt, die den Zugriff auf Fahrzeuginformationen ermöglichen. Anschließend wird die Modellierung in BPpy erläutert, die verschiedene B-Threads für die Ausführung der Simulation, abstrakten Szenarien und konkreten Szenarien nutzt. Darauf folgt eine Beschreibung der Logging- und Visualisierungskomponente. Abschließend wird der Ansatz zum automatisierten Erlernen konkreter Szenarien auf Basis eines abstrakten Szenarios vorgestellt.
+
 \section{Simulationsumgebungen}
+In diesem Abschnitt wird die Nutzung von HighwayEnv und SUMO sowie dessen Steuerungsschnittstelle TraCI beschrieben. Zunächst wird die Konfiguration von HighwayEnv beschrieben sowie zwei Ansätze zur Extraktion von Fahrzeuginformationen aus der Umgebung. Danach wird auf die Sumo-Verwendung innerhalb des Projektes eingegangen.
 \subsection{HighwayEnv}
 \subsubsection{Konfiguration von HighwayEnv}
-\begin{itemize}
-    \item z.B. Multi-Agent-setting
-    \item und andere Besonderheiten, die wir in Q1 erarbeitet haben
-\end{itemize}
-\subsubsection{Integration in das BProgram}
-\begin{itemize}
-    \item B-Thread für HighwayEnv, wie aufgebaut und warum?
-\end{itemize}
-\subsubsection{VUT-Ansätze}
-\begin{itemize}
-    \item Training eines VUT, um es als Testfahrzeug für unsere Testszenarien zu nutzen
-\end{itemize}
+In unserem Projekt kommt die von HighwayEnv bereitgestellte Umgebung \texttt{highway-v0} zum Einsatz. Diese simuliert eine mehrspurige Fahrbahn und kann konzeptionell als Autobahnumgebung verstanden werden. 
+
+Damit mehrere Fahrzeuge gleichzeitig steuerbar sind, muss die gewünschte Anzahl an kontrollierbaren Fahrzeugen über den Parameter \texttt{controlled\_vehicles} spezifiziert werden. Zusätzlich lassen sich weitere, nicht kontrollierte Fahrzeuge über den Parameter \texttt{vehicles\_count} in die Simulation integrieren. Ein spezielles VUT kann somit ebenfalls über diesen Mechanismus berücksichtigt werden.
+
+Da unser Projekt in einem Multi-Agent-Setting ausgeführt wird, ist eine entsprechende Konfiguration notwendig. Hierfür müssen sowohl der Action-Typ (\texttt{MultiAgentAction}) asl auch der Observation-Typ (MultiAgentObservation) gesetzt werden. Auf diese Weise wird sichergestellt, dass:
+\begin{enumerate}
+    \item mehrere Agenten gleichzeitig Aktionen ausführen können und
+    \item die Beobachtungsdaten (OBservation) auch für alle kontrollierten Fahrzeuge bereitgestellt werden.
+\end{enumerate}
+
 \subsubsection{Ansätze zum Zugriff auf Fahrzeuginformationen}
-\begin{itemize}
-    \item Observation-Wrapper-Ansatz
-    \item Vehicle-Based Ansatz
-    \item Vergleich der beiden Ansätze
-\end{itemize}
+\label{sec:get_vehicle_info}
+Um in HighwayEnv Entscheidungen zu treffen, etwa hinsichtlich Abständen zwischen Fahrzeugen, Spurwahl oder Spurwechseln, ist eine geeignete Repräsentation von Fahrzeuginformationen erforderlich. In diesem Kapitel werden zwei unterschiedliche Ansätze vorgestellt. Zunächst der \texttt{ObservationWrapper}, anschließend ein Vehicle-basiertes Modell. Abschließend erfolgt ein Vergleich der beiden Methoden.
+
+Der \texttt{ObservationWrapper} kapselt die von der Environment zurückgegebene Observation und interpretiert deren Werte fachlich. Zu Beginn einer Simulation wird dieser einmalig initialisiert und nach jedem Step mit den aktuellen Daten aktualisiert. Auf Basis dieser Struktur können Methoden, wie \texttt{is\_right\_lane\_} oder \texttt{get\_distance\_to\_leading\_vehicle} genutzt werden, um Abstände und Spurverfügbarkeit zu prüfen.
+
+Ein zentrales Kriterium für Korrektheit ist dabei die Reihenfolge der Features innerhalb der Observation. In der aktuellen Implementierung müssen die Werte [\"x\", \"y\", \"vx\", \"vy\"] genau in dieser Abfolge am Anfang des Arrays stehen. Nur dann können Distanz- und Geschwindigkeitsberechnungen valide durchgeführt werden. Darüber hinaus ist der Zugriff auf das Environment selbst notwendig, da bestimmte Informationen, etwa die Struktur des Straßennetzes, nicht allein aus der Observation extrahiert werden können. So lassen sich etwa Lanes über die Road-Network-Struktur bestimmen, was zusätzliche Abfragen an die Environment erfordert. 
+
+Damit wird eine relativ direkte Möglichkeit geboten mit den von HighwayEnv bereitgestellten Daten zu arbeiten. Gleichzeitig macht ihn die starke Abhängigkeit von der Feature-Reihenfolge und der Environment-Konfiguration anfälliger für Fehler.
+
+Der zweite Ansatz modelliert Fahrzeuge explizit als Objekte. Dazu stehen die Klassen \texttt{Vehicle} und \texttt{ControllableVehicle} zur Verfügung.
+\begin{enumerate}
+    \item \texttt{Vehicle} repräsentiert ein nicht kontrolliertes Fahrzeug und kapselt Methoden, die Informationen direkt aus der Simulation extrahieren. Dazu gehören unter anderem \texttt{speed()}, \texttt{lane\_index()} sowie Distanzwerte wie \texttt{delta\_pos} oder \texttt{delta\_x\_pos()}. Zusätzlich lassen sich Relationen wie \texttt{is\_ahead\_of()} oder \texttt{is\_behind} zwischen zwei Fahrzeugen prüfen.
+    \item \texttt{ControllableVehicle} erweitert die Funktionalität um konkrete Aktionsmöglichkeiten. Ein solches Fahrzeug kann über Methoden wie LANE\_LEFT, LANE\_RIGHT, FASTER, SLOWER oder IDLE direkt gesteuert werden. Damit bildet es die Schnittstelle zwischen Entscheidungslogik und HighwayEnv.
+\end{enumerate}
+
+Die Objekte werden beim Start der Simulation einmalig erzeugt und behalten anschließend den Zugriff auf die von ihnen zugeordneten Fahrzeuge. Eine explizite Aktualisierung interner Variablen ist nicht erforderlich, da die Methoden unmittelbar auf die jeweils aktuellen Daten der Environment zugreifen.
+
+Im direkten Vergleich erweist sich der Vehicle-basierte Ansatz als robuster und flexibler, da die Objekte nur einmalig instanziiert werden und ihre Methoden jederzeit aktuelle Daten liefern, entfällt die Gefahr inkonsistenter Zustände. Der \texttt{ObservationWrapper} hingegen ist stärker fehleranfälligm denn er ist auf die exakte Reihenfolge der Features in der Observation angewiesen und bei Änderungen der Konfiguration können ungültige Ergebnisse geliefert werden.
 \subsection{Sumo}
+Im Verlauf des Projektes stellte sich heraus, dass die Definition eines eigenen Straßennetzes in HighwayEnv immer selbst programmiert werden muss und immer eine eigene Environment benötigt. Daher wurde sich nach Alternativen umgeschaut, welche uns auf die Verkehrssimulation SUMO brachte. Hierbei können individuelle Karten in SUMO-netedit leicht erstellt werden. Zudem bietet dieses Programm eine Möglichkeit der Erzeugung von Straßennetzen auf der Basis von echten Straßen.
+\subsubsection{SumoEnv}
+Im Gegensatz zu HigwhayEnv bietet SUMO keine direkte Implementierung einer \texttt{gym.Env}-Umgebung. Um dennoch Reinfocement-Learning-Experimente in SUMO durchführen zu können wurde eine eigene Umgebung in der Klasse \texttt{SumoEnv} entwickelt. Diese basiert auf dem Gymnasium-Framework und bildet die standardisierten Methoden \texttt{reset}, \texttt{step}, \texttt{close} sowie die Definition von Beobachtungs und Aktionsräumen ab. Voraussetzung für die Nutzung ist die Installation von SUMO sowie das Python-Package TraCI, das eine bidirektionale Steuerung der SUMO-Simulation erlaubt.
+
+Der Konstruktor übernimmt die Initialisierung der Umgebung. Neben der Referenz auf die SUMO-Konfigurationsdatei werden steuerbare Fahrzeuge als Parameter übergeben. Zudem werden die für das Reinforcement Learning relevanten Schnittstellen definiert:
 \begin{itemize}
-    \item Warum SUMO anstelle von HighwayEnv?
+    \item \textbf{Beobachtungsraum}: Als \texttt{spaces.Box} modelliert, repräsentiert er kontinuierliche Werte und ist in der aktuellen Version als Matrix der Dimension (20, 5) umgesetzt.
+    \item \textbf{Aktionsraum}: Über \texttt{spaces.MultiDiscrete} werden diskrete Handlungsoptionen für jedes steuerbare Fahrzeug definiert. Dies ermöglicht eine flexible Steuerung mehrerer Agenten gleichzeitig.
 \end{itemize}
-\subsubsection{SumoEnv zur Einbindung in das BProgram}
-\begin{itemize}
-    \item Klasse SumoEnv erklären
-    \item implementiert Gym Env-Interface, wie auch HighwayEnv
-    \item zur einfacheren Einbindung in unsere bestehende Arbeit
-\end{itemize}
+Zur Verwaltung des Simulationsverlaufs werden Episoden- und Schrittzähler geführt (\texttt{episode}, \texttt{step\_count}, \texttt{max\_steps}).
+
+Zum Starten der Simulation wird in \texttt{start\_simulation} zunächst geprüft, ob die Umgenungsvariable \texttt{SUMO\_HOME} gesetzt ist, um die ausführbare SUMO-Datei korrekt zu lokalisieren. Die Verbindung zu SUMO wird anschließend über TraCI hergestellt. Danach werden Parameter zur Zeitschrittlänge, Kollisionsbehandlung und Startoptionen gesetzt. In der GUI werden zudem Kameraeinstellungen angepasst, um die Simulation bestmöglich visuell nachvollziehen zu können.
+
+Das Hinzufügen von Fahrzeugen übernimmt \texttt{build\_vehicle}. Neben einem vordefinierten Vehicle under Test (vut) werden alle übergebenen steuerbaren Fahrzeuge erzeugt und mit individuellen Eigenschaften wie Startzeit, Fahrspur, Geschwindigkeit, Route oder Fahrverhalten können dabei individuell bestimmt werden. Besonders hervorzuheben ist, dass der Spurwechsel- und Geschwindigkeitsmodus der kontrollierbaren Fahrzeuge so gesetzt wurde, dass möglichst wenige Sicherheitsfeartures von SUMO aktiv sind. Auf diese Weise greifen SUMO-interne Automatikmechanismen, die Fahrmanöver einschränken oder korrigieren, nur minimal ein. 
+
+Ein Neustart der Umgebung erfolgt über \texttt{reset}. Falls bereits eine Simulation aktiv ist, wird diese zunächst beendet (\texttt{close}). Danach erfolgt ein Neustart der SUMO-Instanz sowie die Einbindung der Fahrzeuge. Eine kurze Verzögerung sorgt dafür, dass die Setup-Phase abgeschlossen ist, bevor auf die Fahrzeuge zugegriffen wird, um Fehler bei der Ausführung zu vermeiden.
+
+Innerhalb der \texttt{step}-Methode wird der eigentliche Iterationszyklus einer Episode ausgeführt. Dieser besteht aus:
+\begin{enumerate}
+    \item Anwendung der Agentenaktionen
+    \item Fortsetzung der Simulation um einen Zeitschritt
+    \item Erhebung der Beobachtung
+    \item Berechnung der Belohnung
+    \item Prüfung des Episodenendes
+\end{enumerate}
+Das Rückgabeformat entspricht dem Gymnasium-Standard: (obs, reward, terminated, truncated, info).
+
+Die Aktionslogik (\texttt{\_apply\_action}) implementiert die fünf aus HighwayEnv bekannten diskreten Handlungsoptionen: LANE\_RIGHT, IDLE, LANE\_LEFT, FASTER und SLOWER. Die Beobachtungslogik sammelt hierbei für jedes Fahrzeug relevante Zustandsgrößen wie Geschwindigkeit und Position. Fehlerfälle (etwa aus der Simulation entfernte Fahrzeuge) werden abgefangen, indem Default-Werte zurückgegeben werden.
+
+Die Belohnungsfunktion ist aktuell als Platzhalter implementiert und gibt einen konstanten Wert zurück. Damit ist die Umgebung lauffähig, ohne dass bereits eine spezifische Optimierungslogik definiert werden muss. In unserem Anwendungsfall liegt der Fokus ohne hin nicht auf der Optimierung der Simulation, sondern auf der Steuerung der Fahrzeug, die später einem abstrakten Szenario folgen sollen. Weitere Platzhalter-Methoden wie \texttt{\_get\_info}, \texttt{render} oder \texttt{\_render\_frame} sind vorgesehen, um die Funktionalität um detaillierte Diagnoseinformationen oder zusätzliche Visualisierungen zu erweitern. Innerhalb unserer Experimente war dies bisher nicht notwendig.
+
+Die Methode \texttt(close) beendet die TraCI-Verbindung und sorgt für einen sauberen Abschluss der Simulation. Dies ist insbesondere für die korrekte Durchführung mehrerer Episoden im Training notwendig.
 \subsubsection{Abbildung der Fahrzeugeigenschaften}
-\begin{itemize}
-    \item da sich das Vehicle-Konstrukt als praktikabler herausgestellt hat wurde es analog auf Sumo übertragen
-    \item somit muss in die bestehenden Szenarien nur die Fahrzeug-Klassen anders instanziiert werden, der Rest bleibt gleich
-\end{itemize}
+Wie bereits in Abschnitt \ref{sec:get_vehicle_info} gezeigt, hat sich der Vehicle-basierte Ansatz als robust und flexibel herausgestellt. Daher wurde er auch im Kontext von SUMO übernommen.
+
+Zu diesem Zweck wurden die Klassen \texttt{SumoVehicle} und \texttt{SumoControllableVehicle} implementiert. \texttt{SumoVehicle} repräsentiert dabei nicht kontrollierte Fahrzeuge und stellt Methoden zur Verfügung, um relevante Fahrzeuginformationen direkt aus der SUMO-Simulation zu extrahiehren. \texttt{SumoControllableVehicle} erweitert diese Funktionalität um konkrete Aktionsmöglichkeiten, die analog zur \texttt{ControllableVehicle}-Klasse im Kontext von HighwayEnv implementiert sind.
+
+Durch diese Struktur müssen bestehende Szenario-Implementierungen lediglich einmalig auf die neue Simulations-Engine und die entsprechenden Fahrzeugobjekte angepasst werden. Die eigentliche Steuerungslogik kann unverändert übernommen werden. Gleichzeitig ermöglicht dieser Ansatz einen schnellen Wechsel der Simulations-Engine, sodass das Experiment-Setup nicht an eine spezifische Plattform gebunden ist udn flexibel zwischen HighwayEnv und SUMO oder anderen kompatiblen Umgebungen adaptiert werden kann.
+
 \section{Modellierung von Szenarien mit BPpy}
 Für die Modellierung von Szenarien wurde BPpy genutzt. Hierbei wurden verschiedene BThreads erstellt, die unterschiedliche Aspekte der Szenarien abbilden.
 Einzelne BThreads bilden bestimmte Funktionalitäten und Teilszenarien ab, die dann in Kombination ein vollständiges, konkretes Szenario ergeben. So können die Funktionalitäten insgesamt besser strukturiert und wiederverwendet werden.
@@ -64,7 +100,7 @@ In diesem Thread wird auch auf Kollisionen und andere terminierende Ereignisse g
 
 Das konkrete Szenario wird durch die Kobination von verschiedenen BThreads modelliert, die zusammen die vollständige Logik und Anforderungen des Szenarios abbilden. Dabei wird spezifische Logik implementiert, die nur für dieses Szenario relevant ist und meist in weitere Methoden ausgelagert.
 Die entsprechende Logik wird dann im relevanten BThread aufgerufen, um den Teil des Szenarios zu steuern. Dabei können mehrere BThreads auch zu einem konkreten Szenario gehören, um verschiedene Aspekte abzudecken.
-Diese Threads können über ein Paralleitätskonstrukt parallel ausgeführt werden, um die gleichzeitige Ausführung verschiedener Aspekte des Szenarios zu ermöglichen. Spezifische Logik wird in den einzelnen BThreads per \teexttt{yield from} aufgerufen, um diese anzuwenden.
+Diese Threads können über ein Paralleitätskonstrukt parallel ausgeführt werden, um die gleichzeitige Ausführung verschiedener Aspekte des Szenarios zu ermöglichen. Spezifische Logik wird in den einzelnen BThreads per \texttt{yield from} aufgerufen, um diese anzuwenden.
 \begin{itemize}
     \item Erklärung der einzelnen BThreads -> Simulation, abstraktes Szenario, konkretes Szenario
     \item am Beispiel von follow-behind-Szenario
