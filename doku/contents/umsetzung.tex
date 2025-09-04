@@ -109,6 +109,23 @@ Diese Threads können über ein Paralleitätskonstrukt parallel ausgeführt werd
 \end{itemize}
 
 Die Aufteilung und Aufgaben der einzelnen BThreads wird jetzt noch einmal an einem konkreten Beispiel, dem Follow-Behind-Szenario, erläutert.
+\subsection{Follow-Behind-Szenario}
+Das Follow-Behind-Szenario modelliert eine Situation, in der ein oder mehrere Fahrzeuge einem anderen Fahrzeug (VUT) folgt. Dabei wird überprüft, ob das folgende Fahrzeug einen sicheren Abstand zum vorausfahrenden Fahrzeug einhält.
+Dabei wird auch geprüft, ob dieses Szenario in einer bestimmten Zeit abgeschlossen wird, sodass alle Nicht-VUT-Fahrzeuge sich hinter dem VUT und in derselben Fahrbahn befinden.
+Diese Anforderungen stellen die grundlegenden Anforderungen an das Szenario dar, die in einem abstrakten BThread modelliert werden. Das enstsprechende abstrakte Szenario wird mit geringen Anforderungen (nur die Positionierung in einer vorgegebenen Zeit) in der Methode \texttt{abstract_scenario_two_vehicles_follow_vut} modelliert.
+Das abstrakte Szenario mit den zusätzlichen Anforderungen an die Fahrbahnpositionierung wird in der Methode \texttt{abstract_scenario_2} modelliert.
+
+Der Simulations-Thread sorgt dafür, dass die Fahrzeuge entsprechend den definierten Szenarien agieren und interagieren. Dabei erhält der Simulations-Thread Informationen von den anderen BThreads, um die Simulation entsprechend anzupassen und zu steuern.
+In diesem Beispiel interagiert der Simulations-Thread mit Sumo um die Aktionen korrekt für die Umgebung zu übersetzen und auszuführen. In früheren Beispielen wurde dies auch für HighwayEnv umgesetzt.
+Der Simulations-Thread prüft auch auf Kollisionen und andere terminierende Ereignisse, um die Simulation entsprechend zu beenden oder anzupassen. Zudem wird für alle Fahrzeuge der Simulation geprüft, ob gültige Aktionen vorliegen, die dann las Tupel an \texttt{step}-Methode übergeben werden.
+Die Simulation wird über die step-Methode der Umgebung ausgeführt, die die Aktionen der Fahrzeuge verarbeitet und den Zustand der Simulation aktualisiert. Zuletzt wird die Anzahl an Schritten der Simulation erhöht.
+
+Das konkrete Szenario ist in zwei BThreads gekapselt, die zusammen die vollständigen Anforderungen des Szenarios abbilden. Der erste Teil der Szenario-Logik in dient dazu, dass ein spezifisches Fahrzeug einem anderen Fahrzeug folgt. Die methode nimmt auch eine optionale Verzögerung in Sekunden an.
+Die konkrete Logik, die für diesen Teil des Szenarios benötigt wird, wird über \texttt{yield from} aufgerufen, um die Logik für \texttt{follow\_behind} anzuwenden. In der Methode follow_behind wird zuerst die Methode \texttt{get\_behind} aufgerufen, die eine Wrapper-Methode für einzelne Logik-bausteine darstellt.
+Daraus wird Logik aufgerufen, die dafür sorgt dass das Fahrzeug hinter ein amderes Fahrzeug zurückfällt und in die gleiche Fahrbahn wechselt. Dann wird die dadurch entstehende Distanz zwischen den Fahrzeugen minimiert, indem die Geschwindigkeit des folgenden Fahrzeugs distanzabhängig angepasst wird.
+Zuletzt um das Szenario mit zwei folgenden Fahrzeugen hinter einem VUT abzuschließen, werden in der Methode \texttt{concrete\_scenario\_two\_vehicles\_follow\_vut} zwei BThreads parallel ausgeführt, die jeweils ein Fahrzeug hinter dem VUT folgen lassen.
+Das Ergebnis ist dass sich zunächst ein Fahrzeug hinter dem VUT positioniert, und sobald dies erreicht ist, das zweite Fahrzeug sich hinter dem ersten Fahrzeug positioniert. Danach wird für die Fahrzeuge auch der Abstand und die angepasste Geschwindigkeit gehalten.
+# TODO Codebeispiele
 
 \section{Visualisierung von ausgeführten konkreten Szeanrien}
 \section{Reinforcement Learning}
