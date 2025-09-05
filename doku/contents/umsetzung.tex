@@ -100,32 +100,112 @@ Dabei erhält der Simulations-Thread Informationen von den anderen BThreads, um 
 Dieser Thread dient insbesondere der korrekten Übersetzung der Aktionen für die jeweilige Simulationsumgebung, die in diesem Integrationsprojekt entweder HighwayEnv oder Sumo sein kann.
 In diesem Thread wird auch auf Kollisionen und andere terminierende Ereignisse geprüft, um die Simulation entsprechend zu beenden oder anzupassen.
 
-Das konkrete Szenario wird durch die Kobination von verschiedenen BThreads modelliert, die zusammen die vollständige Logik und Anforderungen des Szenarios abbilden. Dabei wird spezifische Logik implementiert, die nur für dieses Szenario relevant ist und meist in weitere Methoden ausgelagert.
-Die entsprechende Logik wird dann im relevanten BThread aufgerufen, um den Teil des Szenarios zu steuern. Dabei können mehrere BThreads auch zu einem konkreten Szenario gehören, um verschiedene Aspekte abzudecken.
+Das konkrete Szenario wird durch die Kobination von verschiedenen BThreads modelliert, die zusammen die vollständige Logik und Anforderungen des Szenarios abbilden. Dabei wird spezifische Logik implementiert, die nur für dieses Szenario relevant ist und meist in weitere Methoden ausgelagert wird.
+Die entsprechende Logik wird dann im relevanten BThread aufgerufen, um einen Teil des Szenarios zu steuern. Dabei können mehrere BThreads auch zu einem konkreten Szenario gehören, um verschiedene Aspekte abzudecken.
 Diese Threads können über ein Paralleitätskonstrukt parallel ausgeführt werden, um die gleichzeitige Ausführung verschiedener Aspekte des Szenarios zu ermöglichen. Spezifische Logik wird in den einzelnen BThreads per \texttt{yield from} aufgerufen, um diese anzuwenden.
-\begin{itemize}
-    \item Erklärung der einzelnen BThreads -> Simulation, abstraktes Szenario, konkretes Szenario
-    \item am Beispiel von follow-behind-Szenario
-\end{itemize}
 
 Die Aufteilung und Aufgaben der einzelnen BThreads wird jetzt noch einmal an einem konkreten Beispiel, dem Follow-Behind-Szenario, erläutert.
 \subsection{Follow-Behind-Szenario}
 Das Follow-Behind-Szenario modelliert eine Situation, in der ein oder mehrere Fahrzeuge einem anderen Fahrzeug (VUT) folgt. Dabei wird überprüft, ob das folgende Fahrzeug einen sicheren Abstand zum vorausfahrenden Fahrzeug einhält.
 Dabei wird auch geprüft, ob dieses Szenario in einer bestimmten Zeit abgeschlossen wird, sodass alle Nicht-VUT-Fahrzeuge sich hinter dem VUT und in derselben Fahrbahn befinden.
-Diese Anforderungen stellen die grundlegenden Anforderungen an das Szenario dar, die in einem abstrakten BThread modelliert werden. Das enstsprechende abstrakte Szenario wird mit geringen Anforderungen (nur die Positionierung in einer vorgegebenen Zeit) in der Methode \texttt{abstract_scenario_two_vehicles_follow_vut} modelliert.
-Das abstrakte Szenario mit den zusätzlichen Anforderungen an die Fahrbahnpositionierung wird in der Methode \texttt{abstract_scenario_2} modelliert.
+Diese Anforderungen stellen die grundlegenden Anforderungen an das Szenario dar, die in einem abstrakten BThread modelliert werden. Das enstsprechende abstrakte Szenario wird mit geringen Anforderungen (nur die Positionierung in einer vorgegebenen Zeit) in der Methode \texttt{abstract\_scenario\_two\_vehicles\_follow\_vut} modelliert.
+Das abstrakte Szenario mit den zusätzlichen Anforderungen an die Fahrbahnpositionierung wird in der Methode \texttt{abstract\_scenario\_2} modelliert.
+\begin{lstlisting}[language=Python, caption=bstraktes Szenario: Zwei Fahrzeuge folgen dem VUT]
+@thread
+def abstract_scenario_two_vehicles_follow_vut():
+    def condition():
+        return v1.is_behind_by_x(vut) and v2.is_behind_by_x(v1)  # TODO: Same lane?
+
+    satisfied = yield from await_condition(condition, 10)
+    if satisfied:
+        print("################ SAT")
+    else:
+        print("################ UNSAT")
+\end{lstlisting}
 
 Der Simulations-Thread sorgt dafür, dass die Fahrzeuge entsprechend den definierten Szenarien agieren und interagieren. Dabei erhält der Simulations-Thread Informationen von den anderen BThreads, um die Simulation entsprechend anzupassen und zu steuern.
 In diesem Beispiel interagiert der Simulations-Thread mit Sumo um die Aktionen korrekt für die Umgebung zu übersetzen und auszuführen. In früheren Beispielen wurde dies auch für HighwayEnv umgesetzt.
 Der Simulations-Thread prüft auch auf Kollisionen und andere terminierende Ereignisse, um die Simulation entsprechend zu beenden oder anzupassen. Zudem wird für alle Fahrzeuge der Simulation geprüft, ob gültige Aktionen vorliegen, die dann las Tupel an \texttt{step}-Methode übergeben werden.
 Die Simulation wird über die step-Methode der Umgebung ausgeführt, die die Aktionen der Fahrzeuge verarbeitet und den Zustand der Simulation aktualisiert. Zuletzt wird die Anzahl an Schritten der Simulation erhöht.
+\begin{lstlisting}[language=Python, caption=Simulations-Thread Beispiel SumoEnv]
+@thread
+def sumo_env_bthread():
+    global step_count
+    while True:
+        # set vehicle_id to one of in this scenario to let it the gui follow that vehicle
+        # vut, veh_manual_1, veh_manual_2
+        traci.gui.trackVehicle("View #0", "veh_manual_1")
+        collisions = traci.simulation.getCollisions()
+        if collisions:
+            print("Collision detected! Exiting simulation...")
+            traci.close()
+            raise SystemExit()
+
+        e = yield sync(waitFor=true)
+
+        actions = []
+        for vehicle in controllable_vehicles:
+            action_vehicle = e.eval(vehicle.vehicle_smt_var)
+            if action_vehicle in action_map:
+                actions.append(action_map[action_vehicle])
+            else:
+                actions.append(4)  # default is IDLE
+        actions_tuple = tuple(actions)
+
+        obs, reward, truncated, terminated, _ = env.step(actions_tuple)
+        print(f"OBSERVATION in step {step_count}: {obs}")
+        step_count += 1
+\end{lstlisting}
+
+
+\begin{lstlisting}[language=Python, caption=Simulations-Thread Beispiel HighwayEnv]
+@thread
+def highway_env_bthread():
+    global step_count
+    while True:
+        evt = yield sync(waitFor=true)
+        logger.debug(
+            f"highway_env_bthread: step_count: {step_count}, action: {evt.eval(v1.vehicle_smt_var)}"
+        )
+        action_val = evt.eval(v1.vehicle_smt_var)
+        if action_val == LANE_LEFT:
+            action_index = 0
+        elif action_val == LANE_RIGHT:
+            action_index = 2
+        elif action_val == FASTER:
+            action_index = 3
+        elif action_val == SLOWER:
+            action_index = 4
+        else:
+            action_index = 1  # IDLE
+        env.step(action_index)
+        step_count += 1
+        env.render()
+\end{lstlisting}
+
 
 Das konkrete Szenario ist in zwei BThreads gekapselt, die zusammen die vollständigen Anforderungen des Szenarios abbilden. Der erste Teil der Szenario-Logik in dient dazu, dass ein spezifisches Fahrzeug einem anderen Fahrzeug folgt. Die methode nimmt auch eine optionale Verzögerung in Sekunden an.
 Die konkrete Logik, die für diesen Teil des Szenarios benötigt wird, wird über \texttt{yield from} aufgerufen, um die Logik für \texttt{follow\_behind} anzuwenden. In der Methode follow_behind wird zuerst die Methode \texttt{get\_behind} aufgerufen, die eine Wrapper-Methode für einzelne Logik-bausteine darstellt.
 Daraus wird Logik aufgerufen, die dafür sorgt dass das Fahrzeug hinter ein amderes Fahrzeug zurückfällt und in die gleiche Fahrbahn wechselt. Dann wird die dadurch entstehende Distanz zwischen den Fahrzeugen minimiert, indem die Geschwindigkeit des folgenden Fahrzeugs distanzabhängig angepasst wird.
 Zuletzt um das Szenario mit zwei folgenden Fahrzeugen hinter einem VUT abzuschließen, werden in der Methode \texttt{concrete\_scenario\_two\_vehicles\_follow\_vut} zwei BThreads parallel ausgeführt, die jeweils ein Fahrzeug hinter dem VUT folgen lassen.
 Das Ergebnis ist dass sich zunächst ein Fahrzeug hinter dem VUT positioniert, und sobald dies erreicht ist, das zweite Fahrzeug sich hinter dem ersten Fahrzeug positioniert. Danach wird für die Fahrzeuge auch der Abstand und die angepasste Geschwindigkeit gehalten.
-# TODO Codebeispiele
+\begin{lstlisting}[language=Python, caption=Konkretes Szenario: Zwei Fahrzeuge folgen dem VUT - Relevante BThreads]
+@thread
+def follow_behind(
+    behind_vehicle: SumoControllableVehicle,
+    in_front_vehicle: SumoVehicle,
+    delay_seconds: float = 0.0,
+):
+    # " serial: "
+    # yield from wait_seconds(delay_seconds)
+    yield from get_behind(behind_vehicle, in_front_vehicle)
+    yield from stay_behind(behind_vehicle, in_front_vehicle)
+
+
+@thread
+def two_vehicles_follow_vut():
+    yield from parallel(follow_behind(v1, vut), follow_behind(v2, v1))
+\end{lstlisting}
 
 \section{Visualisierung von ausgeführten konkreten Szeanrien}
 \section{Reinforcement Learning}
