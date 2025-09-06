@@ -1,6 +1,6 @@
 import json
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
 
 
 class EventLogger:
@@ -52,11 +52,11 @@ class EventLogger:
         """
         if not self.events:
             return 0
-        events_sorted = sorted(self.events, key=lambda e: e['start'])
+        events_sorted = sorted(self.events, key=lambda e: e["start"])
         count = 0
         for i in range(len(events_sorted)):
             for j in range(i + 1, len(events_sorted)):
-                if events_sorted[i]['end'] > events_sorted[j]['start']:
+                if events_sorted[i]["end"] > events_sorted[j]["start"]:
                     count += 1
         return count
 
@@ -70,21 +70,20 @@ class EventLogger:
             print("No events to export.")
             return
 
-        min_start = min(e['start'] for e in self.events)
-        max_end = max(e['end'] for e in self.events)
-        time_range = {
-            "start": min_start - 1000,
-            "end": max_end + 1000
-        }
+        min_start = min(e["start"] for e in self.events)
+        max_end = max(e["end"] for e in self.events)
+        time_range = {"start": min_start - 1000, "end": max_end + 1000}
         total_events = len(self.events)
-        export_time = datetime.utcnow().isoformat() + 'Z'
+        export_time = datetime.utcnow().isoformat() + "Z"
 
         # Compute category breakdown
-        category_breakdown = defaultdict(lambda: {"count": 0, "totalDuration": 0, "events": []})
+        category_breakdown = defaultdict(
+            lambda: {"count": 0, "totalDuration": 0, "events": []}
+        )
         total_sum_duration = 0
         for e in self.events:
-            cat = e['category']
-            duration = e['duration']
+            cat = e["category"]
+            duration = e["duration"]
             category_breakdown[cat]["count"] += 1
             category_breakdown[cat]["totalDuration"] += duration
             category_breakdown[cat]["events"].append(e.copy())
@@ -101,28 +100,26 @@ class EventLogger:
                 "totalDuration": time_range["end"] - time_range["start"],
                 "categoryBreakdown": dict(category_breakdown),
                 "averageDuration": average_duration,
-                "overlappingEvents": overlapping_events
-            }
+                "overlappingEvents": overlapping_events,
+            },
         }
 
         # Scaled events for the main "events" list (times in seconds)
         scaled_events = [
             {
-                "id": e['event_id'],  # Use event_id instead of unique id
-                "name": e['display_name'],  # Already includes actor prefix
-                "category": e['category'],
-                "actor": e['actor'],
-                "layer": e['layer'],
-                "start": e['start'] / 1000,
-                "end": e['end'] / 1000,
-                "duration": e['duration'] / 1000
-            } for e in self.events
+                "id": e["event_id"],  # Use event_id instead of unique id
+                "name": e["display_name"],  # Already includes actor prefix
+                "category": e["category"],
+                "actor": e["actor"],
+                "layer": e["layer"],
+                "start": e["start"] / 1000,
+                "end": e["end"] / 1000,
+                "duration": e["duration"] / 1000,
+            }
+            for e in self.events
         ]
 
-        data = {
-            "metadata": metadata,
-            "events": scaled_events
-        }
+        data = {"metadata": metadata, "events": scaled_events}
 
-        with open(filename, 'w', encoding='utf-8') as f:
+        with open(filename, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)

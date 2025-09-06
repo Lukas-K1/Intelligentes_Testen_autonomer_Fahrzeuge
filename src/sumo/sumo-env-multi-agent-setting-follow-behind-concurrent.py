@@ -8,8 +8,8 @@ import traci
 from bppy import *
 from z3 import *
 
-from src.sumo.EventLogger import EventLogger
 from src.sumo.action_enum import *
+from src.sumo.EventLogger import EventLogger
 from src.sumo.sumo_vehicle import *
 
 # Create symbolic variables that can take any value from the Actions enum (for SMT-based events in BPpy)
@@ -55,8 +55,10 @@ action_map = {LANE_LEFT: 0, IDLE: 1, LANE_RIGHT: 2, FASTER: 3, SLOWER: 4}
 
 logger = EventLogger()  # Neue Logger-Klasse
 
+
 def sim_time():
     return step_count * 0.05
+
 
 def wait_seconds(seconds):
     step_count_t0 = step_count
@@ -65,10 +67,13 @@ def wait_seconds(seconds):
         print(f"waited {(step_count - step_count_t0) * 0.05} seconds.")
         yield sync(request=true)
 
+
 def seconds(steps):
     return steps * 0.05
 
+
 step_count = 0
+
 
 def fall_behind(
     behind_vehicle: SumoControllableVehicle,
@@ -89,7 +94,7 @@ def fall_behind(
             category="maneuver",
             actor=behind_vehicle.vehicle_id,
             layer="maneuver",
-            start=seconds(step_count) * 1000
+            start=seconds(step_count) * 1000,
         )
         event_started = True
         print(f"[fall_behind] Started event {event_id} at {seconds(step_count)}s")
@@ -110,6 +115,7 @@ def fall_behind(
         logger.end_event(unique_event_id, seconds(step_count) * 1000)
         print(f"[fall_behind] Ended event {unique_event_id} at {seconds(step_count)}s")
 
+
 def change_to_same_lane(
     vehicle_to_change_lane: SumoControllableVehicle, other_vehicle: SumoVehicle
 ):
@@ -124,10 +130,12 @@ def change_to_same_lane(
             category="navigation",
             actor=vehicle_to_change_lane.vehicle_id,
             layer="navigation",
-            start=seconds(step_count) * 1000
+            start=seconds(step_count) * 1000,
         )
         event_started = True
-        print(f"[change_to_same_lane] Started event {event_id} at {seconds(step_count)}s")
+        print(
+            f"[change_to_same_lane] Started event {event_id} at {seconds(step_count)}s"
+        )
 
     while vehicle_to_change_lane.lane_index() != other_vehicle.lane_index():
         if vehicle_to_change_lane.lane_index() < other_vehicle.lane_index():
@@ -136,7 +144,9 @@ def change_to_same_lane(
             yield sync(request=vehicle_to_change_lane.LANE_RIGHT())
     if event_started:
         logger.end_event(unique_event_id, seconds(step_count) * 1000)
-        print(f"[change_to_same_lane] Ended event {unique_event_id} at {seconds(step_count)}s")
+        print(
+            f"[change_to_same_lane] Ended event {unique_event_id} at {seconds(step_count)}s"
+        )
 
 
 def close_distance(
@@ -157,7 +167,7 @@ def close_distance(
             f"Close Distance to {in_front_vehicle.vehicle_id}",
             behind_vehicle.vehicle_id,
             "maneuver",  # Layer
-            seconds(step_count)
+            seconds(step_count),
         )
         eventStarted = true
 
@@ -175,7 +185,6 @@ def close_distance(
         logger.end_event(event_id, seconds(step_count))
 
 
-
 def equalize_speeds(
     controllable_vehicle: SumoControllableVehicle, other_vehicle: SumoVehicle
 ):
@@ -190,7 +199,7 @@ def equalize_speeds(
             category="control",
             actor=controllable_vehicle.vehicle_id,
             layer="control",
-            start=seconds(step_count) * 1000
+            start=seconds(step_count) * 1000,
         )
         event_started = True
         print(f"[equalize_speeds] Started event {event_id} at {seconds(step_count)}s")
@@ -202,13 +211,17 @@ def equalize_speeds(
             yield sync(request=controllable_vehicle.FASTER())
     if event_started:
         logger.end_event(unique_event_id, seconds(step_count) * 1000)
-        print(f"[equalize_speeds] Ended event {unique_event_id} at {seconds(step_count)}s")
+        print(
+            f"[equalize_speeds] Ended event {unique_event_id} at {seconds(step_count)}s"
+        )
+
 
 def get_behind(behind_vehicle: SumoControllableVehicle, in_front_vehicle: SumoVehicle):
     yield from fall_behind(behind_vehicle, in_front_vehicle)
     yield from change_to_same_lane(behind_vehicle, in_front_vehicle)
     yield from close_distance(behind_vehicle, in_front_vehicle)
     yield from equalize_speeds(behind_vehicle, in_front_vehicle)
+
 
 def stay_behind(behind_vehicle: SumoControllableVehicle, in_front_vehicle: SumoVehicle):
     while True:
@@ -257,9 +270,11 @@ def abstract_scenario_two_vehicles_follow_vut():
         category="foo",
         actor="Scenario",
         layer="scenario",
-        start=seconds(step_count) * 1000
+        start=seconds(step_count) * 1000,
     )
-    print(f"[abstract_scenario_two_vehicles_follow_vut] Started event {event_id} at {seconds(step_count)}s")
+    print(
+        f"[abstract_scenario_two_vehicles_follow_vut] Started event {event_id} at {seconds(step_count)}s"
+    )
 
     def condition():
         return v1.is_behind_by_x(vut) and v2.is_behind_by_x(v1)
@@ -270,7 +285,9 @@ def abstract_scenario_two_vehicles_follow_vut():
     else:
         print("################ UNSAT")
     logger.end_event(unique_event_id, seconds(step_count) * 1000)
-    print(f"[abstract_scenario_two_vehicles_follow_vut] Ended event {unique_event_id} at {seconds(step_count)}s")
+    print(
+        f"[abstract_scenario_two_vehicles_follow_vut] Ended event {unique_event_id} at {seconds(step_count)}s"
+    )
 
 
 @thread
@@ -282,7 +299,7 @@ def abstract_scenario_2():
         category="foo",
         actor="Scenario",
         layer="scenario",
-        start=seconds(step_count) * 1000
+        start=seconds(step_count) * 1000,
     )
     print(f"[abstract_scenario_2] Started event {event_id} at {seconds(step_count)}s")
 
@@ -292,7 +309,9 @@ def abstract_scenario_2():
     if not satisfied:
         print("################ UNSAT")
         logger.end_event(unique_event_id, seconds(step_count) * 1000)
-        print(f"[abstract_scenario_2] Ended event {unique_event_id} at {seconds(step_count)}s")
+        print(
+            f"[abstract_scenario_2] Ended event {unique_event_id} at {seconds(step_count)}s"
+        )
         return
     else:
         print("################ COND 1 SAT")
@@ -302,7 +321,9 @@ def abstract_scenario_2():
     if not satisfied:
         print("################ UNSAT")
         logger.end_event(unique_event_id, seconds(step_count) * 1000)
-        print(f"[abstract_scenario_2] Ended event {unique_event_id} at {seconds(step_count)}s")
+        print(
+            f"[abstract_scenario_2] Ended event {unique_event_id} at {seconds(step_count)}s"
+        )
         return
     else:
         print("################ COND 2 SAT")
@@ -312,7 +333,9 @@ def abstract_scenario_2():
     if not satisfied:
         print("################ UNSAT")
         logger.end_event(unique_event_id, seconds(step_count) * 1000)
-        print(f"[abstract_scenario_2] Ended event {unique_event_id} at {seconds(step_count)}s")
+        print(
+            f"[abstract_scenario_2] Ended event {unique_event_id} at {seconds(step_count)}s"
+        )
         return
     else:
         print("################ COND 3 SAT")
@@ -322,13 +345,18 @@ def abstract_scenario_2():
     if not satisfied:
         print("################ UNSAT")
         logger.end_event(unique_event_id, seconds(step_count) * 1000)
-        print(f"[abstract_scenario_2] Ended event {unique_event_id} at {seconds(step_count)}s")
+        print(
+            f"[abstract_scenario_2] Ended event {unique_event_id} at {seconds(step_count)}s"
+        )
         return
     else:
         print("################ COND 4 SAT")
     print("################ SAT")
     logger.end_event(unique_event_id, seconds(step_count) * 1000)
-    print(f"[abstract_scenario_2] Ended event {unique_event_id} at {seconds(step_count)}s")
+    print(
+        f"[abstract_scenario_2] Ended event {unique_event_id} at {seconds(step_count)}s"
+    )
+
 
 def parallel(*bthreads):
     for bt in bthreads:
