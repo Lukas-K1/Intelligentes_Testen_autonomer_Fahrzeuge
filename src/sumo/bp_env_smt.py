@@ -100,6 +100,7 @@ class BPEnvSMT(BPEnv):
             return is_true(model.evaluate(self.done_flag)) or (
                 self.step_count >= self.steps_per_episode
             )
+
         done = is_done()
 
         self.bprogram.advance_bthreads(self.bprogram.tickets, model)

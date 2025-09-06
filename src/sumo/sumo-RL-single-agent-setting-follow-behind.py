@@ -476,7 +476,7 @@ STEPS = args.steps
 log_dir = f"output/{STEPS}/"
 
 
-#if os.path.exists(log_dir) and os.path.isdir(log_dir):
+# if os.path.exists(log_dir) and os.path.isdir(log_dir):
 #   shutil.rmtree(log_dir)
 with warnings.catch_warnings():
     from stable_baselines3 import PPO
@@ -494,16 +494,22 @@ with warnings.catch_warnings():
         print("Kein gespeichertes Modell gefunden, starte Training von Null ...")
         mdl = PPO("MlpPolicy", env, verbose=1, tensorboard_log=log_path)
 
-    mdl.learn(total_timesteps=STEPS, tb_log_name="PPO_1", log_interval=1, reset_num_timesteps=False)
+    mdl.learn(
+        total_timesteps=STEPS,
+        tb_log_name="PPO_1",
+        log_interval=1,
+        reset_num_timesteps=False,
+    )
     mdl.save("PPO_1_Model")
 
 # Tensorboard starten aus eigener venv und mit Verzeichnis, wo die events... Datei geschrieben wird
-#.\.venv1\Scripts\python.exe -m tensorboard.main --logdir "C:\Users\<PROJECT_PATH>\src\sumo\output\1000\events\PPO_1_0" --port 6006
+# .\.venv1\Scripts\python.exe -m tensorboard.main --logdir "C:\Users\<PROJECT_PATH>\src\sumo\output\1000\events\PPO_1_0" --port 6006
 
 
 def load_results(path):
     monitor_files = [
-        f for f in glob(os.path.join(path, "*"))
+        f
+        for f in glob(os.path.join(path, "*"))
         if os.path.isfile(f) and f.endswith(".monitor.csv")
     ]
     data_frames, headers = [], []
@@ -524,10 +530,10 @@ def load_results(path):
 
 
 # = load_results(log_dir)
-#results["episode"] = results["index"] + 1
-#results["timesteps"] = results["episode"] * results["l"]
-#results["mean_reward"] = results["r"][::-1].rolling(200, min_periods=1).mean()[::-1]
-#results[["episode", "l", "timesteps", "r", "mean_reward"]].to_csv(
+# results["episode"] = results["index"] + 1
+# results["timesteps"] = results["episode"] * results["l"]
+# results["mean_reward"] = results["r"][::-1].rolling(200, min_periods=1).mean()[::-1]
+# results[["episode", "l", "timesteps", "r", "mean_reward"]].to_csv(
 #    os.path.join(log_dir, "results.csv"), index=False
-#)
-#print("results saved to", os.path.join(log_dir, "results.csv"))
+# )
+# print("results saved to", os.path.join(log_dir, "results.csv"))
