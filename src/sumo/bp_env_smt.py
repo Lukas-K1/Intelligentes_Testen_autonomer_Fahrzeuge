@@ -98,9 +98,8 @@ class BPEnvSMT(BPEnv):
 
         def is_done():
             return is_true(model.evaluate(self.done_flag)) or (
-                self.step_count > self.steps_per_episode
+                self.step_count >= self.steps_per_episode
             )
-
         done = is_done()
 
         self.bprogram.advance_bthreads(self.bprogram.tickets, model)
@@ -145,6 +144,7 @@ class BPEnvSMT(BPEnv):
         #     raise NotImplementedError("SolverBasedEventSelectionStrategy is currently not supported")
         # self.action_space.bprogram = self.bprogram
         self.bprogram.setup()
+        self.step_count = 0
         while not self._step_done():
             model = self.bprogram.event_selection_strategy.select(self.bprogram.tickets)
             self.bprogram.advance_bthreads(self.bprogram.tickets, model)

@@ -207,7 +207,8 @@ def abstract_scenario_2():
 @thread
 def sumo_env_bthread():
     global step_count
-    while True:
+    terminated = False
+    while not terminated:
         # set vehicle_id to one of in this scenario to let it the gui follow that vehicle
         # vut, veh_manual_1, veh_manual_2
         traci.gui.trackVehicle("View #0", "veh_manual_1")
@@ -229,7 +230,7 @@ def sumo_env_bthread():
         actions_tuple = tuple(actions)
 
         print(f"actions_tuple: {actions_tuple}")
-        obs, reward, truncated, terminated, _ = driving_env.step(actions_tuple)
+        obs, reward, terminated, truncated, _ = driving_env.step(actions_tuple)
         print(f"OBSERVATION in step {step_count}: {obs}")
         step_count += 1
 
@@ -475,19 +476,36 @@ STEPS = args.steps
 log_dir = f"output/{STEPS}/"
 
 
-if os.path.exists(log_dir) and os.path.isdir(log_dir):
-    shutil.rmtree(log_dir)
+#if os.path.exists(log_dir) and os.path.isdir(log_dir):
+#   shutil.rmtree(log_dir)
 with warnings.catch_warnings():
     from stable_baselines3 import PPO
 
     env = Monitor(env, log_dir)
     os.makedirs(log_dir, exist_ok=True)
-    mdl = PPO("MlpPolicy", env, verbose=1)
-    mdl.learn(total_timesteps=STEPS)
+    log_path = os.path.join(log_dir, "events")
+
+    model_path = "PPO_1_Model.zip"
+
+    if os.path.exists(model_path):
+        print(f"Lade bestehendes Modell aus {model_path} ...")
+        mdl = PPO.load(model_path, env=env, tensorboard_log=log_path)
+    else:
+        print("Kein gespeichertes Modell gefunden, starte Training von Null ...")
+        mdl = PPO("MlpPolicy", env, verbose=1, tensorboard_log=log_path)
+
+    mdl.learn(total_timesteps=STEPS, tb_log_name="PPO_1", log_interval=1, reset_num_timesteps=False)
+    mdl.save("PPO_1_Model")
+
+# Tensorboard starten aus eigener venv und mit Verzeichnis, wo die events... Datei geschrieben wird
+#.\.venv1\Scripts\python.exe -m tensorboard.main --logdir "C:\Users\<PROJECT_PATH>\src\sumo\output\1000\events\PPO_1_0" --port 6006
 
 
 def load_results(path):
-    monitor_files = glob(os.path.join(path, ".*")) + glob(os.path.join(path, "*"))
+    monitor_files = [
+        f for f in glob(os.path.join(path, "*"))
+        if os.path.isfile(f) and f.endswith(".monitor.csv")
+    ]
     data_frames, headers = [], []
     for file_name in monitor_files:
         with open(file_name) as file_handler:
@@ -505,11 +523,11 @@ def load_results(path):
     return data_frame
 
 
-results = load_results(log_dir)
-results["episode"] = results["index"] + 1
-results["timesteps"] = results["episode"] * results["l"]
-results["mean_reward"] = results["r"][::-1].rolling(200, min_periods=1).mean()[::-1]
-results[["episode", "l", "timesteps", "r", "mean_reward"]].to_csv(
-    os.path.join(log_dir, "results.csv"), index=False
-)
-print("results saved to", os.path.join(log_dir, "results.csv"))
+# = load_results(log_dir)
+#results["episode"] = results["index"] + 1
+#results["timesteps"] = results["episode"] * results["l"]
+#results["mean_reward"] = results["r"][::-1].rolling(200, min_periods=1).mean()[::-1]
+#results[["episode", "l", "timesteps", "r", "mean_reward"]].to_csv(
+#    os.path.join(log_dir, "results.csv"), index=False
+#)
+#print("results saved to", os.path.join(log_dir, "results.csv"))

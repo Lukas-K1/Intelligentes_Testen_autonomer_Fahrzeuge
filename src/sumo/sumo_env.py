@@ -25,7 +25,7 @@ class SumoEnv(gym.Env):
         self.action_space = spaces.MultiDiscrete([5] * len(self.controllable_vehicles))
         self.episode = 0
         self.step_count = 0
-        self.max_steps = 1000
+        self.max_steps = 100
 
     def _start_simulation(self, sumo_gui: bool = True):
         """
@@ -131,6 +131,10 @@ class SumoEnv(gym.Env):
         obs = self._get_obs()
         reward = self._get_reward()
         terminated = self.step_count >= self.max_steps
+
+        if "vut" not in traci.vehicle.getIDList():
+            terminated = True
+
         truncated = False
 
         return obs, reward, terminated, truncated, {}
