@@ -20,7 +20,6 @@ v2_action = Const("v2_action", Actions)
 # action_vars = [v1_action, v2_action]
 action_vars = [v1_action]
 
-
 v1: SumoControllableVehicle = SumoControllableVehicle(
     "veh_manual_1",
     ["entry", "longEdge", "exit"],
@@ -63,10 +62,10 @@ step_count = 0
 
 
 def fall_behind(
-    behind_vehicle: SumoControllableVehicle,
-    in_front_vehicle: SumoVehicle,
-    min_distance=25.0,
-    max_duration=float("inf"),
+        behind_vehicle: SumoControllableVehicle,
+        in_front_vehicle: SumoVehicle,
+        min_distance=25.0,
+        max_duration=float("inf"),
 ):
     global step_count
     step_count_t0 = step_count
@@ -95,10 +94,10 @@ def change_to_same_lane(
 
 
 def close_distance(
-    behind_vehicle: SumoControllableVehicle,
-    in_front_vehicle: SumoVehicle,
-    max_distance=25.0,
-    max_duration=float("inf"),
+        behind_vehicle: SumoControllableVehicle,
+        in_front_vehicle: SumoVehicle,
+        max_distance=25.0,
+        max_duration=float("inf"),
 ):
     global step_count
     step_count_t0 = step_count
@@ -116,11 +115,11 @@ def close_distance(
 
 
 def equalize_speeds(
-    controllable_vehicle: SumoControllableVehicle, other_vehicle: SumoVehicle
+        controllable_vehicle: SumoControllableVehicle, other_vehicle: SumoVehicle
 ):
     while (
-        abs(controllable_vehicle.speed() - other_vehicle.speed()) <= 0.1
-        and abs(controllable_vehicle.speed() - other_vehicle.speed()) <= 0.1
+            abs(controllable_vehicle.speed() - other_vehicle.speed()) <= 0.1
+            and abs(controllable_vehicle.speed() - other_vehicle.speed()) <= 0.1
     ):
         if controllable_vehicle.speed() > other_vehicle.speed():
             yield sync(request=controllable_vehicle.SLOWER())
@@ -147,9 +146,9 @@ def stay_behind(behind_vehicle: SumoControllableVehicle, in_front_vehicle: SumoV
 
 @thread
 def follow_behind(
-    behind_vehicle: SumoControllableVehicle,
-    in_front_vehicle: SumoVehicle,
-    delay_seconds: float = 0.0,
+        behind_vehicle: SumoControllableVehicle,
+        in_front_vehicle: SumoVehicle,
+        delay_seconds: float = 0.0,
 ):
     # " serial: "
     # yield from wait_seconds(delay_seconds)
@@ -163,7 +162,7 @@ def vehicle_follows_vut():
 
 
 def await_condition(
-    condition_function, deadline_seconds=float("inf"), local_reward=0.0
+        condition_function, deadline_seconds=float("inf"), local_reward=0.0
 ) -> Bool:
     global step_count
     step_count_t0 = step_count
@@ -172,7 +171,7 @@ def await_condition(
             return BoolVal(True)
         yield sync(waitFor=BoolVal(True), localReward=local_reward)
         print(
-            f" +++  waited {seconds(step_count-step_count_t0)} seconds for condition."
+            f" +++  waited {seconds(step_count - step_count_t0)} seconds for condition."
         )
     return BoolVal(False)
 
@@ -488,6 +487,8 @@ class TensorboardCallback(BaseCallback):
             info = self.locals["infos"][0]
             if "reward_goal" in info:
                 self.logger.record("custom/reward_goal", info["reward_goal"])
+            if "local_reward" in info:
+                self.logger.record("custom/local_reward", info["local_reward"])
             if "reward_penalty" in info:
                 self.logger.record("custom/reward_penalty", info["reward_penalty"])
         return True
@@ -525,6 +526,7 @@ with warnings.catch_warnings():
     )
     mdl.save("PPO_1_Model")
 
+
 # Tensorboard starten aus eigener venv und mit Verzeichnis, wo die events... Datei geschrieben wird
 # .\.venv1\Scripts\python.exe -m tensorboard.main --logdir "C:\Users\<PROJECT_PATH>\src\sumo\output\1000\events\PPO_1_0" --port 6006
 
@@ -550,7 +552,6 @@ def load_results(path):
     data_frame.reset_index(inplace=True)
     data_frame["t"] -= min(header["t_start"] for header in headers)
     return data_frame
-
 
 # = load_results(log_dir)
 # results["episode"] = results["index"] + 1

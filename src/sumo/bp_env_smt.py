@@ -118,7 +118,7 @@ class BPEnvSMT(BPEnv):
             # print(self._state().reshape((4, 4)))
             done = is_done()
 
-        return self._state(), local_reward, done, done, {}
+        return self._state(), local_reward, done, done, {"local_reward": local_reward}
 
     def reset(self, seed=None, options=None):
         """
