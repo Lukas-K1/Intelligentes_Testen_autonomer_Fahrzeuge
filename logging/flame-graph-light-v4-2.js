@@ -270,8 +270,9 @@ class FlameGraphAnalyzer {
       { "timestamp": "14.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection" },
       { "timestamp": "20.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection" },
 
-      { "timestamp": "0.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", distance_to_vut: 12.5 },
-      { "timestamp": "2.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", distance_to_vut: 22.5 },
+      { "timestamp": "0.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", "distance_to_vut": 12.5 },
+      { "timestamp": "2.0", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", "distance_to_vut": 22.5 },
+      { "timestamp": "2.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", "distance_to_vut": 27.5 },
     ];
 
     this.processEventData();
@@ -281,8 +282,34 @@ class FlameGraphAnalyzer {
   processEventData() {
     this.state.spans = this.buildSpans(this.state.rawEvents);
     this.state.filteredSpans = [...this.state.spans];
+    this.extractNumericSeries();
     this.updateEventCount();
   }
+
+  extractNumericSeries() {
+      const series = {};
+
+      this.state.rawEvents.forEach(event => {
+        for (const [key, value] of Object.entries(event)) {
+          if (
+            typeof value === "number" &&
+            !["timestamp"].includes(key)
+          ) {
+            if (!series[key]) {
+              series[key] = [];
+            }
+            series[key].push({
+              time: this.parseTimestamp(event.timestamp) / 1000, // seconds
+              value,
+              actor: event.actor
+            });
+          }
+        }
+      });
+
+      this.state.numericSeries = series;
+  }
+
 
   initializeLayers() {
     // console.log(this.state.rawEvents);
@@ -789,12 +816,60 @@ renderLabels() {
   }
 
 renderDiagram() {
-    console.log("Rendering distance diagram");
+  const content = this.elements.analysisContent;
+  content.innerHTML = ""; // clear
 
-    const content = this.elements.analysisContent;
-
-    content.innerHTML = `<div>Hier steht bald ein wundervolles Diagramm!</div>`;
+  if (!this.state.numericSeries || Object.keys(this.state.numericSeries).length === 0) {
+    content.innerHTML = `<div>No numeric data available for diagrams.</div>`;
+    return;
   }
+
+  Object.entries(this.state.numericSeries).forEach(([key, values]) => {
+    // Container
+    const container = document.createElement("div");
+    container.className = "diagram-container";
+    container.style.marginBottom = "2rem";
+    container.innerHTML = `<h3>${key}</h3>`;
+    content.appendChild(container);
+
+    // D3 Chart
+    const width = 500, height = 200, margin = { top: 20, right: 20, bottom: 30, left: 50 };
+
+    const svg = d3.select(container)
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    const x = d3.scaleLinear()
+      .domain(d3.extent(values, d => d.time))
+      .range([margin.left, width - margin.right]);
+
+    const y = d3.scaleLinear()
+      .domain([d3.min(values, d => d.value), d3.max(values, d => d.value)])
+      .nice()
+      .range([height - margin.bottom, margin.top]);
+
+    const line = d3.line()
+      .x(d => x(d.time))
+      .y(d => y(d.value));
+
+    svg.append("path")
+      .datum(values)
+      .attr("fill", "none")
+      .attr("stroke", "#4a9eff")
+      .attr("stroke-width", 2)
+      .attr("d", line);
+
+    svg.append("g")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "s"));
+
+    svg.append("g")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(y));
+  });
+}
+
 
   showImportDialog() {
     const input = document.createElement('input');
