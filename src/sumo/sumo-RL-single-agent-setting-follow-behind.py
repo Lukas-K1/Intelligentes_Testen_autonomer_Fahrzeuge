@@ -62,10 +62,10 @@ step_count = 0
 
 
 def fall_behind(
-        behind_vehicle: SumoControllableVehicle,
-        in_front_vehicle: SumoVehicle,
-        min_distance=25.0,
-        max_duration=float("inf"),
+    behind_vehicle: SumoControllableVehicle,
+    in_front_vehicle: SumoVehicle,
+    min_distance=25.0,
+    max_duration=float("inf"),
 ):
     global step_count
     step_count_t0 = step_count
@@ -94,10 +94,10 @@ def change_to_same_lane(
 
 
 def close_distance(
-        behind_vehicle: SumoControllableVehicle,
-        in_front_vehicle: SumoVehicle,
-        max_distance=25.0,
-        max_duration=float("inf"),
+    behind_vehicle: SumoControllableVehicle,
+    in_front_vehicle: SumoVehicle,
+    max_distance=25.0,
+    max_duration=float("inf"),
 ):
     global step_count
     step_count_t0 = step_count
@@ -115,11 +115,11 @@ def close_distance(
 
 
 def equalize_speeds(
-        controllable_vehicle: SumoControllableVehicle, other_vehicle: SumoVehicle
+    controllable_vehicle: SumoControllableVehicle, other_vehicle: SumoVehicle
 ):
     while (
-            abs(controllable_vehicle.speed() - other_vehicle.speed()) <= 0.1
-            and abs(controllable_vehicle.speed() - other_vehicle.speed()) <= 0.1
+        abs(controllable_vehicle.speed() - other_vehicle.speed()) <= 0.1
+        and abs(controllable_vehicle.speed() - other_vehicle.speed()) <= 0.1
     ):
         if controllable_vehicle.speed() > other_vehicle.speed():
             yield sync(request=controllable_vehicle.SLOWER())
@@ -146,9 +146,9 @@ def stay_behind(behind_vehicle: SumoControllableVehicle, in_front_vehicle: SumoV
 
 @thread
 def follow_behind(
-        behind_vehicle: SumoControllableVehicle,
-        in_front_vehicle: SumoVehicle,
-        delay_seconds: float = 0.0,
+    behind_vehicle: SumoControllableVehicle,
+    in_front_vehicle: SumoVehicle,
+    delay_seconds: float = 0.0,
 ):
     # " serial: "
     # yield from wait_seconds(delay_seconds)
@@ -162,7 +162,7 @@ def vehicle_follows_vut():
 
 
 def await_condition(
-        condition_function, deadline_seconds=float("inf"), local_reward=0.0
+    condition_function, deadline_seconds=float("inf"), local_reward=0.0
 ) -> Bool:
     global step_count
     step_count_t0 = step_count
@@ -552,6 +552,7 @@ def load_results(path):
     data_frame.reset_index(inplace=True)
     data_frame["t"] -= min(header["t_start"] for header in headers)
     return data_frame
+
 
 # = load_results(log_dir)
 # results["episode"] = results["index"] + 1
