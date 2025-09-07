@@ -10,7 +10,7 @@ class FlameGraphAnalyzer {
     this.renderActorFilterButtons();
     this.setupEventListeners();
     this.setupResizer();
-    this.initializeAnalysisTabs();
+    this.renderDiagram();
     this.render();
   }
 
@@ -98,11 +98,6 @@ class FlameGraphAnalyzer {
     document.querySelectorAll('.actor-filter-chip').forEach(chip => {
       // console.log(chip);
       chip.addEventListener('click', () => this.toggleActor(chip.dataset.actor));
-    });
-
-    // Analysis tabs
-    document.querySelectorAll('.analysis-tab').forEach(tab => {
-      tab.addEventListener('click', () => this.switchAnalysisTab(tab.dataset.tab));
     });
 
     // Export modal
@@ -280,7 +275,6 @@ class FlameGraphAnalyzer {
     ];
 
     this.processEventData();
-    this.updateStatistics();
     this.log('info', `Loaded ${this.state.spans.length} event spans`);
   }
 
@@ -794,345 +788,13 @@ renderLabels() {
       filtered === total ? `${total} visible` : `${filtered} visible`;
   }
 
-  updateStatistics() {
-    const stats = this.calculateStatistics();
-    this.elements.totalDuration.textContent = `${(stats.totalDuration / 1000).toFixed(1)}s`;
-  }
-
-  calculateStatistics() {
-    const stats = {
-      totalDuration: 0,
-      layerBreakdown: {},
-      averageDuration: 0,
-      overlappingEvents: 0
-    };
-
-    if (this.state.spans.length === 0) return stats;
-
-    const timeRange = this.getTimeRange();
-    stats.totalDuration = timeRange.end - timeRange.start;
-
-    // Layer breakdown
-    this.state.spans.forEach(span => {
-      if (!stats.layerBreakdown[span.layer]) {
-        stats.layerBreakdown[span.layer] = {
-          count: 0,
-          totalDuration: 0,
-          events: []
-        };
-      }
-      stats.layerBreakdown[span.layer].count++;
-      stats.layerBreakdown[span.layer].totalDuration += span.duration;
-      stats.layerBreakdown[span.layer].events.push(span);
-    });
-
-    // Average duration
-    const totalEventDuration = this.state.spans.reduce((sum, span) => sum + span.duration, 0);
-    stats.averageDuration = totalEventDuration / this.state.spans.length;
-
-    // Find overlapping events
-    for (let i = 0; i < this.state.spans.length; i++) {
-      for (let j = i + 1; j < this.state.spans.length; j++) {
-        if (this.state.spans[i].start < this.state.spans[j].end &&
-            this.state.spans[i].end > this.state.spans[j].start) {
-          stats.overlappingEvents++;
-        }
-      }
-    }
-
-    return stats;
-  }
-
-  initializeAnalysisTabs() {
-    this.switchAnalysisTab('diagram');
-  }
-
-  switchAnalysisTab(tabName) {
-    // Update tab UI
-    document.querySelectorAll('.analysis-tab').forEach(tab => {
-      tab.classList.toggle('active', tab.dataset.tab === tabName);
-    });
-
-    // Update content
-    const content = this.elements.analysisContent;
-
-    switch(tabName) {
-      case 'statistics':
-        this.renderStatisticsTab();
-        break;
-      case 'patterns':
-        this.renderPatternsTab();
-        break;
-      case 'performance':
-        this.renderPerformanceTab();
-        break;
-      case 'diagram':
-        this.renderDiagram();
-        break;
-    }
-  }
-
-  renderStatisticsTab() {
-    const stats = this.calculateStatistics();
-    const content = this.elements.analysisContent;
-
-    content.innerHTML = `
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-card-title">Total Events</div>
-          <div class="stat-card-value">${this.state.spans.length}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-title">Average Duration</div>
-          <div class="stat-card-value">${(stats.averageDuration / 1000).toFixed(2)}<span class="stat-card-unit">s</span></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-title">Timeline Duration</div>
-          <div class="stat-card-value">${(stats.totalDuration / 1000).toFixed(1)}<span class="stat-card-unit">s</span></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-title">Overlapping Events</div>
-          <div class="stat-card-value">${stats.overlappingEvents}</div>
-        </div>
-      </div>
-
-      <h3 style="margin: 2rem 0 1rem; font-size: 1.125rem;">Layer Breakdown</h3>
-      <div class="layer-breakdown">
-        ${Object.entries(stats.layerBreakdown).map(([layer, data]) => `
-          <div class="stat-card">
-            <div class="stat-card-title">
-              <span class="event-layer layer-${layer}">${layer}</span>
-            </div>
-            <div class="stat-card-value">${data.count}<span class="stat-card-unit">events</span></div>
-            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
-              Total: ${(data.totalDuration / 1000).toFixed(2)}s
-            </div>
-          </div>
-        `).join('')}
-      </div>
-
-      ${this.state.selectedEvents.size > 0 ? `
-        <h3 style="margin: 2rem 0 1rem; font-size: 1.125rem;">Selected Events Analysis</h3>
-        <div class="selected-events-analysis">
-          ${this.renderSelectedEventsAnalysis()}
-        </div>
-      ` : ''}
-    `;
-  }
-
-  renderSelectedEventsAnalysis() {
-    const selectedSpans = this.state.filteredSpans.filter(span =>
-      this.state.selectedEvents.has(span.id)
-    );
-
-    if (selectedSpans.length === 0) return '';
-
-    const totalDuration = selectedSpans.reduce((sum, span) => sum + span.duration, 0);
-    const avgDuration = totalDuration / selectedSpans.length;
-
-    return `
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-card-title">Selected Count</div>
-          <div class="stat-card-value">${selectedSpans.length}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-title">Combined Duration</div>
-          <div class="stat-card-value">${(totalDuration / 1000).toFixed(2)}<span class="stat-card-unit">s</span></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-title">Average Duration</div>
-          <div class="stat-card-value">${(avgDuration / 1000).toFixed(2)}<span class="stat-card-unit">s</span></div>
-        </div>
-      </div>
-    `;
-  }
-
-  renderPatternsTab() {
-    const patterns = this.analyzePatterns();
-    const content = this.elements.analysisContent;
-
-    content.innerHTML = `
-      <h3 style="margin-bottom: 1rem; font-size: 1.125rem;">Behavior Patterns</h3>
-
-      <div class="pattern-analysis">
-        <h4 style="margin: 1.5rem 0 0.5rem; color: var(--text-secondary);">Event Sequences</h4>
-        ${patterns.sequences.map(seq => `
-          <div class="stat-card">
-            <div class="stat-card-title">${seq.pattern}</div>
-            <div class="stat-card-value">${seq.count}<span class="stat-card-unit">occurrences</span></div>
-          </div>
-        `).join('')}
-
-        <h4 style="margin: 1.5rem 0 0.5rem; color: var(--text-secondary);">Critical Paths</h4>
-        ${patterns.criticalPaths.map(path => `
-          <div class="stat-card">
-            <div class="stat-card-title">${path.name}</div>
-            <div class="stat-card-value">${(path.duration / 1000).toFixed(2)}<span class="stat-card-unit">s</span></div>
-            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
-              ${path.events.length} events
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  analyzePatterns() {
-    const patterns = {
-      sequences: [],
-      criticalPaths: []
-    };
-
-    // Find common event sequences
-    const sequenceMap = new Map();
-    for (let i = 0; i < this.state.spans.length - 1; i++) {
-      const current = this.state.spans[i];
-      const next = this.state.spans[i + 1];
-      const sequence = `${current.layer} → ${next.layer}`;
-
-      sequenceMap.set(sequence, (sequenceMap.get(sequence) || 0) + 1);
-    }
-
-    patterns.sequences = Array.from(sequenceMap.entries())
-      .map(([pattern, count]) => ({ pattern, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-
-    // Find critical paths (longest sequences)
-    const paths = [];
-    let currentPath = [];
-    let currentPathStart = 0;
-
-    this.state.spans.forEach((span, index) => {
-      if (currentPath.length === 0 ||
-          span.start <= currentPath[currentPath.length - 1].end + 100) {
-        currentPath.push(span);
-      } else {
-        if (currentPath.length > 2) {
-          const duration = currentPath[currentPath.length - 1].end - currentPath[0].start;
-          paths.push({
-            name: `${currentPath[0].display_name} → ${currentPath[currentPath.length - 1].display_name}`,
-            duration,
-            events: [...currentPath]
-          });
-        }
-        currentPath = [span];
-      }
-    });
-
-    patterns.criticalPaths = paths
-      .sort((a, b) => b.duration - a.duration)
-      .slice(0, 3);
-
-    return patterns;
-  }
-
-  renderPerformanceTab() {
-    const bottlenecks = this.findBottlenecks();
-    const content = this.elements.analysisContent;
-
-    content.innerHTML = `
-      <h3 style="margin-bottom: 1rem; font-size: 1.125rem;">Performance Analysis</h3>
-
-      <h4 style="margin: 1.5rem 0 0.5rem; color: var(--text-secondary);">Longest Events</h4>
-      <div class="stats-grid">
-        ${bottlenecks.longestEvents.map(event => `
-          <div class="stat-card">
-            <div class="stat-card-title">${event.display_name}</div>
-            <div class="stat-card-value">${(event.duration / 1000).toFixed(2)}<span class="stat-card-unit">s</span></div>
-            <div style="margin-top: 0.5rem;">
-              <span class="event-layer layer-${event.layer}">${event.layer}</span>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-
-      <h4 style="margin: 1.5rem 0 0.5rem; color: var(--text-secondary);">Concurrency Analysis</h4>
-      <div class="stat-card">
-        <div class="stat-card-title">Max Concurrent Events</div>
-        <div class="stat-card-value">${bottlenecks.maxConcurrency}</div>
-        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
-          At ${(bottlenecks.maxConcurrencyTime / 1000).toFixed(2)}s
-        </div>
-      </div>
-
-      <h4 style="margin: 1.5rem 0 0.5rem; color: var(--text-secondary);">Time Gaps</h4>
-      <div class="stats-grid">
-        ${bottlenecks.gaps.map(gap => `
-          <div class="stat-card">
-            <div class="stat-card-title">Gap at ${(gap.time / 1000).toFixed(2)}s</div>
-            <div class="stat-card-value">${(gap.duration / 1000).toFixed(2)}<span class="stat-card-unit">s</span></div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  findBottlenecks() {
-    const bottlenecks = {
-      longestEvents: [],
-      maxConcurrency: 0,
-      maxConcurrencyTime: 0,
-      gaps: []
-    };
-
-    // Find longest events
-    bottlenecks.longestEvents = [...this.state.spans]
-      .sort((a, b) => b.duration - a.duration)
-      .slice(0, 5);
-
-    // Find max concurrency
-    const timePoints = [];
-    this.state.spans.forEach(span => {
-      timePoints.push({ time: span.start, type: 'start' });
-      timePoints.push({ time: span.end, type: 'end' });
-    });
-
-    timePoints.sort((a, b) => a.time - b.time);
-
-    let currentConcurrency = 0;
-    timePoints.forEach(point => {
-      if (point.type === 'start') {
-        currentConcurrency++;
-        if (currentConcurrency > bottlenecks.maxConcurrency) {
-          bottlenecks.maxConcurrency = currentConcurrency;
-          bottlenecks.maxConcurrencyTime = point.time;
-        }
-      } else {
-        currentConcurrency--;
-      }
-    });
-
-    // Find gaps
-    const sortedSpans = [...this.state.spans].sort((a, b) => a.start - b.start);
-    for (let i = 0; i < sortedSpans.length - 1; i++) {
-      const gap = sortedSpans[i + 1].start - sortedSpans[i].end;
-      if (gap > 100) { // Gap > 100ms
-        bottlenecks.gaps.push({
-          time: sortedSpans[i].end,
-          duration: gap
-        });
-      }
-    }
-
-    bottlenecks.gaps = bottlenecks.gaps
-      .sort((a, b) => b.duration - a.duration)
-      .slice(0, 3);
-
-    return bottlenecks;
-  }
-
-// Im FlameGraphAnalyzer
 renderDiagram() {
     console.log("Rendering distance diagram");
 
-    const stats = this.calculateStatistics();
     const content = this.elements.analysisContent;
 
     content.innerHTML = `<div>Hier steht bald ein wundervolles Diagramm!</div>`;
   }
-
 
   showImportDialog() {
     const input = document.createElement('input');
@@ -1179,7 +841,6 @@ renderDiagram() {
         if (events.length > 0) {
           this.state.rawEvents = events;
           this.processEventData();
-          this.updateStatistics();
           this.render();
           this.log('info', `Imported ${this.state.spans.length} events from ${file.name}`);
         } else {
@@ -1225,8 +886,7 @@ renderDiagram() {
       metadata: {
         exportTime: new Date().toISOString(),
         totalEvents: this.state.spans.length,
-        timeRange: this.getTimeRange(),
-        statistics: this.calculateStatistics()
+        timeRange: this.getTimeRange()
       },
       events: this.state.spans.map(span => ({
         id: span.event_id,
@@ -1324,11 +984,6 @@ renderDiagram() {
         setTimeout(() => this.render(), 100);
       }
     });
-  }
-
-  updateAnalysisPanel() {
-    const activeTab = document.querySelector('.analysis-tab.active').dataset.tab;
-    this.switchAnalysisTab(activeTab);
   }
 
   log(level, message) {
