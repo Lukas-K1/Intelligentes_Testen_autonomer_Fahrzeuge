@@ -3,6 +3,8 @@ import sys
 import time
 
 import gymnasium as gym
+from stable_baselines3.common.callbacks import BaseCallback
+
 import register_env
 import traci
 from bppy import *
@@ -476,6 +478,27 @@ STEPS = args.steps
 log_dir = f"output/{STEPS}/"
 
 
+# Callback-Klasse für custom Logging
+class TensorboardCallback(BaseCallback):
+    def __init__(self, verbose=0):
+        super(TensorboardCallback, self).__init__(verbose)
+
+    def _on_step(self) -> bool:
+        # Falls Info-Keys existieren -> custom Rewards loggen
+        if len(self.locals["infos"]) > 0:
+            info = self.locals["infos"][0]
+            if "reward_goal" in info:
+                self.logger.record("custom/reward_goal", info["reward_goal"])
+            if "reward_penalty" in info:
+                self.logger.record("custom/reward_penalty", info["reward_penalty"])
+        return True
+
+    def _on_rollout_end(self) -> None:
+        # Learning Rate nur am Ende eines Rollouts loggen
+        current_lr = self.model.lr_schedule(self.num_timesteps)
+        self.logger.record("custom/learning_rate", current_lr)
+
+
 # if os.path.exists(log_dir) and os.path.isdir(log_dir):
 #   shutil.rmtree(log_dir)
 with warnings.catch_warnings():
@@ -499,6 +522,7 @@ with warnings.catch_warnings():
         tb_log_name="PPO_1",
         log_interval=1,
         reset_num_timesteps=False,
+        callback=TensorboardCallback(),
     )
     mdl.save("PPO_1_Model")
 
