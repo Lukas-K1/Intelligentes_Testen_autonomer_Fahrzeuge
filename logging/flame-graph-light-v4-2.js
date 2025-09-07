@@ -249,34 +249,34 @@ class FlameGraphAnalyzer {
     this.state.rawEvents = [
       //TODO: New data starts here
       // Car1 - Complex overtaking maneuver
-      { timestamp: "0.0", event_id: "car1-overtake", display_name: "Car1 – Overtake", category: "foo", actor: "Car1", layer: "scenario" },
-      { timestamp: "20.0", event_id: "car1-overtake", display_name: "Car1 – Overtake", category: "foo", actor: "Car1", layer: "scenario" },
-      { timestamp: "0.5", event_id: "car1-accelerate", display_name: "Car1 – Accelerate", category: "sensor", actor: "Car1", layer: "selection" },
-      { timestamp: "3.5", event_id: "car1-accelerate", display_name: "Car1 – Accelerate", category: "sensor", actor: "Car1", layer: "selection" },
-      { timestamp: "4.0", event_id: "car1-switch-lane-left", display_name: "Car1 – Switch Lane (left)", category: "sensor", actor: "Car1", layer: "selection" },
-      { timestamp: "6.0", event_id: "car1-switch-lane-left", display_name: "Car1 – Switch Lane (left)", category: "sensor", actor: "Car1", layer: "selection" },
-      { timestamp: "10.0", event_id: "car1-switch-lane-right", display_name: "Car1 – Switch Lane (right)", category: "sensor", actor: "Car1", layer: "selection" },
-      { timestamp: "13.0", event_id: "car1-switch-lane-right", display_name: "Car1 – Switch Lane (right)", category: "sensor", actor: "Car1", layer: "selection" },
-      { timestamp: "14.0", event_id: "car1-ride-into-sunset", display_name: "Car1 – Ride into sunset", category: "sensor", actor: "Car1", layer: "selection" },
-      { timestamp: "20.0", event_id: "car1-ride-into-sunset", display_name: "Car1 – Ride into sunset", category: "sensor", actor: "Car1", layer: "selection" },
+      { "timestamp": "0.0", "event_id": "car1-overtake", "display_name": "Car1 – Overtake", "category": "foo", "actor": "Car1", "layer": "scenario" },
+      { "timestamp": "20.0", "event_id": "car1-overtake", "display_name": "Car1 – Overtake", "category": "foo", "actor": "Car1", "layer": "scenario" },
+      { "timestamp": "0.5", "event_id": "car1-accelerate", "display_name": "Car1 – Accelerate", "category": "sensor", "actor": "Car1", "layer": "selection" },
+      { "timestamp": "3.5", "event_id": "car1-accelerate", "display_name": "Car1 – Accelerate", "category": "sensor", "actor": "Car1", "layer": "selection" },
+      { "timestamp": "4.0", "event_id": "car1-switch-lane-left", "display_name": "Car1 – Switch Lane (left)", "category": "sensor", "actor": "Car1", "layer": "selection" },
+      { "timestamp": "6.0", "event_id": "car1-switch-lane-left", "display_name": "Car1 – Switch Lane (left)", "category": "sensor", "actor": "Car1", "layer": "selection" },
+      { "timestamp": "10.0", "event_id": "car1-switch-lane-right", "display_name": "Car1 – Switch Lane (right)", "category": "sensor", "actor": "Car1", "layer": "selection" },
+      { "timestamp": "13.0", "event_id": "car1-switch-lane-right", "display_name": "Car1 – Switch Lane (right)", "category": "sensor", "actor": "Car1", "layer": "selection" },
+      { "timestamp": "14.0", "event_id": "car1-ride-into-sunset", "display_name": "Car1 – Ride into sunset", "category": "sensor", "actor": "Car1", "layer": "selection" },
+      { "timestamp": "20.0", "event_id": "car1-ride-into-sunset", "display_name": "Car1 – Ride into sunset", "category": "sensor", "actor": "Car1", "layer": "selection" },
 
-      { timestamp: "0.5", event_id: "car1-increase-speed", display_name: "Car1 – Increase Speed", category: "sensor", actor: "Car1", layer: "simulation" },
-      { timestamp: "2.5", event_id: "car1-increase-speed", display_name: "Car1 – Increase Speed", category: "sensor", actor: "Car1", layer: "simulation" },
+      { "timestamp": "0.5", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "category": "sensor", "actor": "Car1", "layer": "simulation" },
+      { "timestamp": "2.5", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "category": "sensor", "actor": "Car1", "layer": "simulation" },
 
       // Car2 - Complex overtaking maneuver
-      { timestamp: "0.0", event_id: "car2-overtake", display_name: "Car2 – Overtake", category: "foo", actor: "Car2", layer: "scenario" },
-      { timestamp: "20.0", event_id: "car2-overtake", display_name: "Car2 – Overtake", category: "foo", actor: "Car2", layer: "scenario" },
-      { timestamp: "0.5", event_id: "car2-accelerate", display_name: "Car2 – Accelerate", category: "sensor", actor: "Car2", layer: "selection" },
-      { timestamp: "3.5", event_id: "car2-accelerate", display_name: "Car2 – Accelerate", category: "sensor", actor: "Car2", layer: "selection" },
-      { timestamp: "4.0", event_id: "car2-switch-lane-left", display_name: "Car2 – Switch Lane (left)", category: "sensor", actor: "Car2", layer: "selection" },
-      { timestamp: "6.0", event_id: "car2-switch-lane-left", display_name: "Car2 – Switch Lane (left)", category: "sensor", actor: "Car2", layer: "selection" },
-      { timestamp: "10.0", event_id: "car2-switch-lane-right", display_name: "Car2 – Switch Lane (right)", category: "sensor", actor: "Car2", layer: "selection" },
-      { timestamp: "13.0", event_id: "car2-switch-lane-right", display_name: "Car2 – Switch Lane (right)", category: "sensor", actor: "Car2", layer: "selection" },
-      { timestamp: "14.0", event_id: "car2-ride-into-sunset", display_name: "Car2 – Ride into sunset", category: "sensor", actor: "Car2", layer: "selection" },
-      { timestamp: "20.0", event_id: "car2-ride-into-sunset", display_name: "Car2 – Ride into sunset", category: "sensor", actor: "Car2", layer: "selection" },
+      { "timestamp": "0.0", "event_id": "car2-overtake", "display_name": "Car2 – Overtake", "category": "foo", "actor": "Car2", "layer": "scenario" },
+      { "timestamp": "20.0", "event_id": "car2-overtake", "display_name": "Car2 – Overtake", "category": "foo", "actor": "Car2", "layer": "scenario" },
+      { "timestamp": "0.5", "event_id": "car2-accelerate", "display_name": "Car2 – Accelerate", "category": "sensor", "actor": "Car2", "layer": "selection" },
+      { "timestamp": "3.5", "event_id": "car2-accelerate", "display_name": "Car2 – Accelerate", "category": "sensor", "actor": "Car2", "layer": "selection" },
+      { "timestamp": "4.0", "event_id": "car2-switch-lane-left", "display_name": "Car2 – Switch Lane (left)", "category": "sensor", "actor": "Car2", "layer": "selection" },
+      { "timestamp": "6.0", "event_id": "car2-switch-lane-left", "display_name": "Car2 – Switch Lane (left)", "category": "sensor", "actor": "Car2", "layer": "selection" },
+      { "timestamp": "10.0", "event_id": "car2-switch-lane-right", "display_name": "Car2 – Switch Lane (right)", "category": "sensor", "actor": "Car2", "layer": "selection" },
+      { "timestamp": "13.0", "event_id": "car2-switch-lane-right", "display_name": "Car2 – Switch Lane (right)", "category": "sensor", "actor": "Car2", "layer": "selection" },
+      { "timestamp": "14.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection" },
+      { "timestamp": "20.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection" },
 
-      { timestamp: "0.5", event_id: "car2-increase-speed", display_name: "Car2 – Increase Speed", category: "sensor", actor: "Car2", layer: "simulation" },
-      { timestamp: "2.5", event_id: "car2-increase-speed", display_name: "Car2 – Increase Speed", category: "sensor", actor: "Car2", layer: "simulation" },
+      { "timestamp": "0.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation" },
+      { "timestamp": "2.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation" },
     ];
 
     this.processEventData();
@@ -366,6 +366,7 @@ class FlameGraphAnalyzer {
           duration: timestamp - openEvent.start,
           display_name: openEvent.display_name,
           category: openEvent.category,
+          //TODO: Warum ist das anders als darüber?
           actor: event.actor,
           layer: event.layer
         });
@@ -1116,21 +1117,29 @@ renderLabels() {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result);
+        console.log(data);
 
         // Support multiple import formats
         let events = [];
 
         if (Array.isArray(data)) {
+          console.log("Array is array")
+          // Support simple array of events
           events = data;
         } else if (data.events && Array.isArray(data.events)) {
+            console.log("Data.events is array")
           // Support export format
           events = data.events.flatMap(event => [
-            { timestamp: event.start / 1000, event_id: event.id, display_name: event.name, category: event.category },
-            { timestamp: event.end / 1000, event_id: event.id, display_name: event.name + ' Complete', category: event.category }
+            { timestamp: event.start / 1000, event_id: event.id, display_name: event.name, category: event.category, actor: event.actor, layer: event.layer },
+            { timestamp: event.end / 1000, event_id: event.id, display_name: event.name + ' Complete', category: event.category, actor: event.actor, layer: event.layer }
           ]);
         } else if (data.data && Array.isArray(data.data)) {
+            console.log("Data.data is array")
+          // Support alternative format
           events = data.data;
         }
+
+        console.log(events)
 
         if (events.length > 0) {
           this.state.rawEvents = events;
