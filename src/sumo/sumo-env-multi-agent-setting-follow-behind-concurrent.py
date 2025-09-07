@@ -8,7 +8,6 @@ import traci
 from bppy import *
 from z3 import *
 
-from src.sumo.EventLogger import EventLogger
 from src.sumo.JsonEventLogger import JsonEventLogger
 from src.sumo.action_enum import *
 from src.sumo.sumo_vehicle import *
@@ -56,8 +55,10 @@ action_map = {LANE_LEFT: 0, IDLE: 1, LANE_RIGHT: 2, FASTER: 3, SLOWER: 4}
 
 logger = JsonEventLogger()  # Neue Logger-Klasse
 
+
 def sim_time():
     return step_count * 0.05
+
 
 def wait_seconds(seconds):
     step_count_t0 = step_count
@@ -66,10 +67,13 @@ def wait_seconds(seconds):
         print(f"waited {(step_count - step_count_t0) * 0.05} seconds.")
         yield sync(request=true)
 
+
 def seconds(steps):
     return steps * 0.05
 
+
 step_count = 0
+
 
 def fall_behind(
     behind_vehicle: SumoControllableVehicle,
@@ -106,6 +110,7 @@ def fall_behind(
             break
     if event_started:
         logger.end_event(event_id, seconds(step_count) * 1000)
+
 
 def change_to_same_lane(
     vehicle_to_change_lane: SumoControllableVehicle, other_vehicle: SumoVehicle
@@ -170,7 +175,6 @@ def close_distance(
         logger.end_event(event_id, seconds(step_count))
 
 
-
 def equalize_speeds(
     controllable_vehicle: SumoControllableVehicle, other_vehicle: SumoVehicle
 ):
@@ -203,6 +207,7 @@ def get_behind(behind_vehicle: SumoControllableVehicle, in_front_vehicle: SumoVe
     yield from change_to_same_lane(behind_vehicle, in_front_vehicle)
     yield from close_distance(behind_vehicle, in_front_vehicle)
     yield from equalize_speeds(behind_vehicle, in_front_vehicle)
+
 
 def stay_behind(behind_vehicle: SumoControllableVehicle, in_front_vehicle: SumoVehicle):
     while True:
