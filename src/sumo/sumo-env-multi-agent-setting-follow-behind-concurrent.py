@@ -8,8 +8,8 @@ import traci
 from bppy import *
 from z3 import *
 
-from src.sumo.JsonEventLogger import JsonEventLogger
 from src.sumo.action_enum import *
+from src.sumo.JsonEventLogger import JsonEventLogger
 from src.sumo.sumo_vehicle import *
 
 # Create symbolic variables that can take any value from the Actions enum (for SMT-based events in BPpy)
@@ -93,7 +93,7 @@ def fall_behind(
             name=f"Fall Behind {in_front_vehicle.vehicle_id}",
             actor=behind_vehicle.vehicle_id,
             layer="B - correction",
-            start_time_s=seconds(step_count) * 1000
+            start_time_s=seconds(step_count) * 1000,
         )
         event_started = True
 
@@ -126,7 +126,7 @@ def change_to_same_lane(
             category="maneuver",
             actor=vehicle_to_change_lane.vehicle_id,
             layer="A - maneuver",
-            start_time_s=seconds(step_count) * 1000
+            start_time_s=seconds(step_count) * 1000,
         )
         event_started = True
 
@@ -157,7 +157,7 @@ def close_distance(
             f"Close Distance to {in_front_vehicle.vehicle_id}",
             behind_vehicle.vehicle_id,
             "B - correction",  # Layer
-            seconds(step_count)
+            seconds(step_count),
         )
         eventStarted = true
 
@@ -188,7 +188,7 @@ def equalize_speeds(
             category="control",
             actor=controllable_vehicle.vehicle_id,
             layer="control",
-            start_time_s=seconds(step_count) * 1000
+            start_time_s=seconds(step_count) * 1000,
         )
         event_started = True
         print(f"[equalize_speeds] Started event {event_id} at {seconds(step_count)}s")
@@ -201,6 +201,7 @@ def equalize_speeds(
     if event_started:
         logger.end_event(event_id, seconds(step_count) * 1000)
         print(f"[equalize_speeds] Ended event {event_id} at {seconds(step_count)}s")
+
 
 def get_behind(behind_vehicle: SumoControllableVehicle, in_front_vehicle: SumoVehicle):
     yield from fall_behind(behind_vehicle, in_front_vehicle)
@@ -256,9 +257,11 @@ def abstract_scenario_two_vehicles_follow_vut():
         category="foo",
         actor="Scenario",
         layer="scenario",
-        start_time_s=seconds(step_count) * 1000
+        start_time_s=seconds(step_count) * 1000,
     )
-    print(f"[abstract_scenario_two_vehicles_follow_vut] Started event {event_id} at {seconds(step_count)}s")
+    print(
+        f"[abstract_scenario_two_vehicles_follow_vut] Started event {event_id} at {seconds(step_count)}s"
+    )
 
     def condition():
         return v1.is_behind_by_x(vut) and v2.is_behind_by_x(v1)
@@ -280,7 +283,7 @@ def abstract_scenario_2():
         category="foo",
         actor="Scenario",
         layer="scenario",
-        start_time_s=seconds(step_count) * 1000
+        start_time_s=seconds(step_count) * 1000,
     )
     print(f"[abstract_scenario_2] Started event {event_id} at {seconds(step_count)}s")
 
@@ -322,6 +325,7 @@ def abstract_scenario_2():
         print("################ COND 4 SAT")
     print("################ SAT")
     logger.end_event(event_id, seconds(step_count) * 1000)
+
 
 def parallel(*bthreads):
     for bt in bthreads:
