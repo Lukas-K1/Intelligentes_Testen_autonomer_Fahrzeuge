@@ -58,8 +58,8 @@
     <!-- Toolbar -->
     <div class="toolbar">
       <!-- Dynamic Filter Group -->
-      <div class="category-filter-group" id="category-filter-group">
-        <span class="category-filter-label">Categories:</span>
+      <div class="layer-filter-group" id="layer-filter-group">
+        <span class="layer-filter-label">Categories:</span>
       </div>
       <div class="actor-filter-group" id="actor-filter-group">
         <span class="actor-filter-label">Actor:</span>
@@ -86,7 +86,7 @@
         <div class="tooltip" id="tooltip">
           <div class="tooltip-header">
             <div class="tooltip-title" id="tooltip-title"></div>
-            <span class="event-category" id="tooltip-category"></span>
+            <span class="event-layer" id="tooltip-layer"></span>
           </div>
           <div class="tooltip-metrics" id="tooltip-metrics"></div>
         </div>
@@ -100,6 +100,10 @@
 
     <div class="analysis-panel" id="analysis-panel">
       <div class="analysis-tabs">
+        <div class="analysis-tab" data-tab="diagram">
+          <div class="analysis-tab-title">Diagramm</div>
+          <div class="analysis-tab-desc">Diagramm aus geloggten Werten</div>
+        </div>
         <div class="analysis-tab active" data-tab="statistics">
           <div class="analysis-tab-title">Statistics</div>
           <div class="analysis-tab-desc">Event metrics & analysis</div>

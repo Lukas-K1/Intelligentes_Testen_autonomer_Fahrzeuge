@@ -226,7 +226,7 @@ html, body {
   flex-wrap: wrap;
 }
 
-.category-filter-group {
+.layer-filter-group {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -246,7 +246,7 @@ html, body {
   border: 1px solid var(--border-light);
 }
 
-.category-filter-label {
+.layer-filter-label {
   font-size: 0.75rem;
   color: var(--text-tertiary);
   text-transform: uppercase;
@@ -260,7 +260,7 @@ html, body {
   letter-spacing: 0.5px;
 }
 
-.category-filter-chip {
+.layer-filter-chip {
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
@@ -270,7 +270,7 @@ html, body {
   border: 1px solid transparent;
 }
 
-.category-filter-chip.active {
+.layer-filter-chip.active {
   background: var(--bg-elevated);
   border-color: var(--border-medium);
 }
@@ -360,7 +360,7 @@ html, body {
   flex: 1;
 }
 
-.event-category {
+.event-layer {
   display: inline-block;
   padding: 0.125rem 0.375rem;
   border-radius: var(--radius-sm);
@@ -675,7 +675,7 @@ html, body {
     padding: 0.5rem;
   }
 
-  .category-filter-group {
+  .layer-filter-group {
     flex-wrap: wrap;
   }
 
@@ -718,13 +718,13 @@ html, body {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* ======== Category Colors ======== */
-.category-maneuver { background: rgba(74, 158, 255, 0.2); color: var(--accent-blue); }
-.category-control { background: rgba(74, 222, 128, 0.2); color: var(--accent-green); }
-.category-sensor { background: rgba(251, 146, 60, 0.2); color: var(--accent-orange); }
-.category-navigation { background: rgba(167, 139, 250, 0.2); color: var(--accent-purple); }
-.category-safety { background: rgba(248, 113, 113, 0.2); color: var(--accent-red); }
-.category-infrastructure { background: rgba(34, 211, 238, 0.2); color: var(--accent-cyan); }
+/* ======== Layer Colors ======== */
+.layer-maneuver { background: rgba(74, 158, 255, 0.2); color: var(--accent-blue); }
+.layer-control { background: rgba(74, 222, 128, 0.2); color: var(--accent-green); }
+.layer-sensor { background: rgba(251, 146, 60, 0.2); color: var(--accent-orange); }
+.layer-navigation { background: rgba(167, 139, 250, 0.2); color: var(--accent-purple); }
+.layer-safety { background: rgba(248, 113, 113, 0.2); color: var(--accent-red); }
+.layer-infrastructure { background: rgba(34, 211, 238, 0.2); color: var(--accent-cyan); }
 
 /* ======== Export Modal ======== */
 .modal {

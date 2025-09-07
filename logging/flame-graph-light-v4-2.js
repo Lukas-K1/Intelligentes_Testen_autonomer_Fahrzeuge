@@ -4,9 +4,9 @@ class FlameGraphAnalyzer {
     this.initializeState();
     this.initializeElements();
     this.initializeData();
-    this.initializeCategories();
+    this.initializeLayers();
     this.initializeActors();
-    this.renderCategoryFilterButtons();
+    this.renderLayerFilterButtons();
     this.renderActorFilterButtons();
     this.setupEventListeners();
     this.setupResizer();
@@ -20,7 +20,7 @@ class FlameGraphAnalyzer {
       spans: [],
       filteredSpans: [],
       selectedEvents: new Set(),
-      activeCategories: new Set(),
+      activeLayers: new Set(),
       activeActors: new Set(),
       zoomLevel: 1,
       panOffset: 0
@@ -51,7 +51,7 @@ class FlameGraphAnalyzer {
       analysisContent: document.getElementById('analysis-content'),
       tooltip: document.getElementById('tooltip'),
       tooltipTitle: document.getElementById('tooltip-title'),
-      tooltipCategory: document.getElementById('tooltip-category'),
+      tooltipLayer: document.getElementById('tooltip-layer'),
       tooltipMetrics: document.getElementById('tooltip-metrics'),
       searchInput: document.getElementById('search-input'),
       eventCount: document.getElementById('event-count'),
@@ -88,10 +88,10 @@ class FlameGraphAnalyzer {
 
     // console.log("Event listeners set up");
 
-    // Category filters
-    document.querySelectorAll('.category-filter-chip').forEach(chip => {
+    // Layer filters
+    document.querySelectorAll('.layer-filter-chip').forEach(chip => {
       // console.log(chip);
-      chip.addEventListener('click', () => this.toggleCategory(chip.dataset.category));
+      chip.addEventListener('click', () => this.toggleLayer(chip.dataset.layer));
     });
 
     // Actor filters
@@ -275,8 +275,8 @@ class FlameGraphAnalyzer {
       { "timestamp": "14.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection" },
       { "timestamp": "20.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection" },
 
-      { "timestamp": "0.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation" },
-      { "timestamp": "2.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation" },
+      { "timestamp": "0.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", distance_to_vut: 12.5 },
+      { "timestamp": "2.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", distance_to_vut: 22.5 },
     ];
 
     this.processEventData();
@@ -290,13 +290,13 @@ class FlameGraphAnalyzer {
     this.updateEventCount();
   }
 
-  initializeCategories() {
+  initializeLayers() {
     // console.log(this.state.rawEvents);
-    const categories = new Set(this.state.rawEvents.map((event) => event.category));
-    // console.log(categories);
-    this.state.activeCategories = new Set(categories); // Initially, all categories are active
-    // console.log(this.state.activeCategories);
-    this.state.categories = Array.from(categories); // Convert to array for rendering
+    const layers = new Set(this.state.rawEvents.map((event) => event.layer));
+    // console.log(layers);
+    this.state.activeLayers = new Set(layers); // Initially, all layers are active
+    // console.log(this.state.activeLayers);
+    this.state.layers = Array.from(layers); // Convert to array for rendering
   }
 
   initializeActors() {
@@ -308,16 +308,16 @@ class FlameGraphAnalyzer {
     this.state.actors = Array.from(actors); // Convert to array for rendering
   }
 
-  renderCategoryFilterButtons() {
-    const filterGroup = document.getElementById('category-filter-group');
-    filterGroup.innerHTML = '<span class="category-filter-label">Categories:</span>'; // Clear existing buttons
+  renderLayerFilterButtons() {
+    const filterGroup = document.getElementById('layer-filter-group');
+    filterGroup.innerHTML = '<span class="layer-filter-label">Layers:</span>'; // Clear existing buttons
 
-    // console.log(this.state.categories);
-    this.state.categories.forEach((category) => {
+    // console.log(this.state.layers);
+    this.state.layers.forEach((layer) => {
       const button = document.createElement('span');
-      button.className = `category-filter-chip category-${category} active`;
-      button.dataset.category = category;
-      button.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+      button.className = `layer-filter-chip layer-${layer} active`;
+      button.dataset.layer = layer;
+      button.textContent = layer.charAt(0).toUpperCase() + layer.slice(1);
       filterGroup.appendChild(button);
     });
   }
@@ -352,7 +352,7 @@ class FlameGraphAnalyzer {
         openEvents.set(eventId, {
           start: timestamp,
           display_name: event.display_name,
-          category: event.category,
+          layer: event.layer,
           event_id: eventId
         });
       } else {
@@ -365,7 +365,7 @@ class FlameGraphAnalyzer {
           end: timestamp,
           duration: timestamp - openEvent.start,
           display_name: openEvent.display_name,
-          category: openEvent.category,
+          layer: openEvent.layer,
           //TODO: Warum ist das anders als darüber?
           actor: event.actor,
           layer: event.layer
@@ -472,7 +472,7 @@ class FlameGraphAnalyzer {
         .range([0, this.dimensions.innerHeight])
         .padding(0.1),
 
-      color: (category) => this.config.colors[category] || '#666666'
+      color: (layer) => this.config.colors[layer] || '#666666'
     };
   }
 
@@ -523,7 +523,7 @@ renderBars() {
         .attr('y', y)
         .attr('width', Math.max(2, this.scales.x(span.end) - this.scales.x(span.start)))
         .attr('height', this.config.barHeight * 0.8)
-        .attr('fill', this.scales.color(span.category))
+        .attr('fill', this.scales.color(span.layer))
         .attr('opacity', 0.8)
         .on('mouseover', (event) => this.showTooltip(event, span))
         .on('mouseout', () => this.hideTooltip());
@@ -617,12 +617,12 @@ renderLabels() {
   showTooltip(event, data) {
     const tooltip = this.elements.tooltip;
     const title = this.elements.tooltipTitle;
-    const category = this.elements.tooltipCategory;
+    const layer = this.elements.tooltipLayer;
     const metrics = this.elements.tooltipMetrics;
 
     title.textContent = data.display_name;
-    category.textContent = data.category;
-    category.className = `event-category category-${data.category}`;
+    layer.textContent = data.layer;
+    layer.className = `event-layer layer-${data.layer}`;
 
     const relatedEvents = this.findRelatedEvents(data);
 
@@ -712,25 +712,25 @@ renderLabels() {
     console.log(this.state.activeActors.has(this.state.spans[0].actor))
     // console.log(this.state.spans[0])
     console.log(this.state.spans[0].actor)
-    console.log(this.state.activeCategories.has(this.state.spans[0].category) &&
+    console.log(this.state.activeLayers.has(this.state.spans[0].layer) &&
         this.state.activeActors.has(this.state.spans[0].actor) && (
           this.state.spans[0].display_name.toLowerCase().includes(searchTerm) ||
           this.state.spans[0].event_id.toLowerCase().includes(searchTerm) ||
-          this.state.spans[0].category.toLowerCase().includes(searchTerm)
+          this.state.spans[0].layer.toLowerCase().includes(searchTerm)
         ))
 
     if (!searchTerm) {
       this.state.filteredSpans = this.state.spans.filter(span =>
-        this.state.activeCategories.has(span.category) &&
+        this.state.activeLayers.has(span.layer) &&
         this.state.activeActors.has(span.actor)
       );
     } else {
       this.state.filteredSpans = this.state.spans.filter(span =>
-        this.state.activeCategories.has(span.category) &&
+        this.state.activeLayers.has(span.layer) &&
         this.state.activeActors.has(span.actor) && (
           span.display_name.toLowerCase().includes(searchTerm) ||
           span.event_id.toLowerCase().includes(searchTerm) ||
-          span.category.toLowerCase().includes(searchTerm)
+          span.layer.toLowerCase().includes(searchTerm)
         )
       );
     }
@@ -741,14 +741,14 @@ renderLabels() {
     this.render();
   }
 
-  toggleCategory(category) {
-    const chip = document.querySelector(`[data-category="${category}"]`);
+  toggleLayer(layer) {
+    const chip = document.querySelector(`[data-layer="${layer}"]`);
 
-    if (this.state.activeCategories.has(category)) {
-      this.state.activeCategories.delete(category);
+    if (this.state.activeLayers.has(layer)) {
+      this.state.activeLayers.delete(layer);
       chip.classList.remove('active');
     } else {
-      this.state.activeCategories.add(category);
+      this.state.activeLayers.add(layer);
       chip.classList.add('active');
     }
 
@@ -802,7 +802,7 @@ renderLabels() {
   calculateStatistics() {
     const stats = {
       totalDuration: 0,
-      categoryBreakdown: {},
+      layerBreakdown: {},
       averageDuration: 0,
       overlappingEvents: 0
     };
@@ -812,18 +812,18 @@ renderLabels() {
     const timeRange = this.getTimeRange();
     stats.totalDuration = timeRange.end - timeRange.start;
 
-    // Category breakdown
+    // Layer breakdown
     this.state.spans.forEach(span => {
-      if (!stats.categoryBreakdown[span.category]) {
-        stats.categoryBreakdown[span.category] = {
+      if (!stats.layerBreakdown[span.layer]) {
+        stats.layerBreakdown[span.layer] = {
           count: 0,
           totalDuration: 0,
           events: []
         };
       }
-      stats.categoryBreakdown[span.category].count++;
-      stats.categoryBreakdown[span.category].totalDuration += span.duration;
-      stats.categoryBreakdown[span.category].events.push(span);
+      stats.layerBreakdown[span.layer].count++;
+      stats.layerBreakdown[span.layer].totalDuration += span.duration;
+      stats.layerBreakdown[span.layer].events.push(span);
     });
 
     // Average duration
@@ -844,7 +844,7 @@ renderLabels() {
   }
 
   initializeAnalysisTabs() {
-    this.switchAnalysisTab('statistics');
+    this.switchAnalysisTab('diagram');
   }
 
   switchAnalysisTab(tabName) {
@@ -865,6 +865,9 @@ renderLabels() {
         break;
       case 'performance':
         this.renderPerformanceTab();
+        break;
+      case 'diagram':
+        this.renderDiagram();
         break;
     }
   }
@@ -893,12 +896,12 @@ renderLabels() {
         </div>
       </div>
 
-      <h3 style="margin: 2rem 0 1rem; font-size: 1.125rem;">Category Breakdown</h3>
-      <div class="category-breakdown">
-        ${Object.entries(stats.categoryBreakdown).map(([category, data]) => `
+      <h3 style="margin: 2rem 0 1rem; font-size: 1.125rem;">Layer Breakdown</h3>
+      <div class="layer-breakdown">
+        ${Object.entries(stats.layerBreakdown).map(([layer, data]) => `
           <div class="stat-card">
             <div class="stat-card-title">
-              <span class="event-category category-${category}">${category}</span>
+              <span class="event-layer layer-${layer}">${layer}</span>
             </div>
             <div class="stat-card-value">${data.count}<span class="stat-card-unit">events</span></div>
             <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
@@ -986,7 +989,7 @@ renderLabels() {
     for (let i = 0; i < this.state.spans.length - 1; i++) {
       const current = this.state.spans[i];
       const next = this.state.spans[i + 1];
-      const sequence = `${current.category} → ${next.category}`;
+      const sequence = `${current.layer} → ${next.layer}`;
 
       sequenceMap.set(sequence, (sequenceMap.get(sequence) || 0) + 1);
     }
@@ -1039,7 +1042,7 @@ renderLabels() {
             <div class="stat-card-title">${event.display_name}</div>
             <div class="stat-card-value">${(event.duration / 1000).toFixed(2)}<span class="stat-card-unit">s</span></div>
             <div style="margin-top: 0.5rem;">
-              <span class="event-category category-${event.category}">${event.category}</span>
+              <span class="event-layer layer-${event.layer}">${event.layer}</span>
             </div>
           </div>
         `).join('')}
@@ -1120,6 +1123,17 @@ renderLabels() {
     return bottlenecks;
   }
 
+// Im FlameGraphAnalyzer
+renderDiagram() {
+    console.log("Rendering distance diagram");
+
+    const stats = this.calculateStatistics();
+    const content = this.elements.analysisContent;
+
+    content.innerHTML = `<div>Hier steht bald ein wundervolles Diagramm!</div>`;
+  }
+
+
   showImportDialog() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -1151,8 +1165,8 @@ renderLabels() {
             console.log("Data.events is array")
           // Support export format
           events = data.events.flatMap(event => [
-            { timestamp: event.start / 1000, event_id: event.id, display_name: event.name, category: event.category, actor: event.actor, layer: event.layer },
-            { timestamp: event.end / 1000, event_id: event.id, display_name: event.name + ' Complete', category: event.category, actor: event.actor, layer: event.layer }
+            { timestamp: event.start / 1000, event_id: event.id, display_name: event.name, layer: event.layer, actor: event.actor, layer: event.layer },
+            { timestamp: event.end / 1000, event_id: event.id, display_name: event.name + ' Complete', layer: event.layer, actor: event.actor, layer: event.layer }
           ]);
         } else if (data.data && Array.isArray(data.data)) {
             console.log("Data.data is array")
@@ -1217,7 +1231,7 @@ renderLabels() {
       events: this.state.spans.map(span => ({
         id: span.event_id,
         name: span.display_name,
-        category: span.category,
+        layer: span.layer,
         actor: span.actor,
         layer: span.layer,
         start: span.start / 1000,
@@ -1235,11 +1249,11 @@ renderLabels() {
 
   exportCSV() {
     const csv = Papa.unparse({
-      fields: ['event_id', 'display_name', 'category', 'start_time', 'end_time', 'duration'],
+      fields: ['event_id', 'display_name', 'layer', 'start_time', 'end_time', 'duration'],
       data: this.state.spans.map(span => ({
         event_id: span.event_id,
         display_name: span.display_name,
-        category: span.category,
+        layer: span.layer,
         start_time: (span.start / 1000).toFixed(3),
         end_time: (span.end / 1000).toFixed(3),
         duration: (span.duration / 1000).toFixed(3)
