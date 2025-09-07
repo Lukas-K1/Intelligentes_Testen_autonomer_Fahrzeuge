@@ -1,8 +1,8 @@
 import json
 import os
-from datetime import datetime
 from collections import defaultdict
-from typing import Dict, Any, List, Optional
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 
 class JsonEventLogger:
@@ -35,7 +35,9 @@ class JsonEventLogger:
         start_time_s: float,
     ):
         if event_id in self._open_events:
-            print(f"[JsonEventLogger] Warning: event '{event_id}' already open, overwriting.")
+            print(
+                f"[JsonEventLogger] Warning: event '{event_id}' already open, overwriting."
+            )
 
         self._open_events[event_id] = {
             "id": event_id,
@@ -93,8 +95,14 @@ class JsonEventLogger:
         }
         self._finished_events.append(top_event)
 
-        self._min_start_ms = start_ms if self._min_start_ms is None else min(self._min_start_ms, start_ms)
-        self._max_end_ms = end_ms if self._max_end_ms is None else max(self._max_end_ms, end_ms)
+        self._min_start_ms = (
+            start_ms
+            if self._min_start_ms is None
+            else min(self._min_start_ms, start_ms)
+        )
+        self._max_end_ms = (
+            end_ms if self._max_end_ms is None else max(self._max_end_ms, end_ms)
+        )
         self._total_duration_ms += dur_ms
 
     def export_json(self, filename: str):
@@ -110,11 +118,18 @@ class JsonEventLogger:
         metadata = {
             "exportTime": datetime.utcnow().isoformat() + "Z",
             "totalEvents": len(self._finished_events),
-            "timeRange": {"start": self._min_start_ms or 0, "end": self._max_end_ms or 0},
+            "timeRange": {
+                "start": self._min_start_ms or 0,
+                "end": self._max_end_ms or 0,
+            },
             "statistics": {
                 "totalDuration": self._total_duration_ms,
                 "categoryBreakdown": category_breakdown,
-                "averageDuration": (self._total_duration_ms / len(self._finished_events)) if self._finished_events else 0,
+                "averageDuration": (
+                    (self._total_duration_ms / len(self._finished_events))
+                    if self._finished_events
+                    else 0
+                ),
                 "overlappingEvents": 0,
             },
         }
@@ -125,4 +140,6 @@ class JsonEventLogger:
         with open(filename, "w", encoding="utf-8") as fh:
             json.dump(out, fh, indent=2, ensure_ascii=False)
 
-        print(f"[JsonEventLogger] Exported {len(self._finished_events)} events → {filename}")
+        print(
+            f"[JsonEventLogger] Exported {len(self._finished_events)} events → {filename}"
+        )
