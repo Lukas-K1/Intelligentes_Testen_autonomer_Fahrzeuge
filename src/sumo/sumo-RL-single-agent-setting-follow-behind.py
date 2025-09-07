@@ -3,12 +3,11 @@ import sys
 import time
 
 import gymnasium as gym
-from stable_baselines3.common.callbacks import BaseCallback
-
 import register_env
 import traci
 from bppy import *
 from gymnasium.spaces import Box
+from stable_baselines3.common.callbacks import BaseCallback
 from z3 import *
 
 from src.sumo.action_enum import *
