@@ -808,4 +808,19 @@ html, body {
   color: var(--text-secondary);
 }
 
+.row-label.actor-headline {
+  background: var(--bg-secondary);
+  font-size: 1rem;
+  font-weight: bold;
+  border-bottom: none;
+}
+
+.row-label.layer-headline {
+  background: var(--bg-surface);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding-left: 2rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
 .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}

@@ -506,8 +506,16 @@ class FlameGraphAnalyzer {
 renderBars() {
   const groups = this.groupSpansByActorAndLayer(this.state.filteredSpans);
   console.log(groups);
-  let y = 0;
+  let y = 20;
+  let prevActor = null;
+
   groups.forEach((group, groupIdx) => {
+    console.log(group.actor)
+    if (group.actor !== prevActor) {
+      prevActor = group.actor;
+      console.log(prevActor)
+      y += this.config.barHeight;
+    }
     group.spans.forEach(span => {
       this.chartGroup.append('rect')
         .attr('class', 'flame-bar')
@@ -580,16 +588,29 @@ renderLabels() {
   const groups = this.groupSpansByActorAndLayer(this.state.filteredSpans);
   const labelsContainer = this.elements.labelsContainer;
   labelsContainer.innerHTML = '';
+
+  let lastActor = null;
   groups.forEach(group => {
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'row-label';
-    labelDiv.innerHTML = `
-      <div class="row-label-content">
-        <span>${group.actor}</span>
-        <span style="color: #888;">${group.layer}</span>
-      </div>
-    `;
-    labelsContainer.appendChild(labelDiv);
+    // Akteur-Überschrift nur einmal pro Akteur
+    if (group.actor !== lastActor) {
+      const actorDiv = document.createElement('div');
+      actorDiv.className = 'row-label actor-headline';
+      actorDiv.textContent = group.actor;
+      actorDiv.style.fontWeight = 'bold';
+      actorDiv.style.fontSize = '1rem';
+      actorDiv.style.background = 'var(--bg-secondary)';
+      labelsContainer.appendChild(actorDiv);
+      lastActor = group.actor;
+    }
+    // Layer-Label leicht eingerückt
+    const layerDiv = document.createElement('div');
+    layerDiv.className = 'row-label layer-headline';
+    layerDiv.textContent = group.layer;
+    layerDiv.style.paddingLeft = '2rem';
+    layerDiv.style.fontWeight = '500';
+    layerDiv.style.fontSize = '0.95rem';
+    layerDiv.style.background = 'var(--bg-surface)';
+    labelsContainer.appendChild(layerDiv);
   });
 }
 
