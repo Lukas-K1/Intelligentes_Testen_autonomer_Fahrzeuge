@@ -12,25 +12,29 @@ class FlameGraphAnalyzer {
     this.render();
   }
 
-  initializeState() {
-    this.state = {
-      rawEvents: [],
-      spans: [],
-      filteredSpans: [],
-      selectedEvents: new Set(),
-      activeLayers: new Set(),
-      activeActors: new Set(),
-      zoomLevel: 1,
-      panOffset: 0
-    };
+    initializeState() {
+      this.state = {
+        rawEvents: [],
+        spans: [],
+        filteredSpans: [],
+        selectedEvents: new Set(),
+        activeLayers: new Set(),
+        activeActors: new Set(),
+        actors: [],
+        layers: [],
+        layerDefs: [],          // <— keep full layer metadata
+        zoomLevel: 1,
+        panOffset: 0
+      };
 
-    this.config = {
-      barHeight: 40,
-      margin: { top: 40, right: 60, bottom: 50, left: 0 },
-      pixelsPerSecond: 150,
-      minWidth: 800
-    };
-  }
+      this.config = {
+        barHeight: 40,
+        margin: { top: 40, right: 60, bottom: 50, left: 0 },
+        pixelsPerSecond: 150,
+        minWidth: 800,
+        colors: {}              // <— prevent undefined access
+      };
+    }
 
   initializeElements() {
     this.elements = {
@@ -63,46 +67,47 @@ class FlameGraphAnalyzer {
     };
   }
 
-  setupEventListeners() {
-    this.elements.searchInput.addEventListener('input',
-      this.debounce((e) => this.handleSearch(e.target.value), 300));
+    setupEventListeners() {
+      this.elements.searchInput.addEventListener('input',
+        this.debounce((e) => this.handleSearch(e.target.value), 300));
 
-    this.buttons.import.addEventListener('click', () => this.showImportDialog());
-    this.buttons.export.addEventListener('click', () => this.showExportModal());
-    this.buttons.zoomIn.addEventListener('click', () => this.zoom(1.2));
-    this.buttons.zoomOut.addEventListener('click', () => this.zoom(0.8));
-    this.buttons.zoomFit.addEventListener('click', () => this.zoomToFit());
+      this.buttons.import.addEventListener('click', () => this.showImportDialog());
+      this.buttons.export.addEventListener('click', () => this.showExportModal());
+      this.buttons.zoomIn.addEventListener('click', () => this.zoom(1.2));
+      this.buttons.zoomOut.addEventListener('click', () => this.zoom(0.8));
+      this.buttons.zoomFit.addEventListener('click', () => this.zoomToFit());
 
-    document.querySelectorAll('.layer-filter-chip').forEach(chip => {
-      chip.addEventListener('click', () => this.toggleLayer(chip.dataset.layer));
-    });
-
-    document.querySelectorAll('.actor-filter-chip').forEach(chip => {
-      chip.addEventListener('click', () => this.toggleActor(chip.dataset.actor));
-    });
-
-    document.querySelectorAll('.export-option').forEach(option => {
-      option.addEventListener('click', () => {
-        document.querySelectorAll('.export-option').forEach(o => o.classList.remove('selected'));
-        option.classList.add('selected');
+      // 🔁 Event delegation so newly-rendered chips work automatically
+      document.getElementById('layer-filter-group').addEventListener('click', (e) => {
+        const chip = e.target.closest('.layer-filter-chip');
+        if (chip) this.toggleLayer(chip.dataset.layer);
       });
-    });
+      document.getElementById('actor-filter-group').addEventListener('click', (e) => {
+        const chip = e.target.closest('.actor-filter-chip');
+        if (chip) this.toggleActor(chip.dataset.actor);
+      });
 
-    document.getElementById('confirm-export').addEventListener('click', () => this.confirmExport());
-    document.getElementById('cancel-export').addEventListener('click', () => this.closeExportModal());
+      document.querySelectorAll('.export-option').forEach(option => {
+        option.addEventListener('click', () => {
+          document.querySelectorAll('.export-option').forEach(o => o.classList.remove('selected'));
+          option.classList.add('selected');
+        });
+      });
 
-    this.setupFileDrop();
+      document.getElementById('confirm-export').addEventListener('click', () => this.confirmExport());
+      document.getElementById('cancel-export').addEventListener('click', () => this.closeExportModal());
 
-    this.setupKeyboardShortcuts();
+      this.setupFileDrop();
+      this.setupKeyboardShortcuts();
 
-    this.elements.chartViewport.addEventListener('wheel', (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        const delta = e.deltaY > 0 ? 0.9 : 1.1;
-        this.zoom(delta);
-      }
-    });
-  }
+      this.elements.chartViewport.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          const delta = e.deltaY > 0 ? 0.9 : 1.1;
+          this.zoom(delta);
+        }
+      });
+    }
 
   setupFileDrop() {
     const dropZone = this.elements.fileDropZone;
@@ -173,120 +178,123 @@ class FlameGraphAnalyzer {
     this.updateEventCount();
   }
 
-extractNumericSeries() {
-  const series = {};
+    extractNumericSeries() {
+      const series = {};
 
-  this.state.rawEvents.forEach(event => {
-    for (const [key, value] of Object.entries(event)) {
-      if (
-        typeof value === "number" &&
-        !["timestamp"].includes(key)
-      ) {
-        if (!series[key]) {
-          series[key] = {};
+      this.state.rawEvents.forEach(event => {
+        for (const [key, value] of Object.entries(event)) {
+          if (
+            typeof value === "number" &&
+            !["timestamp"].includes(key)
+          ) {
+            if (!series[key]) {
+              series[key] = {};
+            }
+            if (!series[key][event.actor]) {
+              series[key][event.actor] = [];
+            }
+            series[key][event.actor].push({
+              time: this.parseTimestamp(event.timestamp) / 1000,
+              value
+            });
+          }
         }
-        if (!series[key][event.actor]) {
-          series[key][event.actor] = [];
-        }
-        series[key][event.actor].push({
-          time: this.parseTimestamp(event.timestamp) / 1000,
-          value
+      });
+
+      Object.values(series).forEach(actorSeries => {
+        Object.values(actorSeries).forEach(values => {
+          values.sort((a, b) => a.time - b.time);
         });
+      });
+
+      this.state.numericSeries = series;
+
+      if (!this.state.selectedDiagram && Object.keys(series).length > 0) {
+        this.state.selectedDiagram = Object.keys(series)[0];
       }
     }
-  });
 
-  Object.values(series).forEach(actorSeries => {
-    Object.values(actorSeries).forEach(values => {
-      values.sort((a, b) => a.time - b.time);
-    });
-  });
+    initializeLayers() {
+      if (this.state.layerDefs?.length) {
+        this.state.layers = this.state.layerDefs.map(l => l.id);
+        this.state.activeLayers = new Set(this.state.layers);
+      } else {
+        const layers = Array.from(new Set(this.state.rawEvents.map(e => e.layer)));
+        this.state.layers = layers;
+        this.state.activeLayers = new Set(layers);
+      }
+    }
 
-  this.state.numericSeries = series;
+    initializeActors() {
+      const actors = Array.from(new Set(this.state.rawEvents.map(e => e.actor).filter(Boolean))).sort();
+      this.state.actors = actors;
+      this.state.activeActors = new Set(actors);
+    }
 
-  if (!this.state.selectedDiagram && Object.keys(series).length > 0) {
-    this.state.selectedDiagram = Object.keys(series)[0];
-  }
-}
+    renderLayerFilterButtons() {
+      const filterGroup = document.getElementById('layer-filter-group');
+      filterGroup.innerHTML = '<span class="layer-filter-label">Layers:</span>';
 
-  initializeLayers() {
-    const layers = new Set(this.state.rawEvents.map((event) => event.layer));
-    this.state.activeLayers = new Set(layers);
-    this.state.layers = Array.from(layers);
-  }
+      const metaById = Object.fromEntries((this.state.layerDefs || []).map(l => [l.id, l]));
+      (this.state.layers || []).forEach((layerId) => {
+        const meta = metaById[layerId] || {};
+        const button = document.createElement('span');
+        button.className = `layer-filter-chip layer-${layerId} ${this.state.activeLayers.has(layerId) ? 'active' : ''}`;
+        button.dataset.layer = layerId;
+        button.textContent = meta.display_name || (layerId.charAt(0).toUpperCase() + layerId.slice(1));
+        filterGroup.appendChild(button);
+      });
+    }
 
-  initializeActors() {
-    const actors = new Set(this.state.rawEvents.map((event) => event.actor));
-    this.state.activeActors = new Set(actors);
-    this.state.actors = Array.from(actors);
-  }
+    renderActorFilterButtons() {
+      const group = document.getElementById('actor-filter-group');
+      group.innerHTML = '<span class="actor-filter-label">Actors:</span>';
 
-  renderLayerFilterButtons() {
-    const filterGroup = document.getElementById('layer-filter-group');
-    filterGroup.innerHTML = '<span class="layer-filter-label">Layers:</span>';
-
-    this.state.layers.forEach((layer) => {
-      const button = document.createElement('span');
-      button.className = `layer-filter-chip layer-${layer} active`;
-      button.dataset.layer = layer;
-      button.textContent = layer.charAt(0).toUpperCase() + layer.slice(1);
-      filterGroup.appendChild(button);
-    });
-  }
-
-  renderActorFilterButtons() {
-    const actorFilterGroup = document.getElementById('actor-filter-group');
-    actorFilterGroup.innerHTML = '<span class="actor-filter-label">Actors:</span>';
-
-    this.state.actors.forEach((actor) => {
-      const button = document.createElement('span');
-      button.className = `actor-filter-chip actor-${actor} active`;
-      button.dataset.actor = actor;
-      button.textContent = actor.charAt(0).toUpperCase() + actor.slice(1);
-      actorFilterGroup.appendChild(button);
-    })
-  }
+      (this.state.actors || []).forEach((actor) => {
+        const chip = document.createElement('span');
+        chip.className = `actor-filter-chip actor-${actor} ${this.state.activeActors.has(actor) ? 'active' : ''}`;
+        chip.dataset.actor = actor;
+        chip.textContent = actor;
+        group.appendChild(chip);
+      });
+    }
 
   buildSpans(events) {
-    const openEvents = new Map();
-    const spans = [];
+      const openEvents = new Map();
+      const spans = [];
 
-    events.forEach(event => {
-      const timestamp = this.parseTimestamp(event.timestamp);
-      if (isNaN(timestamp)) return;
+      events.forEach(event => {
+        const timestamp = this.parseTimestamp(event.timestamp);
+        if (isNaN(timestamp)) return;
 
-      const eventId = event.event_id;
+        const eventId = event.event_id;
 
-      if (!openEvents.has(eventId)) {
-        openEvents.set(eventId, {
-          start: timestamp,
-          display_name: event.display_name,
-          layer: event.layer,
-          event_id: eventId
-        });
-      } else {
-        const openEvent = openEvents.get(eventId);
-        spans.push({
-          id: `${eventId}-${openEvent.start}`,
-          event_id: eventId,
-          start: openEvent.start,
-          end: timestamp,
-          duration: timestamp - openEvent.start,
-          display_name: openEvent.display_name,
-          layer: openEvent.layer,
-          //TODO: Warum ist das anders als darüber?
-          actor: event.actor,
-          layer: event.layer
-        });
-        openEvents.delete(eventId);
-      }
-    });
+        if (!openEvents.has(eventId)) {
+          openEvents.set(eventId, {
+            start: timestamp,
+            display_name: event.display_name,
+            layer: event.layer,
+            event_id: eventId,
+            actor: event.actor            // <— keep actor from the opener
+          });
+        } else {
+          const openEvent = openEvents.get(eventId);
+          spans.push({
+            id: `${eventId}-${openEvent.start}`,
+            event_id: eventId,
+            start: openEvent.start,
+            end: timestamp,
+            duration: timestamp - openEvent.start,
+            display_name: openEvent.display_name,
+            layer: openEvent.layer,
+            actor: openEvent.actor        // <— use opener’s actor
+          });
+          openEvents.delete(eventId);
+        }
+      });
 
-    openEvents.forEach((event, id) => {
-      this.log('warn', `Unclosed event: ${event.display_name} (${id})`);
-    });
-
-    return spans.sort((a, b) => a.start - b.start);
+      openEvents.forEach((event, id) => this.log('warn', `Unclosed event: ${event.display_name} (${id})`));
+      return spans.sort((a, b) => a.start - b.start);
   }
 
   parseTimestamp(timestamp) {
@@ -367,20 +375,17 @@ extractNumericSeries() {
   }
 
   createScales() {
-    const timeRange = this.getTimeRange();
-
-    this.scales = {
-      x: d3.scaleLinear()
-        .domain([timeRange.start, timeRange.end])
-        .range([0, this.dimensions.totalWidth - this.config.margin.left - this.config.margin.right]),
-
-      y: d3.scaleBand()
-        .domain(d3.range(this.state.filteredSpans.length))
-        .range([0, this.dimensions.innerHeight])
-        .padding(0.1),
-
-      color: (layer) => this.config.colors[layer] || '#666666'
-    };
+      const timeRange = this.getTimeRange();
+      this.scales = {
+        x: d3.scaleLinear()
+          .domain([timeRange.start, timeRange.end])
+          .range([0, this.dimensions.totalWidth - this.config.margin.left - this.config.margin.right]),
+        y: d3.scaleBand()
+          .domain(d3.range(this.state.filteredSpans.length))
+          .range([0, this.dimensions.innerHeight])
+          .padding(0.1),
+        color: (layer) => (this.config.colors && this.config.colors[layer]) || '#666666'
+      };
   }
 
   createSVG() {
@@ -445,23 +450,19 @@ renderBars() {
   });
 }
 
-  groupSpansByActorAndLayer(spans) {
+groupSpansByActorAndLayer(spans) {
   const groups = {};
   spans.forEach(span => {
     const key = `${span.actor}::${span.layer}`;
-    if (!groups[key]) {
-      groups[key] = { actor: span.actor, layer: span.layer, spans: [] };
-    }
+    if (!groups[key]) groups[key] = { actor: span.actor, layer: span.layer, spans: [] };
     groups[key].spans.push(span);
   });
-    return Object.values(groups).sort((a, b) => {
-    // TODO: Fix sorting to account for correct order of layers
-    if (a.actor < b.actor) return -1;
-    if (a.actor > b.actor) return 1;
-    if (a.layer < b.layer) return -1;
-    if (a.layer > b.layer) return 1;
-    return 0;
-  });
+
+  const layerOrder = new Map((this.state.layers || []).map((id, i) => [id, i]));
+  return Object.values(groups).sort((a, b) =>
+    a.actor.localeCompare(b.actor) ||
+    (layerOrder.get(a.layer) ?? 1e9) - (layerOrder.get(b.layer) ?? 1e9)
+  );
 }
 
 renderAxis() {
@@ -601,34 +602,28 @@ renderLabels() {
     );
   }
 
-  handleSearch(query) {
-    const searchTerm = query.toLowerCase().trim();
+    handleSearch(query) {
+      const searchTerm = query.toLowerCase().trim();
 
-    this.state.activeActors.has(this.state.spans[0].actor) && (
-      this.state.spans[0].display_name.toLowerCase().includes(searchTerm) ||
-      this.state.spans[0].event_id.toLowerCase().includes(searchTerm) ||
-      this.state.spans[0].layer.toLowerCase().includes(searchTerm)
-    )
+      if (!searchTerm) {
+        this.state.filteredSpans = this.state.spans.filter(span =>
+          this.state.activeLayers.has(span.layer) &&
+          this.state.activeActors.has(span.actor)
+        );
+      } else {
+        this.state.filteredSpans = this.state.spans.filter(span =>
+          this.state.activeLayers.has(span.layer) &&
+          this.state.activeActors.has(span.actor) && (
+            span.display_name.toLowerCase().includes(searchTerm) ||
+            span.event_id.toLowerCase().includes(searchTerm) ||
+            span.layer.toLowerCase().includes(searchTerm)
+          )
+        );
+      }
 
-    if (!searchTerm) {
-      this.state.filteredSpans = this.state.spans.filter(span =>
-        this.state.activeLayers.has(span.layer) &&
-        this.state.activeActors.has(span.actor)
-      );
-    } else {
-      this.state.filteredSpans = this.state.spans.filter(span =>
-        this.state.activeLayers.has(span.layer) &&
-        this.state.activeActors.has(span.actor) && (
-          span.display_name.toLowerCase().includes(searchTerm) ||
-          span.event_id.toLowerCase().includes(searchTerm) ||
-          span.layer.toLowerCase().includes(searchTerm)
-        )
-      );
+      this.updateEventCount();
+      this.render();
     }
-
-    this.updateEventCount();
-    this.render();
-  }
 
   toggleLayer(layer) {
     const chip = document.querySelector(`[data-layer="${layer}"]`);
@@ -799,40 +794,44 @@ renderLabels() {
       input.click();
     }
 
-  handleFileImport(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target.result);
+    handleFileImport(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!Array.isArray(data.layers) || !Array.isArray(data.events)) {
+            throw new Error('Invalid log format: expected { layers: [...], events: [...] }');
+          }
 
-        let events = [];
+          // Save layer defs and colors
+          this.state.layerDefs = data.layers.slice();
+          this.config.colors = {};
+          data.layers.forEach(l => { this.config.colors[l.id] = l.color || '#666666'; });
 
-        if (Array.isArray(data)) {
-          events = data;
-        } else if (data.events && Array.isArray(data.events)) {
-          events = data.events.flatMap(event => [
-            { timestamp: event.start / 1000, event_id: event.id, display_name: event.name, layer: event.layer, actor: event.actor, layer: event.layer },
-            { timestamp: event.end / 1000, event_id: event.id, display_name: event.name + ' Complete', layer: event.layer, actor: event.actor, layer: event.layer }
-          ]);
-        } else if (data.data && Array.isArray(data.data)) {
-          events = data.data;
-        }
+          // Save events
+          this.state.rawEvents = data.events;
 
-        if (events.length > 0) {
-          this.state.rawEvents = events;
+          // Build spans + numeric series
           this.processEventData();
+
+          // Extract layers/actors and (re)build chips
+          this.initializeLayers();
+          this.initializeActors();
+          this.renderLayerFilterButtons();
+          this.renderActorFilterButtons();
+
+          // Render visuals
+          this.renderDiagram();
           this.render();
+
           this.log('info', `Imported ${this.state.spans.length} events from ${file.name}`);
-        } else {
-          throw new Error('No valid events found in file');
+        } catch (error) {
+          this.log('error', `Failed to import file: ${error.message}`);
+          alert(`Failed to import file: ${error.message}`);
         }
-      } catch (error) {
-        this.log('error', `Failed to import file: ${error.message}`);
-        alert(`Failed to import file: ${error.message}`);
-      }
-    };
-    reader.readAsText(file);
-  }
+      };
+      reader.readAsText(file);
+    }
 
   showExportModal() {
     this.elements.exportModal.classList.add('active');
