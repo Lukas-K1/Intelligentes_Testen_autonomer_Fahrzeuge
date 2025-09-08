@@ -451,8 +451,9 @@ env = BPEnvSMT(
     observation_space=SumoObservationSpace(dim=calc_dim()),
     reward_function=lambda rewards: sum(filter(None, rewards)),
     steps_per_episode=500,
+    env=driving_env,
 )
-
+env.reset()
 from gymnasium.spaces import Discrete
 
 env.action_space = Discrete(len(env.event_list))

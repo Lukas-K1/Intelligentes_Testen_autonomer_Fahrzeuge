@@ -52,6 +52,52 @@ class BPEnvSMT(BPEnv):
         self.step_count = 0
         self.steps_per_episode = steps_per_episode
 
+    def __init__(
+        self,
+        bprogram_generator,
+        action_list,
+        observation_space=None,
+        action_space=None,
+        reward_function=None,
+        steps_per_episode=None,
+        env = None,
+    ):
+        """
+        Initializes the BPEnv environment.
+
+        Parameters
+        ----------
+        bprogram_generator : function
+            A function that generates a new instance of the BProgram.
+        action_list : list
+            List of all events defined as actions.
+        observation_space : :class:`BPObservationSpace <bppy.gym.bp_observation_space.BPObservationSpace>`, optional
+            Space of possible observations. Defaults to
+            :class:`SimpleBPObservationSpace <bppy.gym.simple_bp_observation_space.SimpleBPObservationSpace>`.
+        reward_function : function, optional
+            A custom function to compute the reward. If not provided, the default reward is the sum of all b-thread
+            rewards.
+        """
+        self.metadata = {}
+        self.bprogram = None
+        self.bprogram_generator = bprogram_generator
+        # self.action_space = BPActionSpace(action_list)
+        self.event_list = action_list
+        self.reward_function = reward_function
+        if self.reward_function is None:
+            self.reward_function = lambda rewards: sum(filter(None, rewards))
+        self.observation_space = observation_space
+        if self.observation_space is None:
+            self.observation_space = SimpleBPObservationSpace(
+                self.bprogram_generator, action_list
+            )
+        self.last_state = None
+        self.done_flag = Bool("done")
+        self.step_count = 0
+        self.steps_per_episode = steps_per_episode
+        self.env = env
+
+
     def step(self, action):
         """
         Executes the given action and returns the resulting observation, reward, done flag, and additional information.
