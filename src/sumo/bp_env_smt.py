@@ -60,7 +60,7 @@ class BPEnvSMT(BPEnv):
         action_space=None,
         reward_function=None,
         steps_per_episode=None,
-        env = None,
+        env=None,
     ):
         """
         Initializes the BPEnv environment.
@@ -96,7 +96,6 @@ class BPEnvSMT(BPEnv):
         self.step_count = 0
         self.steps_per_episode = steps_per_episode
         self.env = env
-
 
     def step(self, action):
         """
