@@ -267,11 +267,11 @@ class FlameGraphAnalyzer {
       { "timestamp": "4.0", "event_id": "car2-switch-lane-left", "display_name": "Car2 – Switch Lane (left)", "category": "sensor", "actor": "Car2", "layer": "selection" },
       { "timestamp": "6.0", "event_id": "car2-switch-lane-left", "display_name": "Car2 – Switch Lane (left)", "category": "sensor", "actor": "Car2", "layer": "selection" },
       { "timestamp": "10.0", "event_id": "car2-switch-lane-right", "display_name": "Car2 – Switch Lane (right)", "category": "sensor", "actor": "Car2", "layer": "selection" },
-      { "timestamp": "13.0", "event_id": "car2-switch-lane-right", "display_name": "Car2 – Switch Lane (right)", "category": "sensor", "actor": "Car2", "layer": "selection" },
-      { "timestamp": "14.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection" },
-      { "timestamp": "20.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection" },
+      { "timestamp": "13.0", "event_id": "car2-switch-lane-right", "display_name": "Car2 – Switch Lane (right)", "category": "sensor", "actor": "Car2", "layer": "selection", "distance_to_car1": 12.5 },
+      { "timestamp": "14.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection", "distance_to_car1": 25 },
+      { "timestamp": "20.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection", "distance_to_car1": 125 },
 
-      { "timestamp": "0.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", "distance_to_vut": 12.5 },
+      { "timestamp": "0.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", "distance_to_vut": 12.5, "distance_to_car1": 25 },
       { "timestamp": "2.0", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", "distance_to_vut": 22.5 },
       { "timestamp": "2.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", "distance_to_vut": 27.5 },
     ];
@@ -287,31 +287,43 @@ class FlameGraphAnalyzer {
     this.updateEventCount();
   }
 
-    extractNumericSeries() {
-      const series = {};
+extractNumericSeries() {
+  const series = {};
 
-      this.state.rawEvents.forEach(event => {
-        for (const [key, value] of Object.entries(event)) {
-          if (
-            typeof value === "number" &&
-            !["timestamp"].includes(key)
-          ) {
-            if (!series[key]) {
-              series[key] = {};
-            }
-            if (!series[key][event.actor]) {
-              series[key][event.actor] = [];
-            }
-            series[key][event.actor].push({
-              time: this.parseTimestamp(event.timestamp) / 1000, // seconds
-              value
-            });
-          }
+  this.state.rawEvents.forEach(event => {
+    for (const [key, value] of Object.entries(event)) {
+      if (
+        typeof value === "number" &&
+        !["timestamp"].includes(key)
+      ) {
+        if (!series[key]) {
+          series[key] = {};
         }
-      });
-
-      this.state.numericSeries = series;
+        if (!series[key][event.actor]) {
+          series[key][event.actor] = [];
+        }
+        series[key][event.actor].push({
+          time: this.parseTimestamp(event.timestamp) / 1000,
+          value
+        });
+      }
     }
+  });
+
+  // 🔑 Sort each actor’s values by timestamp
+  Object.values(series).forEach(actorSeries => {
+    Object.values(actorSeries).forEach(values => {
+      values.sort((a, b) => a.time - b.time);
+    });
+  });
+
+  this.state.numericSeries = series;
+
+  // Auto-select first diagram if none selected
+  if (!this.state.selectedDiagram && Object.keys(series).length > 0) {
+    this.state.selectedDiagram = Object.keys(series)[0];
+  }
+}
 
   initializeLayers() {
     // console.log(this.state.rawEvents);
@@ -817,81 +829,108 @@ renderLabels() {
       filtered === total ? `${total} visible` : `${filtered} visible`;
   }
 
-renderDiagram() {
-  const content = this.elements.analysisContent;
-  content.innerHTML = "";
+    renderDiagram() {
+      const content = this.elements.analysisContent;
+      content.innerHTML = "";
 
-  if (!this.state.numericSeries || Object.keys(this.state.numericSeries).length === 0) {
-    content.innerHTML = `<div>No numeric data available for diagrams.</div>`;
-    return;
-  }
+      if (!this.state.numericSeries || Object.keys(this.state.numericSeries).length === 0) {
+        content.innerHTML = `<div>No numeric data available for diagrams.</div>`;
+        return;
+      }
 
-  Object.entries(this.state.numericSeries).forEach(([key, actorSeries]) => {
-    const container = document.createElement("div");
-    container.className = "diagram-container";
-    container.style.marginBottom = "2rem";
-    container.innerHTML = `<h3>${key}</h3>`;
-    content.appendChild(container);
+      // Create split layout: tabs on left, chart on right
+      const layout = document.createElement("div");
+      layout.style.display = "flex";
+      layout.style.height = "100%";
+      content.appendChild(layout);
 
-    const width = 500, height = 200, margin = { top: 20, right: 80, bottom: 30, left: 50 };
+      // === Tabs ===
+      const tabs = document.createElement("div");
+      tabs.style.width = "150px";
+      tabs.style.borderRight = "1px solid #ccc";
+      tabs.style.display = "flex";
+      tabs.style.flexDirection = "column";
+      layout.appendChild(tabs);
 
-    const svg = d3.select(container)
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
+      Object.keys(this.state.numericSeries).forEach(key => {
+        const tab = document.createElement("button");
+        tab.textContent = key;
+        tab.style.padding = "8px";
+        tab.style.textAlign = "left";
+        tab.style.border = "none";
+        tab.style.background = (this.state.selectedDiagram === key) ? "#eee" : "transparent";
+        tab.style.cursor = "pointer";
+        tab.onclick = () => {
+          this.state.selectedDiagram = key;
+          this.renderDiagram(); // re-render
+        };
+        tabs.appendChild(tab);
+      });
 
-    // Flatten all actor values for global axis scaling
-    const allValues = Object.values(actorSeries).flat();
+      // === Chart area ===
+      const chartContainer = document.createElement("div");
+      chartContainer.style.flex = "1";
+      chartContainer.style.padding = "10px";
+      layout.appendChild(chartContainer);
 
-    const x = d3.scaleLinear()
-      .domain(d3.extent(allValues, d => d.time))
-      .range([margin.left, width - margin.right]);
+      this.renderSingleDiagram(chartContainer, this.state.selectedDiagram, this.state.numericSeries[this.state.selectedDiagram]);
+    }
 
-    const y = d3.scaleLinear()
-      .domain([d3.min(allValues, d => d.value), d3.max(allValues, d => d.value)])
-      .nice()
-      .range([height - margin.bottom, margin.top]);
+    renderSingleDiagram(container, key, actorSeries) {
+      const width = 500, height = 200, margin = { top: 20, right: 80, bottom: 30, left: 50 };
 
-    const color = d3.scaleOrdinal(d3.schemeCategory10)
-      .domain(Object.keys(actorSeries));
+      const svg = d3.select(container)
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
 
-    const line = d3.line()
-      .x(d => x(d.time))
-      .y(d => y(d.value));
+      const allValues = Object.values(actorSeries).flat();
 
-    // One line per actor
-    Object.entries(actorSeries).forEach(([actor, values]) => {
-      svg.append("path")
-        .datum(values)
-        .attr("fill", "none")
-        .attr("stroke", color(actor))
-        .attr("stroke-width", 2)
-        .attr("d", line);
+      const x = d3.scaleLinear()
+        .domain(d3.extent(allValues, d => d.time))
+        .range([margin.left, width - margin.right]);
 
-      // Label at the last data point
-      const lastPoint = values[values.length - 1];
+      const y = d3.scaleLinear()
+        .domain([d3.min(allValues, d => d.value), d3.max(allValues, d => d.value)])
+        .nice()
+        .range([height - margin.bottom, margin.top]);
 
-      svg.append("text")
-        .attr("x", x(lastPoint.time) + 5) // a little to the right of the line end
-        .attr("y", y(lastPoint.value))
-        .attr("dy", "0.35em") // vertical centering
-        .attr("fill", color(actor))
-        .style("font-size", "12px")
-        .text(actor);
-    });
+      const color = d3.scaleOrdinal(d3.schemeCategory10)
+        .domain(Object.keys(actorSeries));
 
-    // Axes
-    svg.append("g")
-      .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "s"));
+      const line = d3.line()
+        .x(d => x(d.time))
+        .y(d => y(d.value));
 
-    svg.append("g")
-      .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(y));
-  });
-}
+      // Draw lines + labels
+      Object.entries(actorSeries).forEach(([actor, values]) => {
+        svg.append("path")
+          .datum(values)
+          .attr("fill", "none")
+          .attr("stroke", color(actor))
+          .attr("stroke-width", 2)
+          .attr("d", line);
 
+        const lastPoint = values[values.length - 1];
+        svg.append("text")
+          .attr("x", x(lastPoint.time) + 5)
+          .attr("y", y(lastPoint.value))
+          .attr("dy", "0.35em")
+          .attr("fill", color(actor))
+          .style("font-size", "12px")
+          .style("text-anchor", "start")
+          .text(actor);
+      });
 
+      // Axes
+      svg.append("g")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "s"));
+
+      svg.append("g")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y));
+    }
 
   showImportDialog() {
     const input = document.createElement('input');
