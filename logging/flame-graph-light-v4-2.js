@@ -1,9 +1,7 @@
-// Enhanced Car Simulation Flame Graph Analyzer
 class FlameGraphAnalyzer {
   constructor() {
     this.initializeState();
     this.initializeElements();
-    this.initializeData();
     this.initializeLayers();
     this.initializeActors();
     this.renderLayerFilterButtons();
@@ -30,15 +28,7 @@ class FlameGraphAnalyzer {
       barHeight: 40,
       margin: { top: 40, right: 60, bottom: 50, left: 0 },
       pixelsPerSecond: 150,
-      minWidth: 800,
-      colors: {
-        maneuver: '#4a9eff',
-        control: '#4ade80',
-        sensor: '#fb923c',
-        navigation: '#a78bfa',
-        safety: '#f87171',
-        infrastructure: '#22d3ee'
-      }
+      minWidth: 800
     };
   }
 
@@ -64,7 +54,6 @@ class FlameGraphAnalyzer {
       memoryUsage: document.getElementById('memory-usage')
     };
 
-    // Buttons
     this.buttons = {
       import: document.getElementById('import-btn'),
       export: document.getElementById('export-btn'),
@@ -75,32 +64,23 @@ class FlameGraphAnalyzer {
   }
 
   setupEventListeners() {
-    // Search
     this.elements.searchInput.addEventListener('input',
       this.debounce((e) => this.handleSearch(e.target.value), 300));
 
-    // Buttons
     this.buttons.import.addEventListener('click', () => this.showImportDialog());
     this.buttons.export.addEventListener('click', () => this.showExportModal());
     this.buttons.zoomIn.addEventListener('click', () => this.zoom(1.2));
     this.buttons.zoomOut.addEventListener('click', () => this.zoom(0.8));
     this.buttons.zoomFit.addEventListener('click', () => this.zoomToFit());
 
-    // console.log("Event listeners set up");
-
-    // Layer filters
     document.querySelectorAll('.layer-filter-chip').forEach(chip => {
-      // console.log(chip);
       chip.addEventListener('click', () => this.toggleLayer(chip.dataset.layer));
     });
 
-    // Actor filters
     document.querySelectorAll('.actor-filter-chip').forEach(chip => {
-      // console.log(chip);
       chip.addEventListener('click', () => this.toggleActor(chip.dataset.actor));
     });
 
-    // Export modal
     document.querySelectorAll('.export-option').forEach(option => {
       option.addEventListener('click', () => {
         document.querySelectorAll('.export-option').forEach(o => o.classList.remove('selected'));
@@ -111,13 +91,10 @@ class FlameGraphAnalyzer {
     document.getElementById('confirm-export').addEventListener('click', () => this.confirmExport());
     document.getElementById('cancel-export').addEventListener('click', () => this.closeExportModal());
 
-    // File drop
     this.setupFileDrop();
 
-    // Keyboard shortcuts
     this.setupKeyboardShortcuts();
 
-    // Mouse wheel zoom
     this.elements.chartViewport.addEventListener('wheel', (e) => {
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
@@ -189,97 +166,6 @@ class FlameGraphAnalyzer {
     });
   }
 
-  initializeData() {
-    // Enhanced sample data with more realistic scenarios
-    this.state.rawEventsOld = [
-      //TODO: Data starts here
-      // Car1 - Complex overtaking maneuver
-      { timestamp: "0.0", event_id: "car1-overtake", display_name: "Car1 – Overtake Planning", category: "foo", actor: "Car1" },
-      { timestamp: "0.1", event_id: "car1-radar-check", display_name: "Car1 – Radar Scan", category: "sensor", actor: "Car1" },
-      { timestamp: "0.2", event_id: "car1-camera-check", display_name: "Car1 – Camera Analysis", category: "sensor", actor: "Car1" },
-      { timestamp: "0.3", event_id: "car1-radar-check", display_name: "Car1 – Radar Complete", category: "sensor", actor: "Car1" },
-      { timestamp: "0.4", event_id: "car1-camera-check", display_name: "Car1 – Camera Complete", category: "sensor", actor: "Car1" },
-      { timestamp: "0.5", event_id: "car1-accelerate", display_name: "Car1 – Begin Acceleration", category: "control", actor: "Car1" },
-      { timestamp: "1.0", event_id: "car1-signal-left", display_name: "Car1 – Left Signal On", category: "safety", actor: "Car1" },
-      { timestamp: "1.2", event_id: "car1-lane-change-left", display_name: "Car1 – Lane Change Left", category: "navigation", actor: "Car1" },
-      { timestamp: "1.5", event_id: "car1-signal-left", display_name: "Car1 – Left Signal Off", category: "safety", actor: "Car1" },
-      { timestamp: "1.8", event_id: "car1-lane-change-left", display_name: "Car1 – In Left Lane", category: "navigation", actor: "Car1" },
-      { timestamp: "2.0", event_id: "car1-accelerate", display_name: "Car1 – Max Acceleration", category: "control", actor: "Car1" },
-      { timestamp: "2.5", event_id: "car1-passing", display_name: "Car1 – Passing Vehicle", category: "maneuver", actor: "Car1" },
-      { timestamp: "3.5", event_id: "car1-passing", display_name: "Car1 – Pass Complete", category: "maneuver", actor: "Car1" },
-      { timestamp: "3.6", event_id: "car1-signal-right", display_name: "Car1 – Right Signal On", category: "safety", actor: "Car1" },
-      { timestamp: "3.8", event_id: "car1-lane-change-right", display_name: "Car1 – Lane Change Right", category: "navigation", actor: "Car1" },
-      { timestamp: "4.0", event_id: "car1-signal-right", display_name: "Car1 – Right Signal Off", category: "safety", actor: "Car1" },
-      { timestamp: "4.2", event_id: "car1-lane-change-right", display_name: "Car1 – Back in Lane", category: "navigation", actor: "Car1" },
-      { timestamp: "4.5", event_id: "car1-overtake", display_name: "Car1 – Overtake Complete", category: "maneuver", actor: "Car1" },
-
-      // Car 2 - Emergency braking scenario
-      { timestamp: "2.0", event_id: "Car 2-cruise", display_name: "Car 2 – Cruise Control", category: "control", actor: "Car 2" },
-      { timestamp: "3.0", event_id: "Car 2-obstacle-detect", display_name: "Car 2 – Obstacle Detected", category: "sensor", actor: "Car 2" },
-      { timestamp: "3.1", event_id: "Car 2-emergency-brake", display_name: "Car 2 – Emergency Brake", category: "safety", actor: "Car 2" },
-      { timestamp: "3.2", event_id: "Car 2-abs-active", display_name: "Car 2 – ABS Activated", category: "control", actor: "Car 2" },
-      { timestamp: "3.5", event_id: "Car 2-obstacle-detect", display_name: "Car 2 – Obstacle Avoided", category: "sensor", actor: "Car 2" },
-      { timestamp: "3.8", event_id: "Car 2-abs-active", display_name: "Car 2 – ABS Released", category: "control", actor: "Car 2" },
-      { timestamp: "4.0", event_id: "Car 2-emergency-brake", display_name: "Car 2 – Brake Released", category: "safety", actor: "Car 2" },
-      { timestamp: "4.5", event_id: "Car 2-cruise", display_name: "Car 2 – Resume Cruise", category: "control", actor: "Car 2" },
-
-      // Traffic Light interaction
-      { timestamp: "5.0", event_id: "traffic-light-1", display_name: "Traffic Light – Yellow", category: "infrastructure", actor: "Traffic Light" },
-      { timestamp: "5.2", event_id: "Car 1-decelerate", display_name: "Car1 – Begin Deceleration", category: "control", actor: "Car1" },
-      { timestamp: "6.0", event_id: "traffic-light-1", display_name: "Traffic Light – Red", category: "infrastructure", actor: "Traffic Light" },
-      { timestamp: "6.5", event_id: "car1-stop", display_name: "Car1 – Full Stop", category: "control", actor: "Car1" },
-      { timestamp: "7.0", event_id: "car1-decelerate", display_name: "Car1 – Stopped", category: "control", actor: "Car1" },
-      { timestamp: "8.0", event_id: "car1-stop", display_name: "Car1 – Waiting", category: "control", actor: "Car1" },
-
-      // Intersection navigation
-      { timestamp: "10.0", event_id: "traffic-light-2", display_name: "Traffic Light – Green", category: "infrastructure", actor: "Traffic Light" },
-      { timestamp: "10.2", event_id: "car1-intersection", display_name: "Car1 – Enter Intersection", category: "navigation", actor: "Car1" },
-      { timestamp: "10.5", event_id: "car1-turn-left", display_name: "Car1 – Left Turn", category: "maneuver", actor: "Car1" },
-      { timestamp: "11.5", event_id: "car1-turn-left", display_name: "Car1 – Turn Complete", category: "maneuver", actor: "Car1" },
-      { timestamp: "12.0", event_id: "car1-intersection", display_name: "Car1 – Exit Intersection", category: "navigation", actor: "Car1" },
-      { timestamp: "12.5", event_id: "traffic-light-2", display_name: "Traffic Light – Yellow", category: "infrastructure", actor: "Traffic Light" }
-    ];
-
-    // New data including layer:
-    this.state.rawEvents = [
-      //TODO: New data starts here
-      // Car1 - Complex overtaking maneuver
-      { "timestamp": "0.0", "event_id": "car1-overtake", "display_name": "Car1 – Overtake", "category": "foo", "actor": "Car1", "layer": "scenario" },
-      { "timestamp": "20.0", "event_id": "car1-overtake", "display_name": "Car1 – Overtake", "category": "foo", "actor": "Car1", "layer": "scenario" },
-      { "timestamp": "0.5", "event_id": "car1-accelerate", "display_name": "Car1 – Accelerate", "category": "sensor", "actor": "Car1", "layer": "selection" },
-      { "timestamp": "3.5", "event_id": "car1-accelerate", "display_name": "Car1 – Accelerate", "category": "sensor", "actor": "Car1", "layer": "selection" },
-      { "timestamp": "4.0", "event_id": "car1-switch-lane-left", "display_name": "Car1 – Switch Lane (left)", "category": "sensor", "actor": "Car1", "layer": "selection" },
-      { "timestamp": "6.0", "event_id": "car1-switch-lane-left", "display_name": "Car1 – Switch Lane (left)", "category": "sensor", "actor": "Car1", "layer": "selection" },
-      { "timestamp": "10.0", "event_id": "car1-switch-lane-right", "display_name": "Car1 – Switch Lane (right)", "category": "sensor", "actor": "Car1", "layer": "selection" },
-      { "timestamp": "13.0", "event_id": "car1-switch-lane-right", "display_name": "Car1 – Switch Lane (right)", "category": "sensor", "actor": "Car1", "layer": "selection" },
-      { "timestamp": "14.0", "event_id": "car1-ride-into-sunset", "display_name": "Car1 – Ride into sunset", "category": "sensor", "actor": "Car1", "layer": "selection" },
-      { "timestamp": "20.0", "event_id": "car1-ride-into-sunset", "display_name": "Car1 – Ride into sunset", "category": "sensor", "actor": "Car1", "layer": "selection" },
-
-      { "timestamp": "0.5", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "category": "sensor", "actor": "Car1", "layer": "simulation", "distance_to_vut": 2.5 },
-      { "timestamp": "2.0", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "category": "sensor", "actor": "Car1", "layer": "simulation", "distance_to_vut": 12.5 },
-      { "timestamp": "2.5", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "category": "sensor", "actor": "Car1", "layer": "simulation", "distance_to_vut": 17.5 },
-
-      // Car2 - Complex overtaking maneuver
-      { "timestamp": "0.0", "event_id": "car2-overtake", "display_name": "Car2 – Overtake", "category": "foo", "actor": "Car2", "layer": "scenario" },
-      { "timestamp": "20.0", "event_id": "car2-overtake", "display_name": "Car2 – Overtake", "category": "foo", "actor": "Car2", "layer": "scenario" },
-      { "timestamp": "0.5", "event_id": "car2-accelerate", "display_name": "Car2 – Accelerate", "category": "sensor", "actor": "Car2", "layer": "selection" },
-      { "timestamp": "3.5", "event_id": "car2-accelerate", "display_name": "Car2 – Accelerate", "category": "sensor", "actor": "Car2", "layer": "selection" },
-      { "timestamp": "4.0", "event_id": "car2-switch-lane-left", "display_name": "Car2 – Switch Lane (left)", "category": "sensor", "actor": "Car2", "layer": "selection" },
-      { "timestamp": "6.0", "event_id": "car2-switch-lane-left", "display_name": "Car2 – Switch Lane (left)", "category": "sensor", "actor": "Car2", "layer": "selection" },
-      { "timestamp": "10.0", "event_id": "car2-switch-lane-right", "display_name": "Car2 – Switch Lane (right)", "category": "sensor", "actor": "Car2", "layer": "selection" },
-      { "timestamp": "13.0", "event_id": "car2-switch-lane-right", "display_name": "Car2 – Switch Lane (right)", "category": "sensor", "actor": "Car2", "layer": "selection", "distance_to_car1": 12.5 },
-      { "timestamp": "14.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection", "distance_to_car1": 25 },
-      { "timestamp": "20.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "category": "sensor", "actor": "Car2", "layer": "selection", "distance_to_car1": 125 },
-
-      { "timestamp": "0.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", "distance_to_vut": 12.5, "distance_to_car1": 25 },
-      { "timestamp": "2.0", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", "distance_to_vut": 22.5 },
-      { "timestamp": "2.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "category": "sensor", "actor": "Car2", "layer": "simulation", "distance_to_vut": 27.5 },
-    ];
-
-    this.processEventData();
-    this.log('info', `Loaded ${this.state.spans.length} event spans`);
-  }
-
   processEventData() {
     this.state.spans = this.buildSpans(this.state.rawEvents);
     this.state.filteredSpans = [...this.state.spans];
@@ -310,7 +196,6 @@ extractNumericSeries() {
     }
   });
 
-  // 🔑 Sort each actor’s values by timestamp
   Object.values(series).forEach(actorSeries => {
     Object.values(actorSeries).forEach(values => {
       values.sort((a, b) => a.time - b.time);
@@ -319,35 +204,27 @@ extractNumericSeries() {
 
   this.state.numericSeries = series;
 
-  // Auto-select first diagram if none selected
   if (!this.state.selectedDiagram && Object.keys(series).length > 0) {
     this.state.selectedDiagram = Object.keys(series)[0];
   }
 }
 
   initializeLayers() {
-    // console.log(this.state.rawEvents);
     const layers = new Set(this.state.rawEvents.map((event) => event.layer));
-    // console.log(layers);
-    this.state.activeLayers = new Set(layers); // Initially, all layers are active
-    // console.log(this.state.activeLayers);
-    this.state.layers = Array.from(layers); // Convert to array for rendering
+    this.state.activeLayers = new Set(layers);
+    this.state.layers = Array.from(layers);
   }
 
   initializeActors() {
-    // console.log(this.state.rawEvents);
     const actors = new Set(this.state.rawEvents.map((event) => event.actor));
-    // console.log(actors);
-    this.state.activeActors = new Set(actors); // Initially, all actors are active
-    // console.log(this.state.activeActors);
-    this.state.actors = Array.from(actors); // Convert to array for rendering
+    this.state.activeActors = new Set(actors);
+    this.state.actors = Array.from(actors);
   }
 
   renderLayerFilterButtons() {
     const filterGroup = document.getElementById('layer-filter-group');
-    filterGroup.innerHTML = '<span class="layer-filter-label">Layers:</span>'; // Clear existing buttons
+    filterGroup.innerHTML = '<span class="layer-filter-label">Layers:</span>';
 
-    // console.log(this.state.layers);
     this.state.layers.forEach((layer) => {
       const button = document.createElement('span');
       button.className = `layer-filter-chip layer-${layer} active`;
@@ -359,9 +236,8 @@ extractNumericSeries() {
 
   renderActorFilterButtons() {
     const actorFilterGroup = document.getElementById('actor-filter-group');
-    actorFilterGroup.innerHTML = '<span class="actor-filter-label">Actors:</span>'; // Clear existing buttons
+    actorFilterGroup.innerHTML = '<span class="actor-filter-label">Actors:</span>';
 
-    // console.log(this.state.actors);
     this.state.actors.forEach((actor) => {
       const button = document.createElement('span');
       button.className = `actor-filter-chip actor-${actor} active`;
@@ -381,8 +257,6 @@ extractNumericSeries() {
 
       const eventId = event.event_id;
 
-      // console.log("316: " + event.actor)
-
       if (!openEvents.has(eventId)) {
         openEvents.set(eventId, {
           start: timestamp,
@@ -392,7 +266,6 @@ extractNumericSeries() {
         });
       } else {
         const openEvent = openEvents.get(eventId);
-        // console.log("326: " + openEvent.actor)
         spans.push({
           id: `${eventId}-${openEvent.start}`,
           event_id: eventId,
@@ -409,7 +282,6 @@ extractNumericSeries() {
       }
     });
 
-    // Add unclosed events as warnings
     openEvents.forEach((event, id) => {
       this.log('warn', `Unclosed event: ${event.display_name} (${id})`);
     });
@@ -540,15 +412,12 @@ extractNumericSeries() {
 
 renderBars() {
   const groups = this.groupSpansByActorAndLayer(this.state.filteredSpans);
-  console.log(groups);
   let y = 20;
   let prevActor = null;
 
   groups.forEach((group, groupIdx) => {
-    console.log(group.actor)
     if (group.actor !== prevActor) {
       prevActor = group.actor;
-      console.log(prevActor)
       y += this.config.barHeight;
     }
     group.spans.forEach(span => {
@@ -585,7 +454,6 @@ renderBars() {
     }
     groups[key].spans.push(span);
   });
-  console.log(groups);
     return Object.values(groups).sort((a, b) => {
     // TODO: Fix sorting to account for correct order of layers
     if (a.actor < b.actor) return -1;
@@ -596,7 +464,6 @@ renderBars() {
   });
 }
 
-// Die Achse beginnt bei 0.5s und zählt ab dort
 renderAxis() {
   const timeRange = this.getTimeRange();
 
@@ -626,7 +493,6 @@ renderLabels() {
 
   let lastActor = null;
   groups.forEach(group => {
-    // Akteur-Überschrift nur einmal pro Akteur
     if (group.actor !== lastActor) {
       const actorDiv = document.createElement('div');
       actorDiv.className = 'row-label actor-headline';
@@ -637,7 +503,6 @@ renderLabels() {
       labelsContainer.appendChild(actorDiv);
       lastActor = group.actor;
     }
-    // Layer-Label leicht eingerückt
     const layerDiv = document.createElement('div');
     layerDiv.className = 'row-label layer-headline';
     layerDiv.textContent = group.layer;
@@ -689,7 +554,6 @@ renderLabels() {
       const x = event.clientX - rect.left + scrollLeft + 15;
       const y = event.clientY - rect.top + scrollTop + 15;
 
-      // Keep tooltip within viewport
       const maxX = rect.width + scrollLeft - tooltip.offsetWidth - 15;
       const maxY = rect.height + scrollTop - tooltip.offsetHeight - 15;
 
@@ -716,7 +580,6 @@ renderLabels() {
       this.state.selectedEvents.add(eventData.id);
     }
 
-    // Update visual selection
     const labelElement = document.querySelector(`[data-event-id="${eventData.id}"]`);
     if (labelElement) {
       labelElement.classList.toggle('highlighted');
@@ -739,20 +602,13 @@ renderLabels() {
   }
 
   handleSearch(query) {
-    console.log("613")
     const searchTerm = query.toLowerCase().trim();
 
-    console.log(this.state.activeActors)
-    console.log(this.state.activeActors.has("Car1"))
-    console.log(this.state.activeActors.has(this.state.spans[0].actor))
-    // console.log(this.state.spans[0])
-    console.log(this.state.spans[0].actor)
-    console.log(this.state.activeLayers.has(this.state.spans[0].layer) &&
-        this.state.activeActors.has(this.state.spans[0].actor) && (
-          this.state.spans[0].display_name.toLowerCase().includes(searchTerm) ||
-          this.state.spans[0].event_id.toLowerCase().includes(searchTerm) ||
-          this.state.spans[0].layer.toLowerCase().includes(searchTerm)
-        ))
+    this.state.activeActors.has(this.state.spans[0].actor) && (
+      this.state.spans[0].display_name.toLowerCase().includes(searchTerm) ||
+      this.state.spans[0].event_id.toLowerCase().includes(searchTerm) ||
+      this.state.spans[0].layer.toLowerCase().includes(searchTerm)
+    ))
 
     if (!searchTerm) {
       this.state.filteredSpans = this.state.spans.filter(span =>
@@ -769,8 +625,6 @@ renderLabels() {
         )
       );
     }
-
-    console.log(this.state.filteredSpans)
 
     this.updateEventCount();
     this.render();
@@ -792,8 +646,6 @@ renderLabels() {
 
   toggleActor(actor) {
     const chip = document.querySelector(`[data-actor="${actor}"]`);
-
-    console.log("Toggling actor:", actor, this.state.activeActors);
 
     if (this.state.activeActors.has(actor)) {
       this.state.activeActors.delete(actor);
@@ -823,7 +675,6 @@ renderLabels() {
   updateEventCount() {
     const total = this.state.spans.length;
     const filtered = this.state.filteredSpans.length;
-    console.log(this.state.filteredSpans.length)
     this.elements.eventCount.textContent = total.toString();
     this.elements.visibleEvents.textContent =
       filtered === total ? `${total} visible` : `${filtered} visible`;
@@ -838,7 +689,6 @@ renderLabels() {
         return;
       }
 
-      // Create split layout: tabs on left, chart on right
       const layout = document.createElement("div");
       layout.style.display = "flex";
       layout.style.height = "100%";
@@ -862,7 +712,7 @@ renderLabels() {
         tab.style.cursor = "pointer";
         tab.onclick = () => {
           this.state.selectedDiagram = key;
-          this.renderDiagram(); // re-render
+          this.renderDiagram();
         };
         tabs.appendChild(tab);
       });
@@ -902,7 +752,6 @@ renderLabels() {
         .x(d => x(d.time))
         .y(d => y(d.value));
 
-      // Draw lines + labels
       Object.entries(actorSeries).forEach(([actor, values]) => {
         svg.append("path")
           .datum(values)
@@ -922,7 +771,6 @@ renderLabels() {
           .text(actor);
       });
 
-      // Axes
       svg.append("g")
         .attr("transform", `translate(0,${height - margin.bottom})`)
         .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "s"));
@@ -950,29 +798,19 @@ renderLabels() {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result);
-        console.log(data);
 
-        // Support multiple import formats
         let events = [];
 
         if (Array.isArray(data)) {
-          console.log("Array is array")
-          // Support simple array of events
           events = data;
         } else if (data.events && Array.isArray(data.events)) {
-            console.log("Data.events is array")
-          // Support export format
           events = data.events.flatMap(event => [
             { timestamp: event.start / 1000, event_id: event.id, display_name: event.name, layer: event.layer, actor: event.actor, layer: event.layer },
             { timestamp: event.end / 1000, event_id: event.id, display_name: event.name + ' Complete', layer: event.layer, actor: event.actor, layer: event.layer }
           ]);
         } else if (data.data && Array.isArray(data.data)) {
-            console.log("Data.data is array")
-          // Support alternative format
           events = data.data;
         }
-
-        console.log(events)
 
         if (events.length > 0) {
           this.state.rawEvents = events;
@@ -1135,6 +973,7 @@ renderLabels() {
 
     this.eventLog.push(entry);
 
+    //TODO: Is this okay?
     // Keep only last 100 entries
     if (this.eventLog.length > 100) {
       this.eventLog.shift();

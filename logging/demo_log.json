@@ -1,0 +1,38 @@
+{
+  "layers": [
+    { "id": "scenario", "display_name": "Scenario Events", "color": "#FF0000" },
+    { "id": "selection", "display_name": "Selected Sensor Events", "color": "#00FF00" },
+    { "id": "simulation", "display_name": "All Sensor Events", "color": "#0000FF" }
+  ],
+  "events": [
+    { "timestamp": "0.0", "event_id": "car1-overtake", "display_name": "Car1 – Overtake", "actor": "Car1", "layer": "scenario" },
+    { "timestamp": "20.0", "event_id": "car1-overtake", "display_name": "Car1 – Overtake", "actor": "Car1", "layer": "scenario" },
+    { "timestamp": "0.5", "event_id": "car1-accelerate", "display_name": "Car1 – Accelerate", "actor": "Car1", "layer": "selection" },
+    { "timestamp": "3.5", "event_id": "car1-accelerate", "display_name": "Car1 – Accelerate", "actor": "Car1", "layer": "selection" },
+    { "timestamp": "4.0", "event_id": "car1-switch-lane-left", "display_name": "Car1 – Switch Lane (left)", "actor": "Car1", "layer": "selection" },
+    { "timestamp": "6.0", "event_id": "car1-switch-lane-left", "display_name": "Car1 – Switch Lane (left)", "actor": "Car1", "layer": "selection" },
+    { "timestamp": "10.0", "event_id": "car1-switch-lane-right", "display_name": "Car1 – Switch Lane (right)", "actor": "Car1", "layer": "selection" },
+    { "timestamp": "13.0", "event_id": "car1-switch-lane-right", "display_name": "Car1 – Switch Lane (right)", "actor": "Car1", "layer": "selection" },
+    { "timestamp": "14.0", "event_id": "car1-ride-into-sunset", "display_name": "Car1 – Ride into sunset", "actor": "Car1", "layer": "selection" },
+    { "timestamp": "20.0", "event_id": "car1-ride-into-sunset", "display_name": "Car1 – Ride into sunset", "actor": "Car1", "layer": "selection" },
+
+    { "timestamp": "0.5", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "actor": "Car1", "layer": "simulation", "distance_to_vut": 2.5 },
+    { "timestamp": "2.0", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "actor": "Car1", "layer": "simulation", "distance_to_vut": 12.5 },
+    { "timestamp": "2.5", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "actor": "Car1", "layer": "simulation", "distance_to_vut": 17.5 },
+
+    { "timestamp": "0.0", "event_id": "car2-overtake", "display_name": "Car2 – Overtake", "actor": "Car2", "layer": "scenario" },
+    { "timestamp": "20.0", "event_id": "car2-overtake", "display_name": "Car2 – Overtake", "actor": "Car2", "layer": "scenario" },
+    { "timestamp": "0.5", "event_id": "car2-accelerate", "display_name": "Car2 – Accelerate", "actor": "Car2", "layer": "selection" },
+    { "timestamp": "3.5", "event_id": "car2-accelerate", "display_name": "Car2 – Accelerate", "actor": "Car2", "layer": "selection" },
+    { "timestamp": "4.0", "event_id": "car2-switch-lane-left", "display_name": "Car2 – Switch Lane (left)", "actor": "Car2", "layer": "selection" },
+    { "timestamp": "6.0", "event_id": "car2-switch-lane-left", "display_name": "Car2 – Switch Lane (left)", "actor": "Car2", "layer": "selection" },
+    { "timestamp": "10.0", "event_id": "car2-switch-lane-right", "display_name": "Car2 – Switch Lane (right)", "actor": "Car2", "layer": "selection" },
+    { "timestamp": "13.0", "event_id": "car2-switch-lane-right", "display_name": "Car2 – Switch Lane (right)", "actor": "Car2", "layer": "selection", "distance_to_car1": 12.5 },
+    { "timestamp": "14.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "actor": "Car2", "layer": "selection", "distance_to_car1": 25 },
+    { "timestamp": "20.0", "event_id": "car2-ride-into-sunset", "display_name": "Car2 – Ride into sunset", "actor": "Car2", "layer": "selection", "distance_to_car1": 125 },
+
+    { "timestamp": "0.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "actor": "Car2", "layer": "simulation", "distance_to_vut": 12.5, "distance_to_car1": 25 },
+    { "timestamp": "2.0", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "actor": "Car2", "layer": "simulation", "distance_to_vut": 22.5 },
+    { "timestamp": "2.5", "event_id": "car2-increase-speed", "display_name": "Car2 – Increase Speed", "actor": "Car2", "layer": "simulation", "distance_to_vut": 27.5 }
+  ]
+}
