@@ -3,6 +3,8 @@ import sys
 import time
 
 import gymnasium as gym
+import json
+
 import register_env
 import traci
 from bppy import *
@@ -87,14 +89,7 @@ def fall_behind(
 
     if not behind_vehicle.is_behind_by_x(in_front_vehicle, min_distance):
         event_id = f"{behind_vehicle.vehicle_id}-fall-behind"
-        logger.start_event(
-            event_id=event_id,
-            category="correction",
-            name=f"Fall Behind {in_front_vehicle.vehicle_id}",
-            actor=behind_vehicle.vehicle_id,
-            layer="B - correction",
-            start_time_s=seconds(step_count) * 1000,
-        )
+        eid = logger.start(event_id = event_id, actor=behind_vehicle.vehicle_id, layer="B - correction", distance_to_vut=behind_vehicle.distance_to(vut))
         event_started = True
 
     while not behind_vehicle.is_behind_by_x(in_front_vehicle, min_distance):
@@ -109,7 +104,7 @@ def fall_behind(
             print("TIMED INTERRUPT")
             break
     if event_started:
-        logger.end_event(event_id, seconds(step_count) * 1000)
+        logger.end(eid, distance_to_vut=behind_vehicle.distance_to(vut))
 
 
 def change_to_same_lane(
@@ -120,14 +115,7 @@ def change_to_same_lane(
 
     if vehicle_to_change_lane.lane_index() != other_vehicle.lane_index():
         event_id = f"{vehicle_to_change_lane.vehicle_id}-lane-change"
-        logger.start_event(
-            event_id=event_id,
-            name=f"Lane Change to {other_vehicle.vehicle_id}",
-            category="maneuver",
-            actor=vehicle_to_change_lane.vehicle_id,
-            layer="A - maneuver",
-            start_time_s=seconds(step_count) * 1000,
-        )
+        eid = logger.start(event_id=event_id, actor=vehicle_to_change_lane.vehicle_id, layer="A - maneuver", lane_position=vehicle_to_change_lane.lane_index())
         event_started = True
 
     while vehicle_to_change_lane.lane_index() != other_vehicle.lane_index():
@@ -136,7 +124,7 @@ def change_to_same_lane(
         else:
             yield sync(request=vehicle_to_change_lane.LANE_RIGHT())
     if event_started:
-        logger.end_event(event_id, seconds(step_count) * 1000)
+        logger.end(eid, lane_position=vehicle_to_change_lane.lane_index())
 
 
 def close_distance(
@@ -151,13 +139,10 @@ def close_distance(
 
     if behind_vehicle.is_behind_by_x(in_front_vehicle, max_distance):
         event_id = f"{behind_vehicle.vehicle_id}-close-distance"
-        logger.start_event(
-            event_id,
-            "correction",
-            f"Close Distance to {in_front_vehicle.vehicle_id}",
-            behind_vehicle.vehicle_id,
-            "B - correction",  # Layer
-            seconds(step_count),
+        eid = logger.start(
+            event_id=event_id,
+            actor=behind_vehicle.vehicle_id,
+            layer="B - correction"
         )
         eventStarted = true
 
@@ -172,7 +157,7 @@ def close_distance(
             print("TIMED INTERRUPT")
             break
     if eventStarted:
-        logger.end_event(event_id, seconds(step_count))
+        logger.end(eid, distance_to_vut=behind_vehicle.distance_to(vut))
 
 
 def equalize_speeds(
@@ -182,13 +167,10 @@ def equalize_speeds(
 
     if abs(controllable_vehicle.speed() - other_vehicle.speed()) <= 0.1:
         event_id = f"{controllable_vehicle.vehicle_id}-equalize-speed"
-        logger.start_event(
+        eid = logger.start(
             event_id=event_id,
-            name=f"Equalize Speed with {other_vehicle.vehicle_id}",
-            category="control",
             actor=controllable_vehicle.vehicle_id,
             layer="control",
-            start_time_s=seconds(step_count) * 1000,
         )
         event_started = True
         print(f"[equalize_speeds] Started event {event_id} at {seconds(step_count)}s")
@@ -199,8 +181,7 @@ def equalize_speeds(
         else:
             yield sync(request=controllable_vehicle.FASTER())
     if event_started:
-        logger.end_event(event_id, seconds(step_count) * 1000)
-        print(f"[equalize_speeds] Ended event {event_id} at {seconds(step_count)}s")
+        logger.end(eid, distance_to_vut=controllable_vehicle.distance_to(vut))
 
 
 def get_behind(behind_vehicle: SumoControllableVehicle, in_front_vehicle: SumoVehicle):
@@ -251,13 +232,10 @@ def await_condition(
 @thread
 def abstract_scenario_two_vehicles_follow_vut():
     event_id = "scenario-follow-vut"
-    logger.start_event(
+    eid = logger.start(
         event_id=event_id,
-        name="Scenario – Two Vehicles Follow VUT",
-        category="foo",
         actor="Scenario",
         layer="scenario",
-        start_time_s=seconds(step_count) * 1000,
     )
     print(
         f"[abstract_scenario_two_vehicles_follow_vut] Started event {event_id} at {seconds(step_count)}s"
@@ -271,19 +249,16 @@ def abstract_scenario_two_vehicles_follow_vut():
         print("################ SAT")
     else:
         print("################ UNSAT")
-    logger.end_event(event_id, seconds(step_count) * 1000)
+    logger.end(eid)
 
 
 @thread
 def abstract_scenario_2():
     event_id = "scenario-2"
-    logger.start_event(
+    eid = logger.start(
         event_id=event_id,
-        name="Scenario2",
-        category="foo",
-        actor="Scenario",
+        actor="Scenario2",
         layer="scenario",
-        start_time_s=seconds(step_count) * 1000,
     )
     print(f"[abstract_scenario_2] Started event {event_id} at {seconds(step_count)}s")
 
@@ -292,7 +267,7 @@ def abstract_scenario_2():
     )
     if not satisfied:
         print("################ UNSAT")
-        logger.end_event(event_id, seconds(step_count) * 1000)
+        logger.end(eid)
         return
     else:
         print("################ COND 1 SAT")
@@ -301,7 +276,7 @@ def abstract_scenario_2():
     )
     if not satisfied:
         print("################ UNSAT")
-        logger.end_event(event_id, seconds(step_count) * 1000)
+        logger.end(eid)
         return
     else:
         print("################ COND 2 SAT")
@@ -310,7 +285,7 @@ def abstract_scenario_2():
     )
     if not satisfied:
         print("################ UNSAT")
-        logger.end_event(event_id, seconds(step_count) * 1000)
+        logger.end(eid)
         return
     else:
         print("################ COND 3 SAT")
@@ -319,19 +294,18 @@ def abstract_scenario_2():
     )
     if not satisfied:
         print("################ UNSAT")
-        logger.end_event(event_id, seconds(step_count) * 1000)
+        logger.end(eid)
         return
     else:
         print("################ COND 4 SAT")
     print("################ SAT")
-    logger.end_event(event_id, seconds(step_count) * 1000)
+    logger.end(eid)
 
 
 def parallel(*bthreads):
     for bt in bthreads:
         b_program.add_bthread(bt)
     yield sync(waitFor=true)
-
 
 @thread
 def sumo_env_bthread():
@@ -369,4 +343,10 @@ if __name__ == "__main__":
     try:
         b_program.run()
     finally:
-        logger.export_json("simulation.json")
+        data_for_demo = logger.export_demo_format()
+
+        # Schreibe JSON in Datei
+        with open("my_demo_log.json", "w", encoding="utf-8") as f:
+            json.dump(data_for_demo, f, ensure_ascii=False, indent=2)
+
+        print("Datei my_demo_log.json wurde gespeichert.")

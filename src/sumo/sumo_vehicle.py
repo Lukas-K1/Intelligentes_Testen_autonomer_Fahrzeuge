@@ -1,3 +1,4 @@
+import math
 from typing import Optional, Tuple
 
 import traci
@@ -64,6 +65,35 @@ class SumoVehicle:
         x_self, _ = traci.vehicle.getPosition(self.vehicle_id)
         x_other, _ = traci.vehicle.getPosition(other_vehicle.vehicle_id)
         return x_self < x_other - threshold
+
+    def position(self) -> tuple[float, float]:
+        """Get the (x, y) position of the vehicle in meters."""
+        return traci.vehicle.getPosition(self.vehicle_id)
+
+    def lane_position(self) -> float:
+        """Get the position of the vehicle along its current lane in meters."""
+        return traci.vehicle.getLanePosition(self.vehicle_id)
+
+    def distance_to(self, other: "SumoVehicle", mode="euclidean") -> float:
+        """
+        Calculate the distance to another vehicle.
+        :param other: the other vehicle
+        :param mode: "lane" for lane-based distance, "euclidean" for straight-line distance
+        """
+        if mode == "lane":
+            if traci.vehicle.getLaneID(self.vehicle_id) == traci.vehicle.getLaneID(other.vehicle_id):
+                return abs(self.lane_position() - other.lane_position())
+            else:
+                # Fallback: euklidisch
+                x1, y1 = self.position()
+                x2, y2 = other.position()
+                return math.hypot(x2 - x1, y2 - y1)
+        elif mode == "euclidean":
+            x1, y1 = self.position()
+            x2, y2 = other.position()
+            return math.hypot(x2 - x1, y2 - y1)
+        else:
+            raise ValueError(f"Unknown mode {mode}")
 
 
 class SumoControllableVehicle(SumoVehicle):
