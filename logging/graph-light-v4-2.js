@@ -425,7 +425,7 @@ class GraphAnalyzer {
             }
             group.spans.forEach(span => {
                 this.chartGroup.append('rect')
-                    .attr('class', 'flame-bar')
+                    .attr('class', 'chart-bar')
                     .attr('x', this.scales.x(span.start))
                     .attr('y', y)
                     .attr('width', Math.max(2, this.scales.x(span.end) - this.scales.x(span.start)))
@@ -439,7 +439,7 @@ class GraphAnalyzer {
                     .attr('x', this.scales.x(span.start) + 5)
                     .attr('y', y + (this.config.barHeight * 0.5))
                     .attr('dy', '.35em')
-                    .attr('fill', '#fff')
+                    .attr('fill', '#000')
                     .attr('font-size', '14px')
                     .attr('pointer-events', 'none')
                     .text(span.display_name);

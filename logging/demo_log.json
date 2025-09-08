@@ -1,8 +1,8 @@
 {
   "layers": [
-    { "id": "scenario", "display_name": "Scenario Events", "color": "#FF0000" },
-    { "id": "selection", "display_name": "Selected Sensor Events", "color": "#00FF00" },
-    { "id": "simulation", "display_name": "All Sensor Events", "color": "#0000FF" }
+    { "id": "scenario", "display_name": "Scenario Events", "color": "#FF4444" },
+    { "id": "selection", "display_name": "Selected Sensor Events", "color": "#44FF44" },
+    { "id": "simulation", "display_name": "All Sensor Events", "color": "#4444FF" }
   ],
   "events": [
     { "timestamp": "0.0", "event_id": "car1-overtake", "display_name": "Car1 – Overtake", "actor": "Car1", "layer": "scenario" },
