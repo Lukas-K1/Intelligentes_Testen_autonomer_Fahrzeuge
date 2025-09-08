@@ -1,10 +1,9 @@
+import json
 import os
 import sys
 import time
 
 import gymnasium as gym
-import json
-
 import register_env
 import traci
 from bppy import *
@@ -89,7 +88,12 @@ def fall_behind(
 
     if not behind_vehicle.is_behind_by_x(in_front_vehicle, min_distance):
         event_id = f"{behind_vehicle.vehicle_id}-fall-behind"
-        eid = logger.start(event_id = event_id, actor=behind_vehicle.vehicle_id, layer="B - correction", distance_to_vut=behind_vehicle.distance_to(vut))
+        eid = logger.start(
+            event_id=event_id,
+            actor=behind_vehicle.vehicle_id,
+            layer="B - correction",
+            distance_to_vut=behind_vehicle.distance_to(vut),
+        )
         event_started = True
 
     while not behind_vehicle.is_behind_by_x(in_front_vehicle, min_distance):
@@ -115,7 +119,12 @@ def change_to_same_lane(
 
     if vehicle_to_change_lane.lane_index() != other_vehicle.lane_index():
         event_id = f"{vehicle_to_change_lane.vehicle_id}-lane-change"
-        eid = logger.start(event_id=event_id, actor=vehicle_to_change_lane.vehicle_id, layer="A - maneuver", lane_position=vehicle_to_change_lane.lane_index())
+        eid = logger.start(
+            event_id=event_id,
+            actor=vehicle_to_change_lane.vehicle_id,
+            layer="A - maneuver",
+            lane_position=vehicle_to_change_lane.lane_index(),
+        )
         event_started = True
 
     while vehicle_to_change_lane.lane_index() != other_vehicle.lane_index():
@@ -140,9 +149,7 @@ def close_distance(
     if behind_vehicle.is_behind_by_x(in_front_vehicle, max_distance):
         event_id = f"{behind_vehicle.vehicle_id}-close-distance"
         eid = logger.start(
-            event_id=event_id,
-            actor=behind_vehicle.vehicle_id,
-            layer="B - correction"
+            event_id=event_id, actor=behind_vehicle.vehicle_id, layer="B - correction"
         )
         eventStarted = true
 
@@ -306,6 +313,7 @@ def parallel(*bthreads):
     for bt in bthreads:
         b_program.add_bthread(bt)
     yield sync(waitFor=true)
+
 
 @thread
 def sumo_env_bthread():

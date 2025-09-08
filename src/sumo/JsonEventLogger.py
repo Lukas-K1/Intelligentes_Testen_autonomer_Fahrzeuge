@@ -1,9 +1,11 @@
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
-import time
+
 import json
 import threading
+import time
 import uuid
+from typing import Any, Dict, List, Optional
+
 
 class JsonEventLogger:
     """
@@ -20,14 +22,16 @@ class JsonEventLogger:
         self._clock = time.perf_counter
         self._wall = time.time
 
-    def start(self,
-              event_id: Optional[str] = None,
-              *,
-              display_name: Optional[str] = None,
-              category: Optional[str] = None,
-              actor: Optional[str] = None,
-              layer: Optional[str] = None,
-              **fields: Any) -> str:
+    def start(
+        self,
+        event_id: Optional[str] = None,
+        *,
+        display_name: Optional[str] = None,
+        category: Optional[str] = None,
+        actor: Optional[str] = None,
+        layer: Optional[str] = None,
+        **fields: Any,
+    ) -> str:
         """Log the start of an event (returns the event_id)."""
         with self._lock:
             eid = event_id or str(uuid.uuid4())
@@ -49,10 +53,12 @@ class JsonEventLogger:
                 "start_perf": start_perf,
                 "start_wall": start_wall,
                 "base": {k: v for k, v in base.items() if v is not None},
-                "start_fields": dict(fields) if fields else {}
+                "start_fields": dict(fields) if fields else {},
             }
             # boundary event for start
-            self._events.append({**{k: v for k, v in base.items() if v is not None}, **fields})
+            self._events.append(
+                {**{k: v for k, v in base.items() if v is not None}, **fields}
+            )
             return eid
 
     def end(self, event_id: str, **fields: Any) -> Dict[str, Any]:
@@ -67,11 +73,13 @@ class JsonEventLogger:
             duration_s = end_perf - state["start_perf"]
 
             base_end = dict(state["base"])
-            base_end.update({
-                "timestamp": round(end_wall, 6),
-                "phase": "end",
-                "duration_s": round(duration_s, 6)
-            })
+            base_end.update(
+                {
+                    "timestamp": round(end_wall, 6),
+                    "phase": "end",
+                    "duration_s": round(duration_s, 6),
+                }
+            )
 
             end_event = {**base_end, **fields}
             self._events.append(end_event)
@@ -79,7 +87,9 @@ class JsonEventLogger:
 
     # Convenience context manager
     class _SpanContext:
-        def __init__(self, logger: "EventLogger", event_id: Optional[str], kwargs: Dict[str, Any]):
+        def __init__(
+            self, logger: "EventLogger", event_id: Optional[str], kwargs: Dict[str, Any]
+        ):
             self._logger = logger
             self._eid = event_id
             self._kwargs = kwargs
@@ -95,9 +105,7 @@ class JsonEventLogger:
                 extra["error"] = str(exc_type.__name__)
             self._logger.end(self.event_id, **extra)
 
-    def span(self,
-             event_id: Optional[str] = None,
-             **kwargs: Any) -> "_SpanContext":
+    def span(self, event_id: Optional[str] = None, **kwargs: Any) -> "_SpanContext":
         """with logger.span('id', actor='Car1', distance_to_vut=2.5): ..."""
         return self._SpanContext(self, event_id, kwargs)
 
@@ -147,7 +155,13 @@ class JsonEventLogger:
             layer = e.get("layer")
             if layer and layer not in seen:
                 seen.add(layer)
-                layers.append({"id": layer, "display_name": f"{layer.capitalize()} Events", "color": "#000000"})
+                layers.append(
+                    {
+                        "id": layer,
+                        "display_name": f"{layer.capitalize()} Events",
+                        "color": "#000000",
+                    }
+                )
 
         events_dict = {}
         for e in self._events:
@@ -172,5 +186,3 @@ class JsonEventLogger:
             ev["timestamp"] = str(round(float(ev["timestamp"]) - min_ts, 3))
 
         return {"layers": layers, "events": all_events}
-
-

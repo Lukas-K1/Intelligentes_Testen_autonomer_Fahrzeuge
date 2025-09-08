@@ -81,7 +81,9 @@ class SumoVehicle:
         :param mode: "lane" for lane-based distance, "euclidean" for straight-line distance
         """
         if mode == "lane":
-            if traci.vehicle.getLaneID(self.vehicle_id) == traci.vehicle.getLaneID(other.vehicle_id):
+            if traci.vehicle.getLaneID(self.vehicle_id) == traci.vehicle.getLaneID(
+                other.vehicle_id
+            ):
                 return abs(self.lane_position() - other.lane_position())
             else:
                 # Fallback: euklidisch
