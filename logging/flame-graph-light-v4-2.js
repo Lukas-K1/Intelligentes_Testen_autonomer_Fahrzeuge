@@ -608,7 +608,7 @@ renderLabels() {
       this.state.spans[0].display_name.toLowerCase().includes(searchTerm) ||
       this.state.spans[0].event_id.toLowerCase().includes(searchTerm) ||
       this.state.spans[0].layer.toLowerCase().includes(searchTerm)
-    ))
+    )
 
     if (!searchTerm) {
       this.state.filteredSpans = this.state.spans.filter(span =>
@@ -780,18 +780,24 @@ renderLabels() {
         .call(d3.axisLeft(y));
     }
 
-  showImportDialog() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        this.handleFileImport(file);
-      }
-    };
-    input.click();
-  }
+    showImportDialog() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.style.display = 'none';
+
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          this.handleFileImport(file);
+        }
+        // clean up
+        input.remove();
+      };
+
+      document.body.appendChild(input);
+      input.click();
+    }
 
   handleFileImport(file) {
     const reader = new FileReader();
