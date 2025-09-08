@@ -255,8 +255,9 @@ class FlameGraphAnalyzer {
       { "timestamp": "14.0", "event_id": "car1-ride-into-sunset", "display_name": "Car1 – Ride into sunset", "category": "sensor", "actor": "Car1", "layer": "selection" },
       { "timestamp": "20.0", "event_id": "car1-ride-into-sunset", "display_name": "Car1 – Ride into sunset", "category": "sensor", "actor": "Car1", "layer": "selection" },
 
-      { "timestamp": "0.5", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "category": "sensor", "actor": "Car1", "layer": "simulation" },
-      { "timestamp": "2.5", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "category": "sensor", "actor": "Car1", "layer": "simulation" },
+      { "timestamp": "0.5", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "category": "sensor", "actor": "Car1", "layer": "simulation", "distance_to_vut": 2.5 },
+      { "timestamp": "2.0", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "category": "sensor", "actor": "Car1", "layer": "simulation", "distance_to_vut": 12.5 },
+      { "timestamp": "2.5", "event_id": "car1-increase-speed", "display_name": "Car1 – Increase Speed", "category": "sensor", "actor": "Car1", "layer": "simulation", "distance_to_vut": 17.5 },
 
       // Car2 - Complex overtaking maneuver
       { "timestamp": "0.0", "event_id": "car2-overtake", "display_name": "Car2 – Overtake", "category": "foo", "actor": "Car2", "layer": "scenario" },
@@ -286,7 +287,7 @@ class FlameGraphAnalyzer {
     this.updateEventCount();
   }
 
-  extractNumericSeries() {
+    extractNumericSeries() {
       const series = {};
 
       this.state.rawEvents.forEach(event => {
@@ -296,20 +297,21 @@ class FlameGraphAnalyzer {
             !["timestamp"].includes(key)
           ) {
             if (!series[key]) {
-              series[key] = [];
+              series[key] = {};
             }
-            series[key].push({
+            if (!series[key][event.actor]) {
+              series[key][event.actor] = [];
+            }
+            series[key][event.actor].push({
               time: this.parseTimestamp(event.timestamp) / 1000, // seconds
-              value,
-              actor: event.actor
+              value
             });
           }
         }
       });
 
       this.state.numericSeries = series;
-  }
-
+    }
 
   initializeLayers() {
     // console.log(this.state.rawEvents);
@@ -817,49 +819,68 @@ renderLabels() {
 
 renderDiagram() {
   const content = this.elements.analysisContent;
-  content.innerHTML = ""; // clear
+  content.innerHTML = "";
 
   if (!this.state.numericSeries || Object.keys(this.state.numericSeries).length === 0) {
     content.innerHTML = `<div>No numeric data available for diagrams.</div>`;
     return;
   }
 
-  Object.entries(this.state.numericSeries).forEach(([key, values]) => {
-    // Container
+  Object.entries(this.state.numericSeries).forEach(([key, actorSeries]) => {
     const container = document.createElement("div");
     container.className = "diagram-container";
     container.style.marginBottom = "2rem";
     container.innerHTML = `<h3>${key}</h3>`;
     content.appendChild(container);
 
-    // D3 Chart
-    const width = 500, height = 200, margin = { top: 20, right: 20, bottom: 30, left: 50 };
+    const width = 500, height = 200, margin = { top: 20, right: 80, bottom: 30, left: 50 };
 
     const svg = d3.select(container)
       .append("svg")
       .attr("width", width)
       .attr("height", height);
 
+    // Flatten all actor values for global axis scaling
+    const allValues = Object.values(actorSeries).flat();
+
     const x = d3.scaleLinear()
-      .domain(d3.extent(values, d => d.time))
+      .domain(d3.extent(allValues, d => d.time))
       .range([margin.left, width - margin.right]);
 
     const y = d3.scaleLinear()
-      .domain([d3.min(values, d => d.value), d3.max(values, d => d.value)])
+      .domain([d3.min(allValues, d => d.value), d3.max(allValues, d => d.value)])
       .nice()
       .range([height - margin.bottom, margin.top]);
+
+    const color = d3.scaleOrdinal(d3.schemeCategory10)
+      .domain(Object.keys(actorSeries));
 
     const line = d3.line()
       .x(d => x(d.time))
       .y(d => y(d.value));
 
-    svg.append("path")
-      .datum(values)
-      .attr("fill", "none")
-      .attr("stroke", "#4a9eff")
-      .attr("stroke-width", 2)
-      .attr("d", line);
+    // One line per actor
+    Object.entries(actorSeries).forEach(([actor, values]) => {
+      svg.append("path")
+        .datum(values)
+        .attr("fill", "none")
+        .attr("stroke", color(actor))
+        .attr("stroke-width", 2)
+        .attr("d", line);
 
+      // Label at the last data point
+      const lastPoint = values[values.length - 1];
+
+      svg.append("text")
+        .attr("x", x(lastPoint.time) + 5) // a little to the right of the line end
+        .attr("y", y(lastPoint.value))
+        .attr("dy", "0.35em") // vertical centering
+        .attr("fill", color(actor))
+        .style("font-size", "12px")
+        .text(actor);
+    });
+
+    // Axes
     svg.append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`)
       .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "s"));
@@ -869,6 +890,7 @@ renderDiagram() {
       .call(d3.axisLeft(y));
   });
 }
+
 
 
   showImportDialog() {
