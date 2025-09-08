@@ -1,96 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Graph Viewer – Advanced Car Simulation Analysis</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Viewer – Advanced Car Simulation Analysis</title>
 
-  <!-- Modern Font Stack -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="graph-light-v4-2.css">
+    <!-- Modern Font Stack -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" href="graph-light-v4-2.css">
 
 </head>
 <body>
-  <header class="header">
+<header class="header">
     <div class="header-content">
-      <h1>
-        <div class="header-icon">🏎️</div>
-        Advanced Graph Analyzer
-      </h1>
-      <div class="header-controls">
-        <div class="stats-badge">
-          <div class="stat">
-            <span>Events:</span>
-            <span class="stat-value" id="event-count">0</span>
-          </div>
-          <div class="stat">
-            <span>Duration:</span>
-            <span class="stat-value" id="total-duration">0s</span>
-          </div>
+        <h1>
+            <div class="header-icon">🏎️</div>
+            Advanced Graph Analyzer
+        </h1>
+        <div class="header-controls">
+            <div class="stats-badge">
+                <div class="stat">
+                    <span>Events:</span>
+                    <span class="stat-value" id="event-count">0</span>
+                </div>
+                <div class="stat">
+                    <span>Duration:</span>
+                    <span class="stat-value" id="total-duration">0s</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <input type="text" class="search-input" placeholder="Search events..." id="search-input">
+                <button class="btn" id="import-btn">
+                    <span>📁</span> Import
+                </button>
+                <button class="btn btn-primary" id="export-btn">
+                    <span>💾</span> Export
+                </button>
+            </div>
         </div>
-        <div class="control-group">
-          <input type="text" class="search-input" placeholder="Search events..." id="search-input">
-          <button class="btn" id="import-btn">
-            <span>📁</span> Import
-          </button>
-          <button class="btn btn-primary" id="export-btn">
-            <span>💾</span> Export
-          </button>
-        </div>
-      </div>
     </div>
-  </header>
+</header>
 
-  <!-- File Drop Zone -->
-  <div class="file-drop-zone" id="file-drop-zone">
+<!-- File Drop Zone -->
+<div class="file-drop-zone" id="file-drop-zone">
     <div class="file-drop-content">
-      <h3>📁 Drop JSON file here</h3>
-      <p>Import your car simulation data</p>
-      <p style="font-size: 0.875rem; color: var(--text-tertiary); margin-top: 1rem;">
-        Supported formats: JSON with timestamp/event_id structure
-      </p>
+        <h3>📁 Drop JSON file here</h3>
+        <p>Import your car simulation data</p>
+        <p style="font-size: 0.875rem; color: var(--text-tertiary); margin-top: 1rem;">
+            Supported formats: JSON with timestamp/event_id structure
+        </p>
     </div>
-  </div>
+</div>
 
-  <div class="main-container">
+<div class="main-container">
     <!-- Toolbar -->
     <div class="toolbar">
-      <!-- Dynamic Filter Group -->
-      <div class="layer-filter-group" id="layer-filter-group">
-        <span class="layer-filter-label">Categories:</span>
-      </div>
-      <div class="actor-filter-group" id="actor-filter-group">
-        <span class="actor-filter-label">Actor:</span>
-      </div>
-      <div class="control-group">
-        <button class="btn" id="zoom-in">🔍+</button>
-        <button class="btn" id="zoom-out">🔍-</button>
-        <button class="btn" id="zoom-fit">📐 Fit</button>
+        <!-- Dynamic Filter Group -->
+        <div class="layer-filter-group" id="layer-filter-group">
+            <span class="layer-filter-label">Categories:</span>
+        </div>
+        <div class="actor-filter-group" id="actor-filter-group">
+            <span class="actor-filter-label">Actor:</span>
+        </div>
+        <div class="control-group">
+            <button class="btn" id="zoom-in">🔍+</button>
+            <button class="btn" id="zoom-out">🔍-</button>
+            <button class="btn" id="zoom-fit">📐 Fit</button>
         </div>
     </div>
 
     <!-- Chart Section -->
     <div class="chart-section" id="chart-section">
-      <div class="labels-panel">
-        <div class="labels-header">
-          <span>Event Timeline</span>
-          <span id="visible-events">0 visible</span>
+        <div class="labels-panel">
+            <div class="labels-header">
+                <span>Event Timeline</span>
+                <span id="visible-events">0 visible</span>
+            </div>
+            <div id="labels-container"></div>
         </div>
-        <div id="labels-container"></div>
-      </div>
-      <div class="chart-viewport" id="chart-viewport">
-        <div id="chart-container"></div>
-        <div class="timeline-marker" id="timeline-marker"></div>
-        <div class="tooltip" id="tooltip">
-          <div class="tooltip-header">
-            <div class="tooltip-title" id="tooltip-title"></div>
-            <span class="event-layer" id="tooltip-layer"></span>
-          </div>
-          <div class="tooltip-metrics" id="tooltip-metrics"></div>
+        <div class="chart-viewport" id="chart-viewport">
+            <div id="chart-container"></div>
+            <div class="timeline-marker" id="timeline-marker"></div>
+            <div class="tooltip" id="tooltip">
+                <div class="tooltip-header">
+                    <div class="tooltip-title" id="tooltip-title"></div>
+                    <span class="event-layer" id="tooltip-layer"></span>
+                </div>
+                <div class="tooltip-metrics" id="tooltip-metrics"></div>
+            </div>
         </div>
-      </div>
     </div>
 
     <div class="resizer" id="resizer"></div>
@@ -99,50 +100,50 @@
     <button class="toggle-btn">Show Diagram Panel</button>
 
     <div class="analysis-panel" id="analysis-panel">
-      <div class="analysis-tabs">
-        <div class="analysis-tab" data-tab="diagram">
-          <div class="analysis-tab-title">Diagramm</div>
-          <div class="analysis-tab-desc">Diagramm aus geloggten Werten</div>
+        <div class="analysis-tabs">
+            <div class="analysis-tab" data-tab="diagram">
+                <div class="analysis-tab-title">Diagramm</div>
+                <div class="analysis-tab-desc">Diagramm aus geloggten Werten</div>
+            </div>
         </div>
-      </div>
-      <div class="analysis-content" id="analysis-content">
-        <!-- Content will be dynamically loaded -->
-      </div>
+        <div class="analysis-content" id="analysis-content">
+            <!-- Content will be dynamically loaded -->
+        </div>
     </div>
-  </div>
+</div>
 
-  <!-- Export Modal -->
-  <div class="modal" id="export-modal">
+<!-- Export Modal -->
+<div class="modal" id="export-modal">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title">Export Options</h2>
-        <p style="color: var(--text-secondary);">Choose your export format</p>
-      </div>
-      <div class="modal-body">
-        <div class="export-options">
-          <div class="export-option selected" data-format="json">
-            <div class="export-option-title">JSON Format</div>
-            <div class="export-option-desc">Complete event data with metadata</div>
-          </div>
-          <div class="export-option" data-format="csv">
-            <div class="export-option-title">CSV Format</div>
-            <div class="export-option-desc">Tabular data for spreadsheet analysis</div>
-          </div>
-          <div class="export-option" data-format="svg">
-            <div class="export-option-title">SVG Image</div>
-            <div class="export-option-desc">Vector graphic of the graph</div>
-          </div>
+        <div class="modal-header">
+            <h2 class="modal-title">Export Options</h2>
+            <p style="color: var(--text-secondary);">Choose your export format</p>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn" id="cancel-export">Cancel</button>
-        <button class="btn btn-primary" id="confirm-export">Export</button>
-      </div>
+        <div class="modal-body">
+            <div class="export-options">
+                <div class="export-option selected" data-format="json">
+                    <div class="export-option-title">JSON Format</div>
+                    <div class="export-option-desc">Complete event data with metadata</div>
+                </div>
+                <div class="export-option" data-format="csv">
+                    <div class="export-option-title">CSV Format</div>
+                    <div class="export-option-desc">Tabular data for spreadsheet analysis</div>
+                </div>
+                <div class="export-option" data-format="svg">
+                    <div class="export-option-title">SVG Image</div>
+                    <div class="export-option-desc">Vector graphic of the graph</div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" id="cancel-export">Cancel</button>
+            <button class="btn btn-primary" id="confirm-export">Export</button>
+        </div>
     </div>
-  </div>
+</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <script src="graph-light-v4-2.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="graph-light-v4-2.js"></script>
 </body>
 </html>
