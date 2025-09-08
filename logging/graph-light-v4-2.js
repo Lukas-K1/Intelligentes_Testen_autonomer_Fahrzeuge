@@ -42,7 +42,7 @@ class GraphAnalyzer {
             chartViewport: document.getElementById('chart-viewport'),
             chartContainer: document.getElementById('chart-container'),
             labelsContainer: document.getElementById('labels-container'),
-            analysisContent: document.getElementById('analysis-content'),
+            diagramContent: document.getElementById('diagram-content'),
             tooltip: document.getElementById('tooltip'),
             tooltipTitle: document.getElementById('tooltip-title'),
             tooltipLayer: document.getElementById('tooltip-layer'),
@@ -644,7 +644,7 @@ class GraphAnalyzer {
     }
 
     renderDiagram() {
-        const content = this.elements.analysisContent;
+        const content = this.elements.diagramContent;
         content.innerHTML = "";
 
         if (!this.state.numericSeries || Object.keys(this.state.numericSeries).length === 0) {
@@ -1030,13 +1030,13 @@ class GraphAnalyzer {
 }
 
 const button = document.querySelector(".toggle-btn");
-const panel = document.querySelector(".analysis-panel");
+const panel = document.querySelector(".diagram-panel");
 
 button.addEventListener("click", () => {
     panel.classList.toggle("open");
     button.textContent = panel.classList.contains("open")
-        ? "Hide Analysis Panel"
-        : "Show Analysis Panel";
+        ? "Hide Diagram Panel"
+        : "Show Diagram Panel";
 });
 
 // Initialize application

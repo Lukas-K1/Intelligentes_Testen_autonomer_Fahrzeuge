@@ -433,7 +433,7 @@ html, body {
     border-radius: 1px;
 }
 
-/* ======== Analysis Panel ======== */
+/* ======== Diagram Panel ======== */
 .toggle-btn {
     background: var(--accent-blue);
     color: white;
@@ -450,7 +450,7 @@ html, body {
 }
 
 /* The panel container */
-.analysis-panel {
+.diagram-panel {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease;
@@ -462,18 +462,18 @@ html, body {
     display: flex;
 }
 
-.analysis-panel.open {
+.diagram-panel.open {
     padding: 15px;
     max-height: 700px;
 }
 
-.analysis-tabs {
+.diagram-tabs {
     width: 200px;
     background: var(--bg-secondary);
     border-right: 1px solid var(--border-light);
 }
 
-.analysis-tab {
+.diagram-tab {
     padding: 1rem;
     border-bottom: 1px solid var(--border-light);
     cursor: pointer;
@@ -481,27 +481,27 @@ html, body {
     position: relative;
 }
 
-.analysis-tab:hover {
+.diagram-tab:hover {
     background: var(--bg-surface);
 }
 
-.analysis-tab.active {
+.diagram-tab.active {
     background: var(--bg-surface);
     border-left: 3px solid var(--accent-blue);
 }
 
-.analysis-tab-title {
+.diagram-tab-title {
     font-weight: 600;
     font-size: 0.875rem;
     margin-bottom: 0.25rem;
 }
 
-.analysis-tab-desc {
+.diagram-tab-desc {
     font-size: 0.75rem;
     color: var(--text-tertiary);
 }
 
-.analysis-content {
+.diagram-content {
     flex: 1;
     padding: 1.5rem;
     overflow-y: auto;
@@ -648,7 +648,7 @@ html, body {
         width: 300px;
     }
 
-    .analysis-tabs {
+    .diagram-tabs {
         width: 150px;
     }
 
