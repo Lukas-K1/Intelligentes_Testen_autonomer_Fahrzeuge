@@ -722,56 +722,117 @@ renderLabels() {
     }
 
     renderSingleDiagram(container, key, actorSeries) {
-      const width = 500, height = 200, margin = { top: 20, right: 80, bottom: 30, left: 50 };
+      const margin = { top: 20, right: 80, bottom: 30, left: 50 };
+      const outerWidth = Math.max(300, (container.clientWidth || 500));
+      const width = outerWidth - margin.left - margin.right;
+      const height = 200 - margin.top - margin.bottom;
+
+      d3.select(container).selectAll('svg').remove();
 
       const svg = d3.select(container)
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom);
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom);
+
+      const g = svg.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
 
       const allValues = Object.values(actorSeries).flat();
+      if (!allValues || allValues.length === 0) {
+        g.append('text')
+          .attr('x', 0).attr('y', 12)
+          .text('No data')
+          .style('font-size', '12px')
+          .style('fill', '#666');
+        return;
+      }
 
       const x = d3.scaleLinear()
         .domain(d3.extent(allValues, d => d.time))
-        .range([margin.left, width - margin.right]);
+        .range([0, width]);
 
       const y = d3.scaleLinear()
         .domain([d3.min(allValues, d => d.value), d3.max(allValues, d => d.value)])
         .nice()
-        .range([height - margin.bottom, margin.top]);
+        .range([height, 0]);
 
       const color = d3.scaleOrdinal(d3.schemeCategory10)
         .domain(Object.keys(actorSeries));
 
+      // === Gridlines ===
+      const xGrid = d3.axisBottom(x).ticks(6).tickSize(-height).tickFormat('');
+      const yGrid = d3.axisLeft(y).ticks(5).tickSize(-width).tickFormat('');
+
+      g.append('g')
+        .attr('class', 'grid x-grid')
+        .attr('transform', `translate(0,${height})`)
+        .call(xGrid)
+        .selectAll('line')
+        .attr('stroke', '#eee')
+        .attr('shape-rendering', 'crispEdges');
+
+      g.append('g')
+        .attr('class', 'grid y-grid')
+        .call(yGrid)
+        .selectAll('line')
+        .attr('stroke', '#eee')
+        .attr('shape-rendering', 'crispEdges');
+
+      g.selectAll('.grid path').remove();
+
       const line = d3.line()
+        .defined(d => d.value !== null && !isNaN(d.value))
         .x(d => x(d.time))
         .y(d => y(d.value));
 
-      Object.entries(actorSeries).forEach(([actor, values]) => {
-        svg.append("path")
-          .datum(values)
-          .attr("fill", "none")
-          .attr("stroke", color(actor))
-          .attr("stroke-width", 2)
-          .attr("d", line);
+      const safeActorId = (actor) => String(actor).replace(/[^\w-]/g, '_');
 
-        const lastPoint = values[values.length - 1];
-        svg.append("text")
-          .attr("x", x(lastPoint.time) + 5)
-          .attr("y", y(lastPoint.value))
-          .attr("dy", "0.35em")
-          .attr("fill", color(actor))
-          .style("font-size", "12px")
-          .style("text-anchor", "start")
-          .text(actor);
+      Object.entries(actorSeries).forEach(([actor, values]) => {
+        if (!values || values.length === 0) return;
+
+        const sorted = values.slice().sort((a, b) => a.time - b.time);
+
+        g.append('path')
+          .datum(sorted)
+          .attr('fill', 'none')
+          .attr('stroke', color(actor))
+          .attr('stroke-width', 2)
+          .attr('d', line);
+
+        const dots = g.selectAll(`.dot-${safeActorId(actor)}`)
+          .data(sorted)
+          .enter()
+          .append('circle')
+          .attr('class', `dot dot-${safeActorId(actor)}`)
+          .attr('cx', d => x(d.time))
+          .attr('cy', d => y(d.value))
+          .attr('r', 3)
+          .attr('fill', color(actor))
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 0.5);
+
+        dots.append('title')
+          .text(d => `${actor}\n${d.value}\n${d.time}s`);
+
+        const last = sorted[sorted.length - 1];
+        if (last) {
+          g.append('text')
+            .attr('x', x(last.time) + 6)
+            .attr('y', y(last.value))
+            .attr('dy', '0.35em')
+            .attr('fill', color(actor))
+            .style('font-size', '12px')
+            .style('text-anchor', 'start')
+            .text(actor);
+        }
       });
 
-      svg.append("g")
-        .attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "s"));
+      // === Axes ===
+      g.append('g')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(x).ticks(5).tickFormat(d => d + 's'));
 
-      svg.append("g")
-        .attr("transform", `translate(${margin.left},0)`)
+      g.append('g')
         .call(d3.axisLeft(y));
     }
 
