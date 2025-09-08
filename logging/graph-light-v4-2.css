@@ -544,7 +544,7 @@ html, body {
 }
 
 /* ======== Chart Elements ======== */
-.flame-bar {
+.chart-bar {
   stroke: var(--bg-secondary);
   stroke-width: 1;
   rx: 2;
@@ -553,13 +553,13 @@ html, body {
   transition: var(--transition);
 }
 
-.flame-bar:hover {
+.chart-bar:hover {
   stroke: var(--accent-blue);
   stroke-width: 2;
   filter: brightness(1.2);
 }
 
-.flame-bar.selected {
+.chart-bar.selected {
   stroke: var(--accent-blue);
   stroke-width: 3;
 }

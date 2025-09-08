@@ -1,4 +1,4 @@
-class FlameGraphAnalyzer {
+class GraphAnalyzer {
   constructor() {
     this.initializeState();
     this.initializeElements();
@@ -572,7 +572,7 @@ renderLabels() {
       document.querySelectorAll('.row-label.highlighted').forEach(el => {
         el.classList.remove('highlighted');
       });
-      this.svg.selectAll('.flame-bar').classed('selected', false);
+      this.svg.selectAll('.chart-bar').classed('selected', false);
     }
 
     if (this.state.selectedEvents.has(eventData.id)) {
@@ -586,7 +586,7 @@ renderLabels() {
       labelElement.classList.toggle('highlighted');
     }
 
-    this.svg.selectAll('.flame-bar')
+    this.svg.selectAll('.chart-bar')
       .filter(d => d.id === eventData.id)
       .classed('selected', this.state.selectedEvents.has(eventData.id));
 
@@ -942,7 +942,7 @@ renderLabels() {
 
     this.downloadFile(
       JSON.stringify(exportData, null, 2),
-      `flame-graph-export-${new Date().toISOString().split('T')[0]}.json`,
+      `chart-graph-export-${new Date().toISOString().split('T')[0]}.json`,
       'application/json'
     );
   }
@@ -962,7 +962,7 @@ renderLabels() {
 
     this.downloadFile(
       csv,
-      `flame-graph-export-${new Date().toISOString().split('T')[0]}.csv`,
+      `chart-graph-export-${new Date().toISOString().split('T')[0]}.csv`,
       'text/csv'
     );
   }
@@ -974,7 +974,7 @@ renderLabels() {
 
     this.downloadFile(
       svgBlob,
-      `flame-graph-${new Date().toISOString().split('T')[0]}.svg`,
+      `chart-graph-${new Date().toISOString().split('T')[0]}.svg`,
       'image/svg+xml'
     );
   }
@@ -1074,8 +1074,8 @@ button.addEventListener("click", () => {
 // Initialize application
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const analyzer = new FlameGraphAnalyzer();
-    window.flameGraphAnalyzer = analyzer; // For debugging
+    const analyzer = new GraphAnalyzer();
+    window.graphAnalyzer = analyzer; // For debugging
 
     // Show welcome message
     // analyzer.log('info', 'Flame Graph Analyzer initialized successfully');
