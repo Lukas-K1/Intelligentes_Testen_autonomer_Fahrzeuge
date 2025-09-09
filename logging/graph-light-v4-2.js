@@ -22,7 +22,7 @@ class GraphAnalyzer {
             activeActors: new Set(),
             actors: [],
             layers: [],
-            layerDefs: [],          // <— keep full layer metadata
+            layerDefs: [], //TODO: remove redundancy
             zoomLevel: 1,
             panOffset: 0
         };
@@ -32,7 +32,7 @@ class GraphAnalyzer {
             margin: {top: 40, right: 60, bottom: 50, left: 0},
             pixelsPerSecond: 150,
             minWidth: 800,
-            colors: {}              // <— prevent undefined access
+            colors: {}
         };
     }
 
@@ -343,10 +343,12 @@ class GraphAnalyzer {
 
     setupDimensions() {
         const viewportRect = this.elements.chartViewport.getBoundingClientRect();
+        const groups = this.groupSpansByActorAndLayer(this.state.filteredSpans);
+
         this.dimensions = {
             containerWidth: viewportRect.width,
             containerHeight: viewportRect.height,
-            innerHeight: this.state.filteredSpans.length * this.config.barHeight
+            innerHeight: groups.length * this.config.barHeight + 150
         };
 
         this.dimensions.totalHeight = this.dimensions.innerHeight +
@@ -374,14 +376,17 @@ class GraphAnalyzer {
 
     createScales() {
         const timeRange = this.getTimeRange();
+        const groups = this.groupSpansByActorAndLayer(this.state.filteredSpans);
         this.scales = {
             x: d3.scaleLinear()
                 .domain([timeRange.start, timeRange.end])
                 .range([0, this.dimensions.totalWidth - this.config.margin.left - this.config.margin.right]),
+
             y: d3.scaleBand()
-                .domain(d3.range(this.state.filteredSpans.length))
+                .domain(d3.range(groups.length))
                 .range([0, this.dimensions.innerHeight])
                 .padding(0.1),
+
             color: (layer) => (this.config.colors && this.config.colors[layer]) || '#666666'
         };
     }
@@ -815,7 +820,6 @@ class GraphAnalyzer {
             if (file) {
                 this.handleFileImport(file);
             }
-            // clean up
             input.remove();
         };
 
@@ -832,26 +836,21 @@ class GraphAnalyzer {
                     throw new Error('Invalid log format: expected { layers: [...], events: [...] }');
                 }
 
-                // Save layer defs and colors
                 this.state.layerDefs = data.layers.slice();
                 this.config.colors = {};
                 data.layers.forEach(l => {
                     this.config.colors[l.id] = l.color || '#666666';
                 });
 
-                // Save events
                 this.state.rawEvents = data.events;
 
-                // Build spans + numeric series
                 this.processEventData();
 
-                // Extract layers/actors and (re)build chips
                 this.initializeLayers();
                 this.initializeActors();
                 this.renderLayerFilterButtons();
                 this.renderActorFilterButtons();
 
-                // Render visuals
                 this.renderDiagram();
                 this.render();
 
