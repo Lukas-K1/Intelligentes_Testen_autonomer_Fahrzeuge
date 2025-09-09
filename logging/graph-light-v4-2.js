@@ -283,7 +283,7 @@ class GraphAnalyzer {
                     display_name: bar.display_name,
                     layer: bar.layer,
                     bar_id: barId,
-                    actor: bar.actor            // <— keep actor from the opener
+                    actor: bar.actor
                 });
             } else {
                 const openBar = openBars.get(barId);
@@ -513,9 +513,11 @@ class GraphAnalyzer {
                 labelsContainer.appendChild(actorDiv);
                 lastActor = group.actor;
             }
+            const metaById = Object.fromEntries((this.state.layerDefs || []).map(l => [l.id, l]));
+            const meta = metaById[group.layer] || {};
             const layerDiv = document.createElement('div');
             layerDiv.className = 'row-label layer-headline';
-            layerDiv.textContent = group.layer;
+            layerDiv.textContent = meta.display_name || (layerId.charAt(0).toUpperCase() + layerId.slice(1));
             layerDiv.style.paddingLeft = '2rem';
             layerDiv.style.fontWeight = '500';
             layerDiv.style.fontSize = '0.95rem';
