@@ -242,6 +242,15 @@ class GraphAnalyzer {
             button.className = `layer-filter-chip layer-${layerId} ${this.state.activeLayers.has(layerId) ? 'active' : ''}`;
             button.dataset.layer = layerId;
             button.textContent = meta.display_name || (layerId.charAt(0).toUpperCase() + layerId.slice(1));
+
+            const color = this.config.colors[layerId] || '#666';
+            button.style.backgroundColor = color;
+            button.style.color = '#fff'; // ensures contrast
+            button.style.borderRadius = '12px';
+            button.style.padding = '4px 8px';
+            button.style.margin = '2px';
+            button.style.cursor = 'pointer';
+
             filterGroup.appendChild(button);
         });
     }
