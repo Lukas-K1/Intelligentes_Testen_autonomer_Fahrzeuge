@@ -23,8 +23,8 @@
         <div class="header-controls">
             <div class="stats-badge">
                 <div class="stat">
-                    <span>Events:</span>
-                    <span class="stat-value" id="event-count">0</span>
+                    <span>Bars:</span>
+                    <span class="stat-value" id="bar-count">0</span>
                 </div>
                 <div class="stat">
                     <span>Duration:</span>
@@ -32,7 +32,7 @@
                 </div>
             </div>
             <div class="control-group">
-                <input type="text" class="search-input" placeholder="Search events..." id="search-input">
+                <input type="text" class="search-input" placeholder="Search bars..." id="search-input">
                 <button class="btn" id="import-btn">
                     <span>📁</span> Import
                 </button>
@@ -50,7 +50,7 @@
         <h3>📁 Drop JSON file here</h3>
         <p>Import your car simulation data</p>
         <p style="font-size: 0.875rem; color: var(--text-tertiary); margin-top: 1rem;">
-            Supported formats: JSON with timestamp/event_id structure
+            Supported formats: JSON with timestamp/bar_id structure
         </p>
     </div>
 </div>
@@ -76,8 +76,8 @@
     <div class="chart-section" id="chart-section">
         <div class="labels-panel">
             <div class="labels-header">
-                <span>Event Timeline</span>
-                <span id="visible-events">0 visible</span>
+                <span>Bar Timeline</span>
+                <span id="visible-bars">0 visible</span>
             </div>
             <div id="labels-container"></div>
         </div>
@@ -87,7 +87,7 @@
             <div class="tooltip" id="tooltip">
                 <div class="tooltip-header">
                     <div class="tooltip-title" id="tooltip-title"></div>
-                    <span class="event-layer" id="tooltip-layer"></span>
+                    <span class="bar-layer" id="tooltip-layer"></span>
                 </div>
                 <div class="tooltip-metrics" id="tooltip-metrics"></div>
             </div>
@@ -123,7 +123,7 @@
             <div class="export-options">
                 <div class="export-option selected" data-format="json">
                     <div class="export-option-title">JSON Format</div>
-                    <div class="export-option-desc">Complete event data with metadata</div>
+                    <div class="export-option-desc">Complete bar data with metadata</div>
                 </div>
                 <div class="export-option" data-format="csv">
                     <div class="export-option-title">CSV Format</div>

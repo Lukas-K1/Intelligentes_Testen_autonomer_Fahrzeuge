@@ -360,7 +360,7 @@ html, body {
     flex: 1;
 }
 
-.event-layer {
+.bar-layer {
     display: inline-block;
     padding: 0.125rem 0.375rem;
     border-radius: var(--radius-sm);
@@ -370,7 +370,7 @@ html, body {
     letter-spacing: 0.5px;
 }
 
-.event-duration {
+.bar-duration {
     font-size: 0.75rem;
     color: var(--text-tertiary);
     font-family: 'JetBrains Mono', monospace;

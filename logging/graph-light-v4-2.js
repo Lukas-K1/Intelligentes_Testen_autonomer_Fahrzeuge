@@ -14,10 +14,10 @@ class GraphAnalyzer {
 
     initializeState() {
         this.state = {
-            rawEvents: [],
+            rawBars: [],
             spans: [],
             filteredSpans: [],
-            selectedEvents: new Set(),
+            selectedBars: new Set(),
             activeLayers: new Set(),
             activeActors: new Set(),
             actors: [],
@@ -48,9 +48,9 @@ class GraphAnalyzer {
             tooltipLayer: document.getElementById('tooltip-layer'),
             tooltipMetrics: document.getElementById('tooltip-metrics'),
             searchInput: document.getElementById('search-input'),
-            eventCount: document.getElementById('event-count'),
+            barCount: document.getElementById('bar-count'),
             totalDuration: document.getElementById('total-duration'),
-            visibleEvents: document.getElementById('visible-events'),
+            visibleBars: document.getElementById('visible-bars'),
             timelineMarker: document.getElementById('timeline-marker'),
             fileDropZone: document.getElementById('file-drop-zone'),
             exportModal: document.getElementById('export-modal'),
@@ -77,7 +77,6 @@ class GraphAnalyzer {
         this.buttons.zoomOut.addEventListener('click', () => this.zoom(0.8));
         this.buttons.zoomFit.addEventListener('click', () => this.zoomToFit());
 
-        // 🔁 Event delegation so newly-rendered chips work automatically
         document.getElementById('layer-filter-group').addEventListener('click', (e) => {
             const chip = e.target.closest('.layer-filter-chip');
             if (chip) this.toggleLayer(chip.dataset.layer);
@@ -112,8 +111,8 @@ class GraphAnalyzer {
     setupFileDrop() {
         const dropZone = this.elements.fileDropZone;
 
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            document.addEventListener(eventName, (e) => {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(barName => {
+            document.addEventListener(barName, (e) => {
                 e.preventDefault();
                 e.stopPropagation();
             });
@@ -171,18 +170,18 @@ class GraphAnalyzer {
         });
     }
 
-    processEventData() {
-        this.state.spans = this.buildSpans(this.state.rawEvents);
+    processBarData() {
+        this.state.spans = this.buildSpans(this.state.rawBars);
         this.state.filteredSpans = [...this.state.spans];
         this.extractNumericSeries();
-        this.updateEventCount();
+        this.updateBarCount();
     }
 
     extractNumericSeries() {
         const series = {};
 
-        this.state.rawEvents.forEach(event => {
-            for (const [key, value] of Object.entries(event)) {
+        this.state.rawBars.forEach(bar => {
+            for (const [key, value] of Object.entries(bar)) {
                 if (
                     typeof value === "number" &&
                     !["timestamp"].includes(key)
@@ -190,11 +189,11 @@ class GraphAnalyzer {
                     if (!series[key]) {
                         series[key] = {};
                     }
-                    if (!series[key][event.actor]) {
-                        series[key][event.actor] = [];
+                    if (!series[key][bar.actor]) {
+                        series[key][bar.actor] = [];
                     }
-                    series[key][event.actor].push({
-                        time: this.parseTimestamp(event.timestamp) / 1000,
+                    series[key][bar.actor].push({
+                        time: this.parseTimestamp(bar.timestamp) / 1000,
                         value
                     });
                 }
@@ -219,14 +218,14 @@ class GraphAnalyzer {
             this.state.layers = this.state.layerDefs.map(l => l.id);
             this.state.activeLayers = new Set(this.state.layers);
         } else {
-            const layers = Array.from(new Set(this.state.rawEvents.map(e => e.layer)));
+            const layers = Array.from(new Set(this.state.rawBars.map(e => e.layer)));
             this.state.layers = layers;
             this.state.activeLayers = new Set(layers);
         }
     }
 
     initializeActors() {
-        const actors = Array.from(new Set(this.state.rawEvents.map(e => e.actor).filter(Boolean))).sort();
+        const actors = Array.from(new Set(this.state.rawBars.map(e => e.actor).filter(Boolean))).sort();
         this.state.actors = actors;
         this.state.activeActors = new Set(actors);
     }
@@ -268,41 +267,41 @@ class GraphAnalyzer {
         });
     }
 
-    buildSpans(events) {
-        const openEvents = new Map();
+    buildSpans(bars) {
+        const openBars = new Map();
         const spans = [];
 
-        events.forEach(event => {
-            const timestamp = this.parseTimestamp(event.timestamp);
+        bars.forEach(bar => {
+            const timestamp = this.parseTimestamp(bar.timestamp);
             if (isNaN(timestamp)) return;
 
-            const eventId = event.event_id;
+            const barId = bar.bar_id;
 
-            if (!openEvents.has(eventId)) {
-                openEvents.set(eventId, {
+            if (!openBars.has(barId)) {
+                openBars.set(barId, {
                     start: timestamp,
-                    display_name: event.display_name,
-                    layer: event.layer,
-                    event_id: eventId,
-                    actor: event.actor            // <— keep actor from the opener
+                    display_name: bar.display_name,
+                    layer: bar.layer,
+                    bar_id: barId,
+                    actor: bar.actor            // <— keep actor from the opener
                 });
             } else {
-                const openEvent = openEvents.get(eventId);
+                const openBar = openBars.get(barId);
                 spans.push({
-                    id: `${eventId}-${openEvent.start}`,
-                    event_id: eventId,
-                    start: openEvent.start,
+                    id: `${barId}-${openBar.start}`,
+                    bar_id: barId,
+                    start: openBar.start,
                     end: timestamp,
-                    duration: timestamp - openEvent.start,
-                    display_name: openEvent.display_name,
-                    layer: openEvent.layer,
-                    actor: openEvent.actor        // <— use opener’s actor
+                    duration: timestamp - openBar.start,
+                    display_name: openBar.display_name,
+                    layer: openBar.layer,
+                    actor: openBar.actor        // <— use opener’s actor
                 });
-                openEvents.delete(eventId);
+                openBars.delete(barId);
             }
         });
 
-        openEvents.forEach((event, id) => this.log('warn', `Unclosed event: ${event.display_name} (${id})`));
+        openBars.forEach((bar, id) => this.log('warn', `Unclosed bar: ${bar.display_name} (${id})`));
         return spans.sort((a, b) => a.start - b.start);
     }
 
@@ -341,7 +340,7 @@ class GraphAnalyzer {
       <div class="loading">
         <div style="text-align: center;">
           <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
-          <div>No events to display</div>
+          <div>No bars to display</div>
           <div style="font-size: 0.875rem; color: var(--text-tertiary); margin-top: 0.5rem;">
             Import data or adjust filters
           </div>
@@ -446,7 +445,7 @@ class GraphAnalyzer {
                     .attr('height', this.config.barHeight * 0.8)
                     .attr('fill', this.scales.color(span.layer))
                     .attr('opacity', 0.8)
-                    .on('mouseover', (event) => this.showTooltip(event, span))
+                    .on('mouseover', (bar) => this.showTooltip(bar, span))
                     .on('mouseout', () => this.hideTooltip());
 
                 this.chartGroup.append('text')
@@ -455,7 +454,7 @@ class GraphAnalyzer {
                     .attr('dy', '.35em')
                     .attr('fill', '#000')
                     .attr('font-size', '14px')
-                    .attr('pointer-events', 'none')
+                    .attr('pointer-bars', 'none')
                     .text(span.display_name);
             });
             y += this.config.barHeight;
@@ -525,7 +524,7 @@ class GraphAnalyzer {
         });
     }
 
-    showTooltip(event, data) {
+    showTooltip(bar, data) {
         const tooltip = this.elements.tooltip;
         const title = this.elements.tooltipTitle;
         const layer = this.elements.tooltipLayer;
@@ -533,37 +532,37 @@ class GraphAnalyzer {
 
         title.textContent = data.display_name;
         layer.textContent = data.layer;
-        layer.className = `event-layer layer-${data.layer}`;
+        layer.className = `bar-layer layer-${data.layer}`;
 
-        const relatedEvents = this.findRelatedEvents(data);
+        const relatedBars = this.findRelatedBars(data);
 
         metrics.innerHTML = `
-      <span class="tooltip-metric-label">Event ID:</span>
-      <span class="tooltip-metric-value">${data.event_id}</span>
+      <span class="tooltip-metric-label">Bar ID:</span>
+      <span class="tooltip-metric-value">${data.bar_id}</span>
       <span class="tooltip-metric-label">Duration:</span>
       <span class="tooltip-metric-value">${(data.duration / 1000).toFixed(3)}s</span>
       <span class="tooltip-metric-label">Start:</span>
       <span class="tooltip-metric-value">${(data.start / 1000).toFixed(3)}s</span>
       <span class="tooltip-metric-label">End:</span>
       <span class="tooltip-metric-value">${(data.end / 1000).toFixed(3)}s</span>
-      ${relatedEvents.length > 0 ? `
+      ${relatedBars.length > 0 ? `
         <span class="tooltip-metric-label">Overlaps with:</span>
-        <span class="tooltip-metric-value">${relatedEvents.length} events</span>
+        <span class="tooltip-metric-value">${relatedBars.length} bars</span>
       ` : ''}
     `;
 
         tooltip.classList.add('visible');
-        this.updateTooltipPosition(event);
+        this.updateTooltipPosition(bar);
     }
 
-    updateTooltipPosition(event) {
+    updateTooltipPosition(bar) {
         const tooltip = this.elements.tooltip;
         const rect = this.elements.chartViewport.getBoundingClientRect();
         const scrollLeft = this.elements.chartViewport.scrollLeft;
         const scrollTop = this.elements.chartViewport.scrollTop;
 
-        const x = event.clientX - rect.left + scrollLeft + 15;
-        const y = event.clientY - rect.top + scrollTop + 15;
+        const x = bar.clientX - rect.left + scrollLeft + 15;
+        const y = bar.clientY - rect.top + scrollTop + 15;
 
         const maxX = rect.width + scrollLeft - tooltip.offsetWidth - 15;
         const maxY = rect.height + scrollTop - tooltip.offsetHeight - 15;
@@ -576,11 +575,11 @@ class GraphAnalyzer {
         this.elements.tooltip.classList.remove('visible');
     }
 
-    findRelatedEvents(event) {
+    findRelatedBars(bar) {
         return this.state.filteredSpans.filter(span =>
-            span.id !== event.id &&
-            span.start < event.end &&
-            span.end > event.start
+            span.id !== bar.id &&
+            span.start < bar.end &&
+            span.end > bar.start
         );
     }
 
@@ -597,13 +596,13 @@ class GraphAnalyzer {
                     this.state.activeLayers.has(span.layer) &&
                     this.state.activeActors.has(span.actor) && (
                         span.display_name.toLowerCase().includes(searchTerm) ||
-                        span.event_id.toLowerCase().includes(searchTerm) ||
+                        span.bar_id.toLowerCase().includes(searchTerm) ||
                         span.layer.toLowerCase().includes(searchTerm)
                     )
             );
         }
 
-        this.updateEventCount();
+        this.updateBarCount();
         this.render();
     }
 
@@ -649,11 +648,11 @@ class GraphAnalyzer {
         this.elements.chartViewport.scrollTop = 0;
     }
 
-    updateEventCount() {
+    updateBarCount() {
         const total = this.state.spans.length;
         const filtered = this.state.filteredSpans.length;
-        this.elements.eventCount.textContent = total.toString();
-        this.elements.visibleEvents.textContent =
+        this.elements.barCount.textContent = total.toString();
+        this.elements.visibleBars.textContent =
             filtered === total ? `${total} visible` : `${filtered} visible`;
     }
 
@@ -841,8 +840,8 @@ class GraphAnalyzer {
         reader.onload = (e) => {
             try {
                 const data = JSON.parse(e.target.result);
-                if (!Array.isArray(data.layers) || !Array.isArray(data.events)) {
-                    throw new Error('Invalid log format: expected { layers: [...], events: [...] }');
+                if (!Array.isArray(data.layers) || !Array.isArray(data.bars)) {
+                    throw new Error('Invalid log format: expected { layers: [...], bars: [...] }');
                 }
 
                 this.state.layerDefs = data.layers.slice();
@@ -851,9 +850,9 @@ class GraphAnalyzer {
                     this.config.colors[l.id] = l.color || '#666666';
                 });
 
-                this.state.rawEvents = data.events;
+                this.state.rawBars = data.bars;
 
-                this.processEventData();
+                this.processBarData();
 
                 this.initializeLayers();
                 this.initializeActors();
@@ -863,7 +862,7 @@ class GraphAnalyzer {
                 this.renderDiagram();
                 this.render();
 
-                this.log('info', `Imported ${this.state.spans.length} events from ${file.name}`);
+                this.log('info', `Imported ${this.state.spans.length} bars from ${file.name}`);
             } catch (error) {
                 this.log('error', `Failed to import file: ${error.message}`);
                 alert(`Failed to import file: ${error.message}`);
@@ -903,11 +902,11 @@ class GraphAnalyzer {
         const exportData = {
             metadata: {
                 exportTime: new Date().toISOString(),
-                totalEvents: this.state.spans.length,
+                totalBars: this.state.spans.length,
                 timeRange: this.getTimeRange()
             },
-            events: this.state.spans.map(span => ({
-                id: span.event_id,
+            bars: this.state.spans.map(span => ({
+                id: span.bar_id,
                 name: span.display_name,
                 actor: span.actor,
                 layer: span.layer,
@@ -926,9 +925,9 @@ class GraphAnalyzer {
 
     exportCSV() {
         const csv = Papa.unparse({
-            fields: ['event_id', 'display_name', 'layer', 'start_time', 'end_time', 'duration'],
+            fields: ['bar_id', 'display_name', 'layer', 'start_time', 'end_time', 'duration'],
             data: this.state.spans.map(span => ({
-                event_id: span.event_id,
+                bar_id: span.bar_id,
                 display_name: span.display_name,
                 layer: span.layer,
                 start_time: (span.start / 1000).toFixed(3),
