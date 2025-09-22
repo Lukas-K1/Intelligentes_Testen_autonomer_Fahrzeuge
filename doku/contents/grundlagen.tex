@@ -1,9 +1,22 @@
 \chapter{Grundlagen}
 
 \section{Testumgebungen im autonomen Fahren}
+Um die Sicherheit und Zuverlässlichkeit von autonomen Fahrsystemen zu gewährleisten, müssen diese umfassend getestet werden. 
+Dabei werden verschiedene Testumgebungen eingesetzt um die verschiedenen Anforderungen an die Systeme zu prüfen. 
+
 \begin{itemize}
-    \item kurze Abgrenzung VIL, HIL, SIL
-    \item zur Einordung, welche unterschiedlichen Testebenen es gibt
+    \item Software-in-the-Loop (SIL) \newline
+            Die zu prüfende Software wird in einer Simulationsumgebung getestet, wobei die Hardware-Komponenten des Fahrzeug simuliert werden. 
+            Ziel ist es Fehler in der Software durch verschiedene Testszenarien frühzeitig zu identifizieren und zu beheben.
+            Auf dieser Ebene ist das wiederholte Testen aufgrund von benötigter Zeit und Rechenleistung am günstigsten, da zum Beispiel schneller als in Echtzeit getestet werden kann. 
+            Deshalb wird versucht möglichst viele Tests auf dieser Ebene durchzuführen.
+    \item Hardware-in-the-Loop (HIL) \newline
+            Bei HIL-Tests wird reale Zielhardware der Fahrzeuge wie Steuergeräte und Sensoren in die Simulation eingebunden. 
+            So kann die Interaktion zwischen Software und Hardware unter kontrollierten Bedingungen relativ realitätsnah getestet werden.
+    \item Vehicle-in-the-Loop (VIL) \newline
+            VIL-Tests testen reale Fahrzeuge durch Fahrzeugtests im Verkehr, auf Teststrecken oder im Teststand. 
+            Hier wird das komplette Zusammenspiel aller Software und Hardware-Komponenten im Fahrzeug geprüft.
+            Diese Tests sind am aufwändigsten und teuersten, da sie reale Fahrzeuge sowie Testumgebungen benötigen.
 \end{itemize}
 \section{Klassifikation von Testszenarien im autonomen Fahren}
 \begin{itemize}
@@ -11,12 +24,44 @@
     \item am Beste mittels eines Beispiels z.B. Überhol-Manöver beschreiben
 \end{itemize}
 \section{OpenSCENARIO als Standard zur Beschreibung von Testszenarien}
-\begin{itemize}
-    \item OpenScenario 1.x Standard (XML-basiert) 
-    \item OpenScenario DSL 
-    \item jeweils Beispiel zeigen, wie so etwas aussehen könnte
-    \item Herausforderungen herausstellen
-\end{itemize}
+
+
+
+Ein Standard für die Beschreibung von Testszenarien für autonomes Fahren ist OpenSCENARIO, welches durch die ASAM (Association for Standardization of Automation and Measuring Systems) entwickelt wurde.
+Im Laufe der Zeit wurden verschiedene Versionen veröffentlicht, frühe Versionen basieren auf XML, was die Erstellung und Wartung von Szenarien aufgrund des Umfangs und dem Detailgrad komplex macht.
+Später wurde OpenSCENARIO DSL entwickelt, eine domänenspezifische Sprache, die eine einfachere und intuitivere Beschreibung von Szenarien ermöglicht.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth]{contents/figures/openscenario_xml.png}
+    \caption{OpenSCENARIO XML Beispiel \cite{EinfuehrungIntegrationsprojekt}}
+    \label{fig:osl-xml}
+\end{figure}
+
+Abbildung \ref{fig:osl-xml} zeigt einen beispielhaften Ausschnitt eines OpenSCENARIO XML Szenarios.
+Das Szenario ist dabei in \glqq Acts\grqq{} gegliedert, welche jeweils eine Menge von Aktionen definieren.
+Diese werden durch Subtypen definiert und enthalten unter anderem Informationen über die beteiligten Akteure, deren Start- und Endzeitpunkt sowie die Art der Aktion.
+Damit ist ein genaues Beschreiben von Testszenarien möglich, allerdings ist die XML-Syntax sehr umfangreich und für Menschen unübersichtlich, dafür aber einfach maschinenlesbar.
+
+
+
+In Abbildung \ref{fig:osl-dsl} ist ein weiteres Szenario mit OpenSCENARIO DSL dargestellt.
+Die DSL-Syntax ist deutlich kompakter und einfacher lesbar als die XML Syntax, was die Erstellung und Wartung von Szenarien erleichtert.
+Es werden zwei Fahrzeuge definiert, welche sich auf einer Straße befinden und eine Überholsituation durchführen sollen.
+Dabei sind im Sinne eines abstrakten Szenarios beispielsweise Intervalle definiert, in denen das Überholmanöver durchgeführt werden soll, sowie die Abstände, die zwischen den Fahrzeugen eingehalten werden sollen.
+Allerdings wird das Szenario nur deklarativ beschrieben, enthält also keine Anweisungen zur Ausführung sondern dazu, welche Abläufe valide sind.
+Ein automatisiertes Testen ist damit dadurch nicht ohne weiteres möglich, da ein Parsen der Syntax und eine Interpretation der Szenariobeschreibung notwendig ist. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\linewidth]{contents/figures/openscenario_dsl.png}
+    \caption{OpenSCENARIO DSL Beispiel \cite{EinfuehrungIntegrationsprojekt}}
+    \label{fig:osl-dsl}
+\end{figure}
+
+
+
+
 \section{Eingesetzte Simulations-Engines im Rahmen dieser Arbeit}
 Simulationsumgebungen sind ein zentrales Werkzeug im Bereich des autonomen Fahrens. Sie ermöglichen es, Verkehrssituationen unter kontrollierten Bedingungen nachzustellen und die entwickelten Verfahren zu testen. Abhängig vom jeweiligen Einsatzgebiet unterscheiden sich die Umgebungen vor allem im Grad der Abstraktion, in den bereitgestellten Funktionen und im benötigten Rechenaufwand. In den folgenden Abschnitten werden mit HighwayEnv sowie SUMO und dem dazugehörigen TraCI drei Umgebungen vorgestellt, die in unserem Projekt verwendet werden.
 \subsection{HighwayEnv}
