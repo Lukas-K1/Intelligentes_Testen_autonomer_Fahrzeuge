@@ -254,8 +254,6 @@ def two_vehicles_follow_vut():
 
 In diesem Abschnitt wird das Logging-Format und die Visualisierung mit ihren Funktionen zur Analyseunterstützung vorgestellt. Dabei sind sowohl die Beispiel-Logs als auch die Screenshots aus dem Visualisierungstool zur besseren Lesbarkeit in je zwei Teile unterteilt und die für die Abbildungen visualisierten Logs nur in Teilen eingefügt.
 
-Die Grundidee der entwickelten Visualisierung ist die Darstellung der Ereignisse in Form von Balken, die mehrere zusammenhängende Events zusammenfassen, dazustellen.
-
 \begin{figure}[htb]
     \centering
     \includegraphics[width=\textwidth]{contents/figures/graph_analyzer.png}
@@ -263,9 +261,11 @@ Die Grundidee der entwickelten Visualisierung ist die Darstellung der Ereignisse
     \label{fig:analyzer_graph}
 \end{figure}
 
-Das Logging folgt grundsätzlich dem Schema, das beispielhaft in den Listings \ref{lst:demo-json-layers} und \ref{lst:demo-json} zu sehen ist.
+Die Grundidee der entwickelten Visualisierung ist die Darstellung der Ereignisse in Form von Balken, die mehrere zusammenhängende Events zusammenfassen, dazustellen (siehe Abbildung \ref{fig:analyzer_graph}).
 
 \lstinputlisting[language=json, caption={Beispiel-Log Schichten}, label={lst:demo-json-layers}]{contents/code/layers_config.json}
+
+Das Logging folgt grundsätzlich dem Schema, das beispielhaft in den Listings \ref{lst:demo-json-layers} und \ref{lst:demo-json} zu sehen ist.
 
 Dabei kann über das \texttt{layers}-Attribut eine Liste der vorgesehenen Schichten mitgegeben werden, in denen die gelogten Event angezeigt werden sollen. Darüber hinaus kann der Nutzer hier definieren, welche Namen die Schichten tragen und in welchen Farben die Balken der jeweiligen Schicht dargestellt werden. Im Beispiel also von oben nach unten die Schichten \enquote{Scenario Bars}, \enquote{Selected Sensor Bars} und \enquote{All Sensor Bars} wie in Abbildung \ref{fig:analyzer_graph} zu sehen ist.
 
@@ -280,9 +280,7 @@ Im Beispiel zuletzt wird zu jedem Eintrag ein \texttt{layer} gelogt, welches die
 Die beiden Attribute \texttt{actor} und \texttt{layer} werden aggregiert und in der Visualisierung genutzt, um dem Nutzer eine Filterung nach Schichten und Akteuren zu ermöglichen. Die daraus generierten Filter-Buttons sind im oberen Bereich von Abbildung \ref{fig:analyzer_graph} zu sehen.
 Darüber hinaus ist auch eine Freitextsuche über das Eingabefeld oben rechts möglich. Diese Möglichkeiten können beliebig kombiniert werden, um die Analyse optimal zu unterstützen.
 
-Neben den zwingend notwendigen Attributen der Log-Einträge können frei weitere Informationen gelogt werden. Im Listing
-%TODO: Referenz auf Listing
-ist zu den letzten Einträgen zusätzlich \texttt{distance\_to\_vut} gelogt. Diese Daten werden genutzt, um Diagramme wie in Abbildung \ref{fig:analyzer_diagram_panel} zu erstellen, das im \enquote{Diagram Panel} angezeigt wird. Dabei kann der Nutzer die jeweiligen Attribute beliebig benennen. Zu einem Attribut (hier \texttt{distance\_to\_vut}) werden dann alle gelogten Werte in einem Diagramm nach Akteuren unterteilt eingetragen.
+Neben den zwingend notwendigen Attributen der Log-Einträge können frei weitere Informationen gelogt werden. Im Listing \ref{lst:demo-json} ist zu den letzten drei Einträgen (ab Zeile 10) zusätzlich \texttt{distance\_to\_vut} gelogt. Diese Daten werden genutzt, um Diagramme wie in Abbildung \ref{fig:analyzer_diagram_panel} zu erstellen, das im \enquote{Diagram Panel} angezeigt wird. Dabei kann der Nutzer die jeweiligen Attribute beliebig benennen. Zu einem Attribut (hier \texttt{distance\_to\_vut}) werden dann alle gelogten Werte in einem Diagramm nach Akteuren unterteilt eingetragen.
 
 \begin{figure}[htb]
     \centering
@@ -292,10 +290,6 @@ ist zu den letzten Einträgen zusätzlich \texttt{distance\_to\_vut} gelogt. Die
 \end{figure}
 
 Ein besonderer Vorteil des entwickelten Analysetools ist, dass es durch die Entwicklung ausschließlich mit HTML, CSS und JavaScript jederzeit auf dem Computer des Entwicklers mit Hilfe eines beliebigen Browsers eingesetzt werden kann. Da es als Teil des Projekts abgelegt wurde, ist es während der Arbeit am Projekt stets verfügbar.
-
-%TODO: Toll, weil portable erwähnen
-%TODO: Wird optional und nicht optional deutlich
-
 
 \section{Reinforcement Learning}
 Hier wird die Struktur und Funktionalität des Projekts, das ein Reinforcement-Learning-Modell (RL) für Überholszenarien trainiert, speichert und nutzt beschrieben. Die Hauptkomponenten des Projekts sind in mehreren Python-Dateien organisiert.

@@ -47,29 +47,86 @@ tabsize=2
 \lstset{style=mystyle, captionpos=t}
 
 % JSON definition
-\lstdefinelanguage{json}{
-  showspaces=false,
-  showtabs=false,
-  breaklines=true,
-  breakatwhitespace=true,
+
+% Color palette (tweak as desired)
+\definecolor{jsonkey}{RGB}{166,56,0}
+\definecolor{jsonstr}{RGB}{36,90,169}
+\definecolor{jsonnum}{RGB}{128,0,128}
+\definecolor{jsondelim}{RGB}{100,100,100}
+\definecolor{jsonbg}{RGB}{0.95,0.95,0.92}
+
+% Base style shared by JSON listings
+\lstdefinestyle{jsonbase}{
+  backgroundcolor=\color{jsonbg},
   basicstyle=\ttfamily\small,
-  morestring=[b]",
-  literate=
-   *{0}{{0}}{1}
-    {1}{{1}}{1}
-    {2}{{2}}{1}
-    {3}{{3}}{1}
-    {4}{{4}}{1}
-    {5}{{5}}{1}
-    {6}{{6}}{1}
-    {7}{{7}}{1}
-    {8}{{8}}{1}
-    {9}{{9}}{1}
-    {\{}{{\{}}{1}
-    {\}}{{\}}}{1}
-    {[}{{[}}{1}
-    {]}{{]}}{1},
+  showstringspaces=false,
+  breaklines=true,
+  numbers=left,
+  numberstyle=\tiny\color{jsondelim},
+  numbersep=6pt,
+  upquote=true,
+  columns=fullflexible
 }
+
+\lstdefinelanguage{json}{
+  morestring=[b]",
+  stringstyle=\color{jsonstr},
+  showstringspaces=false,
+  alsoletter={:},
+  literate=
+   *{0}{{{\color{jsonnum}0}}}{1}
+    {1}{{{\color{jsonnum}1}}}{1}
+    {2}{{{\color{jsonnum}2}}}{1}
+    {3}{{{\color{jsonnum}3}}}{1}
+    {4}{{{\color{jsonnum}4}}}{1}
+    {5}{{{\color{jsonnum}5}}}{1}
+    {6}{{{\color{jsonnum}6}}}{1}
+    {7}{{{\color{jsonnum}7}}}{1}
+    {8}{{{\color{jsonnum}8}}}{1}
+    {9}{{{\color{jsonnum}9}}}{1}
+    {.0}{{{\color{jsonnum}.0}}}{2}
+    {.1}{{{\color{jsonnum}.1}}}{2}
+    {.2}{{{\color{jsonnum}.2}}}{2}
+    {.3}{{{\color{jsonnum}.3}}}{2}
+    {.4}{{{\color{jsonnum}.4}}}{2}
+    {.5}{{{\color{jsonnum}.5}}}{2}
+    {.6}{{{\color{jsonnum}.6}}}{2}
+    {.7}{{{\color{jsonnum}.7}}}{2}
+    {.8}{{{\color{jsonnum}.8}}}{2}
+    {.9}{{{\color{jsonnum}.9}}}{2}
+    {\{}{{{\color{jsondelim}{\{}}}}{1}
+    {\}}{{{\color{jsondelim}{\}}}}}{1}
+    {[}{{{\color{jsondelim}{[}}}}{1}
+    {]}{{{\color{jsondelim}{]}}}}{1}
+    {,}{{{\color{jsondelim}{,}}}}{1}
+    % Key recoloring heuristic:
+    % Turn the closing quote before a colon, plus the colon, into key color.
+    % Variants handle possible whitespace between " and :
+    {" :}{{{\color{jsonkey}" :}}}{3}
+    {" : }{{{\color{jsonkey}" : }}}{4}
+    {" :  }{{{\color{jsonkey}" :  }}}{5}
+    {" :   }{{{\color{jsonkey}" :   }}}{6}
+    {" :    }{{{\color{jsonkey}" :    }}}{7}
+    {" :     }{{{\color{jsonkey}" :     }}}{8}
+    {" :      }{{{\color{jsonkey}" :      }}}{9}
+    {" :       }{{{\color{jsonkey}" :       }}}{10}
+    % Common colon forms
+    {" :}{{{\color{jsonkey}" :}}}{3}
+    {" :}{{{\color{jsonkey}" :}}}{3}
+    {" :}{{{\color{jsonkey}" :}}}{3}
+    {" :}{{{\color{jsonkey}" :}}}{3}
+    {" :}{{{\color{jsonkey}" :}}}{3}
+    % Tight form (no spaces)
+    {":}{{{\color{jsonkey}":}}}{2}
+}
+
+% Convenience style binding
+\lstdefinestyle{json}{
+  style=jsonbase,
+  language=json
+}
+
+
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{graphicx}
