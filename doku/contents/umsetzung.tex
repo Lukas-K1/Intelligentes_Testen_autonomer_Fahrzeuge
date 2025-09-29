@@ -1,6 +1,6 @@
 \chapter{Umsetzung}
 
-\section{Gesamt-Architektur}
+\section{Gesamtarchitektur}
 Die Architektur besteht aus drei Hauptkomponenten: den Simulations-Engines, der Logging- und Visualisierungskomponente sowie dem BProgram, in dem Szenarien modelliert und ausgeführt werden können. Das BProgram kann zur Ausführung unabhängig zwischen den beiden bereitgestellten Simulations-Engines wählen. Innerhalb des Projekts wurden zunächst konkrete Szenarios manuell implementiert. Im weiteren Verlauf wurde ein Ansatz entwickelt, um konkrete Szenarien automatisiert zu erlernen, sodass diese einem abstrakt definierten Szenario folgen. In den konkreten Szenarien kommt zudem ein Logger zum Einsatz, der Daten für die Visualisierung bereitstellt. Eine zukünftige Vision der Gesamtarchitektur ist in Abbildung \ref{fig:architecture} dargestellt.
 
 \begin{figure}[h]
@@ -54,7 +54,7 @@ Im direkten Vergleich erweist sich der Vehicle-basierte Ansatz als robuster und 
 \subsection{Sumo}
 Im Verlauf des Projektes zeigte sich, dass die Definition eines eigenen Straßennetzes in HighwayEnv über die Implementierung einer individuellen Environment erfolgen muss. Daher wurden alternative Lösungen untersucht, was uns zur Verkehrssimulation SUMO führte. In SUMO können individuelle Karten einfach mit SUMO-netedit erstellt werden. Zudem bietet die Software die Möglichkeit, Straßennetze auf Basis realer Straßen zu generieren.
 \subsubsection{SumoEnv}
-Im Gegensatz zu HigwhayEnv bietet SUMO keine direkte Implementierung einer \texttt{gym.Env}-Umgebung. Um dennoch Reinforcement-Learning-Experimente in SUMO durchführen zu können wurde eine eigene Umgebung in der Klasse \texttt{SumoEnv} entwickelt. Diese basiert auf dem Gymnasium-Framework und bildet die standardisierten Methoden \texttt{reset}, \texttt{step}, \texttt{close} sowie die Definition von Beobachtungs und Aktionsräumen ab. Voraussetzung für die Nutzung ist die Installation von SUMO sowie das Python-Package TraCI, das eine bidirektionale Steuerung der SUMO-Simulation erlaubt.
+Im Gegensatz zu HigwhayEnv bietet SUMO keine direkte Implementierung einer \texttt{gym.Env}-Umgebung. Um dennoch Reinforcement-Learning-Experimente in SUMO durchführen zu können wurde eine eigene Umgebung in der Klasse \texttt{SumoEnv} entwickelt. Diese basiert auf dem Gymnasium-Framework und bildet die standardisierten Methoden \texttt{reset}, \texttt{step}, \texttt{close} sowie die Definition von Beobachtungs- und Aktionsräumen ab. Voraussetzung für die Nutzung ist die Installation von SUMO sowie das Python-Package TraCI, das eine bidirektionale Steuerung der SUMO-Simulation erlaubt.
 
 Der Konstruktor übernimmt die Initialisierung der Umgebung. Neben der Referenz auf die SUMO-Konfigurationsdatei werden steuerbare Fahrzeuge als Parameter übergeben. Zudem werden die für das Reinforcement Learning relevanten Schnittstellen definiert:
 \begin{itemize}
@@ -65,7 +65,9 @@ Zur Verwaltung des Simulationsverlaufs werden Episoden- und Schrittzähler gefü
 
 Zum Starten der Simulation wird in \texttt{start\_simulation} zunächst geprüft, ob die Umgebungsvariable \texttt{SUMO\_HOME} gesetzt ist, um die ausführbare SUMO-Datei korrekt zu lokalisieren. Die Verbindung zu SUMO wird anschließend über TraCI hergestellt. Danach werden Parameter zur Zeitschrittlänge, Kollisionsbehandlung und Startoptionen gesetzt. In der GUI werden zudem Kameraeinstellungen angepasst, um die Simulation bestmöglich visuell nachvollziehen zu können.
 
-Das Hinzufügen von Fahrzeugen übernimmt \texttt{build\_vehicle}. Neben einem vordefinierten Vehicle under Test (vut) werden alle übergebenen steuerbaren Fahrzeuge erzeugt. Mit den individuellen Eigenschaften wie Startzeit, Fahrspur, Geschwindigkeit, Route oder Fahrverhalten können diese weiter angepasst werden. Besonders hervorzuheben ist, dass der Spurwechsel- und Geschwindigkeitsmodus der kontrollierbaren Fahrzeuge so gesetzt wurde, dass möglichst wenige Sicherheitsfeatures von SUMO aktiv sind. Auf diese Weise greifen SUMO-interne Automatikmechanismen, die Fahrmanöver einschränken oder korrigieren, nur minimal ein. 
+Das Hinzufügen von Fahrzeugen übernimmt \texttt{build\_vehicle}. Neben einem vordefinierten Vehicle under Test (vut)
+%TODO: Abkürzungen vereinheitlichen!
+werden alle übergebenen steuerbaren Fahrzeuge erzeugt. Mit den individuellen Eigenschaften wie Startzeit, Fahrspur, Geschwindigkeit, Route oder Fahrverhalten können diese weiter angepasst werden. Besonders hervorzuheben ist, dass der Spurwechsel- und Geschwindigkeitsmodus der kontrollierbaren Fahrzeuge so gesetzt wurde, dass möglichst wenige Sicherheitsfeatures von SUMO aktiv sind. Auf diese Weise greifen SUMO-interne Automatikmechanismen, die Fahrmanöver einschränken oder korrigieren, nur minimal ein. 
 
 Ein Neustart der Umgebung erfolgt über \texttt{reset}. Falls bereits eine Simulation aktiv ist, wird diese zunächst beendet (\texttt{close}). Danach erfolgen ein Neustart der SUMO-Instanz sowie die Einbindung der Fahrzeuge. Eine kurze Verzögerung sorgt dafür, dass die Setup-Phase abgeschlossen ist, bevor auf die Fahrzeuge zugegriffen wird, um Fehler bei der Ausführung zu vermeiden.
 
@@ -79,7 +81,7 @@ Innerhalb der \texttt{step}-Methode wird ein Simulations-Schritt, wie folgt ausg
 \end{enumerate}
 Das Rückgabeformat entspricht dem Gymnasium-Standard: (obs, reward, terminated, truncated, info).
 
-Die Aktionslogik wird in einer separaten Methode \texttt{\_apply\_action()} implementiert. Das Listing \ref{lst:applyAction} zeigt die aktuelle Implementierung der Anwendung einer Aktion mittels der TraCI-Schnittstelle. Hierbei wird die selbe Logik und Enumeration verwendet, wie auch in HighwayEnv.
+Die Aktionslogik wird in einer separaten Methode \texttt{\_apply\_action()} implementiert. Das Listing \ref{lst:applyAction} zeigt die aktuelle Implementierung der Anwendung einer Aktion mittels der TraCI-Schnittstelle. Hierbei wird dieselbe Logik und Enumeration verwendet, wie auch in HighwayEnv.
 
 \begin{lstlisting}[language=Python, caption=apply\_action Implementierung, label={lst:applyAction}]
 def _apply_action(self, action):
@@ -122,8 +124,8 @@ Durch diese Struktur müssen bestehende Szenario-Implementierungen lediglich ein
 \section{Modellierung von Szenarien mit BPpy}
 Für die Modellierung von Szenarien wurde BPpy genutzt. Hierbei wurden verschiedene BThreads erstellt, die unterschiedliche Aspekte der Szenarien abbilden.
 Einzelne BThreads bilden bestimmte Funktionalitäten und Teilszenarien ab, die dann in Kombination ein vollständiges, konkretes Szenario ergeben. So können die Funktionalitäten insgesamt besser strukturiert und wiederverwendet werden.
-Die BThreads werden aber außer für einzelne Funktionalitäten auch für die Simulation und Abstraktion von Szenarien genutzt, sowie gebündelt um ein konkretes Szenario wie ein Überholmanöver abzubilden.
-So gibt es BThreads, die ein abstraktes Szenario modellieren, also die grundlegende Anforderungen an das Szenario definieren, ohne sich auf eine konkrete Implementierung festzulegen. Diese abstrakten Szenarien werden dann im BProgram mit ausgeführt um zu überprüfen, dass die Anforderungen an das Szenario erfüllt werden.
+Die BThreads werden aber außer für einzelne Funktionalitäten auch für die Simulation und Abstraktion von Szenarien genutzt, sowie gebündelt, um ein konkretes Szenario wie ein Überholmanöver abzubilden.
+So gibt es BThreads, die ein abstraktes Szenario modellieren, also die grundlegenden Anforderungen an das Szenario definieren, ohne sich auf eine konkrete Implementierung festzulegen. Diese abstrakten Szenarien werden dann im BProgram mit ausgeführt um zu überprüfen, dass die Anforderungen an das Szenario erfüllt werden.
 Dabei werden konkrete Angaben überprüft, wie z.B. das sich bestimmte Fahrzeugpositionen verändert haben oder in welcher Fahrbahn sich die Fahrzeuge im Vergleich zueinander befinden.
 Dazu kann dann geloggt werden, ob die Anforderungen erfüllt wurden beziehungsweise welche Anforderungen nicht erfüllt wurden.
 
@@ -132,7 +134,7 @@ Dabei erhält der Simulations-Thread Informationen von den anderen BThreads, um 
 Dieser Thread dient insbesondere der korrekten Übersetzung der Aktionen für die jeweilige Simulationsumgebung, die in diesem Integrationsprojekt entweder HighwayEnv oder Sumo sein kann.
 In diesem Thread wird auch auf Kollisionen und andere terminierende Ereignisse geprüft, um die Simulation entsprechend zu beenden oder anzupassen.
 
-Das konkrete Szenario wird durch die Kobination von verschiedenen BThreads modelliert, die zusammen die vollständige Logik und Anforderungen des Szenarios abbilden. Dabei wird spezifische Logik implementiert, die nur für dieses Szenario relevant ist und meist in weitere Methoden ausgelagert wird.
+Das konkrete Szenario wird durch die Kombination von verschiedenen BThreads modelliert, die zusammen die vollständige Logik und Anforderungen des Szenarios abbilden. Dabei wird spezifische Logik implementiert, die nur für dieses Szenario relevant ist und meist in weitere Methoden ausgelagert wird.
 Die entsprechende Logik wird dann im relevanten BThread aufgerufen, um einen Teil des Szenarios zu steuern. Dabei können mehrere BThreads auch zu einem konkreten Szenario gehören, um verschiedene Aspekte abzudecken.
 Diese Threads können über ein Parallelitätskonstrukt parallel ausgeführt werden, um die gleichzeitige Ausführung verschiedener Aspekte des Szenarios zu ermöglichen. Spezifische Logik wird in den einzelnen BThreads per \texttt{yield from} aufgerufen, um diese anzuwenden.
 
@@ -140,7 +142,7 @@ Die Aufteilung und Aufgaben der einzelnen BThreads wird jetzt noch einmal an ein
 \subsection{Follow-Behind-Szenario}
 Das Follow-Behind-Szenario modelliert eine Situation, in der ein oder mehrere Fahrzeuge einem anderen Fahrzeug (VUT) folgt. Dabei wird überprüft, ob das folgende Fahrzeug einen sicheren Abstand zum vorausfahrenden Fahrzeug einhält.
 Dabei wird auch geprüft, ob dieses Szenario in einer bestimmten Zeit abgeschlossen wird, sodass alle Nicht-VUT-Fahrzeuge sich hinter dem VUT und in derselben Fahrbahn befinden.
-Diese Anforderungen stellen die grundlegenden Anforderungen an das Szenario dar, die in einem abstrakten BThread modelliert werden. Das enstsprechende abstrakte Szenario wird mit geringen Anforderungen (nur die Positionierung in einer vorgegebenen Zeit) in der Methode \texttt{abstract\_scenario\_two\_vehicles\_follow\_vut} modelliert.
+Diese Anforderungen stellen die grundlegenden Anforderungen an das Szenario dar, die in einem abstrakten BThread modelliert werden. Das entsprechende abstrakte Szenario wird mit geringen Anforderungen (nur die Positionierung in einer vorgegebenen Zeit) in der Methode \texttt{abstract\_scenario\_two\_vehicles\_follow\_vut} modelliert.
 Das abstrakte Szenario mit den zusätzlichen Anforderungen an die Fahrbahnpositionierung wird in der Methode \texttt{abstract\_scenario\_2} modelliert.
 \begin{lstlisting}[language=Python, caption=bstraktes Szenario: Zwei Fahrzeuge folgen dem VUT, basicstyle=\ttfamily\small]
 @thread
@@ -156,7 +158,7 @@ def abstract_scenario_two_vehicles_follow_vut():
 \end{lstlisting}
 
 Der Simulations-Thread sorgt dafür, dass die Fahrzeuge entsprechend den definierten Szenarien agieren und interagieren. Dabei erhält der Simulations-Thread Informationen von den anderen BThreads, um die Simulation entsprechend anzupassen und zu steuern.
-In diesem Beispiel interagiert der Simulations-Thread mit Sumo um die Aktionen korrekt für die Umgebung zu übersetzen und auszuführen. In früheren Beispielen wurde dies auch für HighwayEnv umgesetzt.\ref{lst:highway}
+In diesem Beispiel interagiert der Simulations-Thread mit Sumo, um die Aktionen korrekt für die Umgebung zu übersetzen und auszuführen. In früheren Beispielen wurde dies auch für HighwayEnv umgesetzt.\ref{lst:highway}
 Der Simulations-Thread prüft auch auf Kollisionen und andere terminierende Ereignisse, um die Simulation entsprechend zu beenden oder anzupassen. Zudem wird für alle Fahrzeuge der Simulation geprüft, ob gültige Aktionen vorliegen, die dann las Tupel an \texttt{step}-Methode übergeben werden.\ref{lst:sumo}
 Die Simulation wird über die \texttt{step}-Methode der Umgebung ausgeführt, die die Aktionen der Fahrzeuge verarbeitet und den Zustand der Simulation aktualisiert. Zuletzt wird die Anzahl an Schritten der Simulation erhöht.
 \begin{figure}[ht]
@@ -220,10 +222,10 @@ def highway_env_bthread():
 \end{figure}
 
 Das konkrete Szenario ist in zwei BThreads gekapselt, die zusammen die vollständigen Anforderungen des Szenarios abbilden. Der erste Teil der Szenario-Logik in dient dazu, dass ein spezifisches Fahrzeug einem anderen Fahrzeug folgt. Die Methode nimmt auch eine optionale Verzögerung in Sekunden an.
-Die konkrete Logik, die für diesen Teil des Szenarios benötigt wird, wird über \texttt{yield from} aufgerufen, um die Logik für \texttt{follow\_behind} anzuwenden. In der Methode follow\_behind wird zuerst die Methode \texttt{get\_behind} aufgerufen, die eine Wrapper-Methode für einzelne Logik-Bausteine darstellt.
+Die konkrete Logik, die für diesen Teil des Szenarios benötigt wird, wird über \texttt{yield from} aufgerufen, um die Logik für \texttt{follow\_behind} anzuwenden. In der Methode \texttt{get\_behind} wird zuerst die Methode \texttt{get\_behind} aufgerufen, die eine Wrapper-Methode für einzelne Logik-Bausteine darstellt.
 Daraus wird Logik aufgerufen, die dafür sorgt, dass das Fahrzeug hinter ein anderes Fahrzeug zurückfällt und in die gleiche Fahrbahn wechselt. Dann wird die dadurch entstehende Distanz zwischen den Fahrzeugen minimiert, indem die Geschwindigkeit des folgenden Fahrzeugs distanzabhängig angepasst wird.
-Zuletzt um das Szenario mit zwei folgenden Fahrzeugen hinter einem VUT abzuschließen, werden in der Methode \texttt{concrete\_scenario\_two\_vehicles\_follow\_vut} zwei BThreads parallel ausgeführt, die jeweils ein Fahrzeug hinter dem VUT folgen lassen.\ref{lst:concreteFollowBehind}
-Das Ergebnis ist dass sich zunächst ein Fahrzeug hinter dem VUT positioniert, und, sobald dies erreicht ist, das zweite Fahrzeug sich hinter dem ersten Fahrzeug positioniert. Danach wird für die Fahrzeuge auch der Abstand und die angepasste Geschwindigkeit gehalten.
+Zuletzt um das Szenario mit zwei folgenden Fahrzeugen hinter einem VUT abzuschließen, werden in der Methode \texttt{concrete\_scenario\_two\_vehicles\_follow\_vut} zwei BThreads parallel ausgeführt, die jeweils ein Fahrzeug hinter dem VUT folgen lassen \ref{lst:concreteFollowBehind}.
+Das Ergebnis ist, dass sich zunächst ein Fahrzeug hinter dem VUT positioniert, und, sobald dies erreicht ist, das zweite Fahrzeug sich hinter dem ersten Fahrzeug positioniert. Danach wird für die Fahrzeuge auch der Abstand und die angepasste Geschwindigkeit gehalten.
 \begin{figure}[ht]
 \begin{lstlisting}[language=Python, caption=Konkretes Szenario: Zwei Fahrzeuge folgen dem VUT - Relevante BThreads, basicstyle=\ttfamily\small, label={lst:concreteFollowBehind}]
 @thread
@@ -274,8 +276,8 @@ Diese Datei ist für das Training des RL-Modells verantwortlich.
 
 \begin{itemize}
     \item \texttt{make\_env(rank: int)}: Erstellt eine Instanz der Überholumgebung für das Training.
-    \item \texttt{RenderCallback}: Eine Callback-Klasse, der die Umgebung während des Trainings in regelmäßigen Abständen rendert. Ihre \texttt{\_on\_step()} Methode wird vom Modell während des Trainings aufgerufen um zu bestimmen ob die aktuelle Episode gerendert werden soll.
-    \item \texttt{main()}: Führt das Training des RL-Modells durch. Es initialisiert das Modell und definiert die Traingsumgebung, trainiert es mit der \texttt{DQN}-Methode und speichert das trainierte Modell.
+    \item \texttt{RenderCallback}: Eine Callback-Klasse, der die Umgebung während des Trainings in regelmäßigen Abständen rendert. Ihre \texttt{\_on\_step()} Methode wird vom Modell während des Trainings aufgerufen um zu bestimmen, ob die aktuelle Episode gerendert werden soll.
+    \item \texttt{main()}: Führt das Training des RL-Modells durch. Es initialisiert das Modell und definiert die Trainingsumgebung, trainiert es mit der \texttt{DQN}-Methode und speichert das trainierte Modell.
 \end{itemize}
 
 \subsection{Trainieren des Modells}

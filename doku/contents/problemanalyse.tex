@@ -14,7 +14,7 @@ Das Projekt „Intelligentes Testen autonomer Fahrzeuge“ hat das Ziel, verifiz
     \item[Fehlende oder uneinheitliche Observability und Reporting] Für eine aussagekräftige Evaluation sind strukturierte Observation-Schnittstellen (z. B. Helper-Funktionen zum Abruf von Abständen, Spurfreigaben etc.) sowie umfassende Log-/Reporting-Mechanismen erforderlich, um Testziele und VUT-Reaktionen transparent auswerten zu können.(vgl. \cite{EinfuehrungIntegrationsprojekt})
 \end{description}
 
-\section{Use-Cases}
+\section{Use Case}
 
 Um aus den identifizierten Problemen und Herausforderungen konkrete Anforderungen an die Testumgebung abzuleiten, ist es sinnvoll, typische Anwendungsszenarien zu betrachten. Diese Use Cases verdeutlichen, welche Nutzergruppen mit dem System interagieren und welche Ziele sie dabei verfolgen. So wird deutlich, wie die Testumgebung im praktischen Einsatz genutzt werden soll und welche Funktionalitäten sie mindestens bereitstellen muss.
 
@@ -27,14 +27,14 @@ Um aus den identifizierten Problemen und Herausforderungen konkrete Anforderunge
 
 
 \begin{description}
-    \item[VUT-Tester] Als Tester eines VUTs möchte ich konkrete Szenarien in der Testumgebung ausführen und anschließend prüfen lassen, ob die definierten Testziel erreicht wurden.
+    \item[VUT-Tester] Als Tester eines VUTs möchte ich konkrete Szenarien in der Testumgebung ausführen und anschließend prüfen lassen, ob die definierten Testziele erreicht wurden.
     \item[ML-Forscher] Als Forscher möchte ich aus einem abstrakten Szenario konkrete Szenarien durch Verfahren wie RL oder evolutionäre KI erzeugen lassen.
     \item[Analyst] Als Analyst möchte ich vorhandene Logs und Ergebnisse auswerten, Kennzahlen berechnen und einen Report mit Visualisierungen erstellen.
 \end{description}
 
 \section{Technische Anforderungen}
 
-Aus der Problemstellung, Use-Cases und den Forschungsfragen aus dem Abschnitt Motivation \ref{chap:Motivation} ergeben sich folgende Anforderungen:
+Aus der Problemstellung, Use-Cases und den Forschungsfragen aus dem Abschnitt Motivation \ref{chap:motivation} ergeben sich folgende Anforderungen:
 
 \subsection{Simulationsumgebung und Adapter}
 Die Testplattform muss eine simulationsbasierte Infrastruktur bieten, die sowohl schnelle Prototypdurchläufe als auch realistischere Simulationen unterstützt. Zudem muss sie den Wechsel zwischen leichteren Engines (z. B. HighwayEnv) und realistischeren Umgebungen (z. B. SUMO) ermöglichen. Dazu gehört eine Adapterschicht, die simulatorspezifische Details kapselt und eine einheitliche API für Szenarien und Fahrzeuge bereitstellt, um Portabilität und Reproduzierbarkeit zu gewährleisten.
@@ -53,4 +53,4 @@ Die Plattform erfasst Ereignisse, Zustandsänderungen, Beobachtungen und Metadat
 
 \subsection{Schnittstellen für intelligente Erzeugung}
 
-Die Architektur muss das Einbinden und Testen „intelligenter” Erzeugungs- und Steuerungsverfahren, wie etwa Reinforcement Learning, evolutionäre Algorithmen oder Constraint-Solver, ermöglichen. Wesentlich sind hierbei modulare Schnittstellen für Trainings- und Evaluationsläufe, Konfigurationsmöglichkeiten für Episoden, Mechanismen zur Übergabe und Aggregation von Reward-Signalen sowie die Erfassung von Trainings-Traces für Debugging und Analyse. Dadurch ist es möglich, Lernalgorithmen gezielt auf abstrakte Ziele hin zu optimieren und ihre Ergebnisse in konkrete Steuerfolgen zu überführen. Dadurch kann erforscht werden, ob und wie automatisierte Verfahren die Generierung valider, zielgerichteter Testszenarien verbessern.
+Die Architektur muss das Einbinden und Testen \enquote{intelligenter} Erzeugungs- und Steuerungsverfahren, wie etwa Reinforcement Learning, evolutionäre Algorithmen oder Constraint-Solver, ermöglichen. Wesentlich sind hierbei modulare Schnittstellen für Trainings- und Evaluationsläufe, Konfigurationsmöglichkeiten für Episoden, Mechanismen zur Übergabe und Aggregation von Reward-Signalen sowie die Erfassung von Trainings-Traces für Debugging und Analyse. Dadurch ist es möglich, Lernalgorithmen gezielt auf abstrakte Ziele hin zu optimieren und ihre Ergebnisse in konkrete Steuerfolgen zu überführen. Dadurch kann erforscht werden, ob und wie automatisierte Verfahren die Generierung valider, zielgerichteter Testszenarien verbessern.
