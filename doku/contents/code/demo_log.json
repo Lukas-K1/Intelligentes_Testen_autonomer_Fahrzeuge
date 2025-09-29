@@ -1,0 +1,14 @@
+{
+  "layers": "Hier werden Schichten definiert",
+  "bars": [
+    { "timestamp": "0.0", "bar_id": "car1-overtake", "display_name": "Car1 - Overtake", "actor": "Car1", "layer": "scenario" },
+    { "timestamp": "3.5", "bar_id": "car1-accelerate", "display_name": "Car1 - Accelerate", "actor": "Car1", "layer": "selection" },
+
+    { "timestamp": "4.0", "bar_id": "car1-switch-lane-left", "display_name": "Car1 - Switch Lane (left)", "actor": "Car1", "layer": "selection" },
+    { "timestamp": "20.0", "bar_id": "car1-ride-into-sunset", "display_name": "Car1 - Ride into sunset", "actor": "Car1", "layer": "selection" },
+
+    { "timestamp": "0.5", "bar_id": "car1-increase-speed", "display_name": "Car1 - Increase Speed", "actor": "Car1", "layer": "simulation", "distance_to_vut": 2.5 },
+    { "timestamp": "2.0", "bar_id": "car1-increase-speed", "display_name": "Car1 - Increase Speed", "actor": "Car1", "layer": "simulation", "distance_to_vut": 12.5 },
+    { "timestamp": "2.5", "bar_id": "car1-increase-speed", "display_name": "Car1 - Increase Speed", "actor": "Car1", "layer": "simulation", "distance_to_vut": 17.5 }
+  ]
+}

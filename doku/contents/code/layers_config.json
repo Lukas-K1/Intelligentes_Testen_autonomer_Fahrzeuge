@@ -1,0 +1,8 @@
+{
+  "layers": [
+    { "id": "scenario", "display_name": "Scenario Bars", "color": "#FF4444" },
+    { "id": "selection", "display_name": "Selected Sensor Bars", "color": "#44FF44" },
+    { "id": "simulation", "display_name": "All Sensor Bars", "color": "#4444FF" }
+  ],
+  "bars": "Hier stehen Logs"
+}
