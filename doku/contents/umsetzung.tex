@@ -83,7 +83,8 @@ Das Rückgabeformat entspricht dem Gymnasium-Standard: (obs, reward, terminated,
 
 Die Aktionslogik wird in einer separaten Methode \texttt{\_apply\_action()} implementiert. Das Listing \ref{lst:applyAction} zeigt die aktuelle Implementierung der Anwendung einer Aktion mittels der TraCI-Schnittstelle. Hierbei wird dieselbe Logik und Enumeration verwendet, wie auch in HighwayEnv.
 
-\begin{lstlisting}[language=Python, caption=apply\_action Implementierung, label={lst:applyAction}]
+\begin{figure}[ht]
+\begin{lstlisting}[language=Python, caption=apply\_action Implementierung, label={lst:applyAction}, basicstyle=\ttfamily\small]
 def _apply_action(self, action):
     for i, vehicle in enumerate(self.controllable_vehicles):
             vehicle_id = vehicle.vehicle_id
@@ -109,6 +110,7 @@ def _apply_action(self, action):
             elif action[i] == 4:
                 traci.vehicle.setSpeed(vehicle_id, max(0, speed - 1))
 \end{lstlisting}
+\end{figure}
 Die Beobachtungslogik sammelt hierbei für jedes Fahrzeug relevante Zustandsgrößen wie Geschwindigkeit und Position. Fehlerfälle (etwa aus der Simulation entfernte Fahrzeuge) werden abgefangen, indem Default-Werte zurückgegeben werden.
 
 Die Belohnungsfunktion ist aktuell als Platzhalter implementiert und gibt einen konstanten Wert zurück. Damit ist die Umgebung lauffähig, ohne dass bereits eine spezifische Optimierungslogik definiert werden muss. In unserem Anwendungsfall liegt der Fokus ohnehin nicht auf der Optimierung der Simulation, sondern auf der Steuerung der Fahrzeuge, die später einem abstrakten Szenario folgen sollen. Weitere Platzhalter-Methoden wie \texttt{\_get\_info}, \texttt{render} oder \texttt{\_render\_frame} sind vorgesehen, um die Funktionalität um detaillierte Diagnoseinformationen oder zusätzliche Visualisierungen zu erweitern. Innerhalb unserer Experimente war dies bisher nicht notwendig.
@@ -144,11 +146,11 @@ Das Follow-Behind-Szenario modelliert eine Situation, in der ein oder mehrere Fa
 Dabei wird auch geprüft, ob dieses Szenario in einer bestimmten Zeit abgeschlossen wird, sodass alle Nicht-VUT-Fahrzeuge sich hinter dem VUT und in derselben Fahrbahn befinden.
 Diese Anforderungen stellen die grundlegenden Anforderungen an das Szenario dar, die in einem abstrakten BThread modelliert werden. Das entsprechende abstrakte Szenario wird mit geringen Anforderungen (nur die Positionierung in einer vorgegebenen Zeit) in der Methode \texttt{abstract\_scenario\_two\_vehicles\_follow\_vut} modelliert.
 Das abstrakte Szenario mit den zusätzlichen Anforderungen an die Fahrbahnpositionierung wird in der Methode \texttt{abstract\_scenario\_2} modelliert.
-\begin{lstlisting}[language=Python, caption=bstraktes Szenario: Zwei Fahrzeuge folgen dem VUT, basicstyle=\ttfamily\small]
+\begin{lstlisting}[language=Python, caption=Abstraktes Szenario: Zwei Fahrzeuge folgen dem VUT, basicstyle=\ttfamily\small]
 @thread
 def abstract_scenario_two_vehicles_follow_vut():
     def condition():
-        return v1.is_behind_by_x(vut) and v2.is_behind_by_x(v1)  # TODO: Same lane?
+        return v1.is_behind_by_x(vut) and v2.is_behind_by_x(v1)
 
     satisfied = yield from await_condition(condition, 10)
     if satisfied:
