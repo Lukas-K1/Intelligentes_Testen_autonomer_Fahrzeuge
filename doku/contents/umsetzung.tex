@@ -5,16 +5,16 @@ Die Architektur besteht aus drei Hauptkomponenten: den Simulations-Engines, der 
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1\linewidth]{contents/figures/fullArchitectureVision.pdf}
+    \includegraphics[width=1\linewidth]{contents/figures/full_architecture.drawio.png}
     \caption{Vision der Gesamtarchitektur}
     \label{fig:architecture}
 \end{figure}
 
-Dabei ist zu beachten, dass der in der Abbildung rot markierte Kasten keine bereits implementierte Komponente repräsentiert, sondern eine Vision darstellt, wie die Architektur künftig erweitert werden könnte. Die Idee besteht darin, eine unterstützende DrivingEngine einzuführen, die auf der abstrakten Klasse \texttt{gymnasium.Env} basiert und diese gezielt erweitert. So könnte beispielsweise eine zusätzliche Methode \texttt{build\_vehicles} vorgesehen werden, die von den jeweiligen Umgebungen implementiert werden muss, um sicherzustellen, dass die Fahrzeuge innerhalb der Simulationsumgebung korrekt erzeugt und verfügbar sind. Ergänzend steht ein Vehicle-Interface zur Verfügung, das implementiert werden muss, um unabhängig von der gewählten Umgebung konsistent auf Fahrzeuginformationen zugreifen zu können. Auf dieser Basis ließe sich ein B-Thread definieren, der die DrivingEngine steuert und bei Bedarf flexibel durch eine andere Engine ersetzt werden kann, solange diese die entsprechenden Schnittstellen erfüllt.
+Dabei ist zu beachten, dass der in der Abbildung rot markierte Kasten keine bereits implementierte Komponente repräsentiert, sondern eine Vision darstellt, wie die Architektur künftig erweitert werden könnte. Die Idee besteht darin, eine unterstützende DrivingEngine einzuführen, die auf der abstrakten Klasse \texttt{gymnasium.Env} basiert und diese gezielt erweitert. So könnte beispielsweise eine zusätzliche Methode \texttt{build\_vehicles} vorgesehen werden, die von den jeweiligen Umgebungen implementiert werden muss, um sicherzustellen, dass die Fahrzeuge innerhalb der Simulationsumgebung korrekt erzeugt und verfügbar sind. Ergänzend steht ein Vehicle-Interface zur Verfügung, das implementiert werden muss, um unabhängig von der gewählten Umgebung konsistent auf Fahrzeuginformationen zugreifen zu können. Auf dieser Basis ließe sich ein BThread definieren, der die DrivingEngine steuert und bei Bedarf flexibel durch eine andere Engine ersetzt werden kann, solange diese die entsprechenden Schnittstellen erfüllt.
 
 Aktuell ist dieser Ansatz jedoch nicht umgesetzt. Stattdessen muss im Code manuell festgelegt werden, ob die Simulation mit SumoEnv oder HighwayEnv ausgeführt werden soll. Ebenso erfordert ein Wechsel der Simulationsumgebung derzeit auch Anpassungen an den zugehörigen Vehicle-Zusatzklassen, die in der Komponente Simulation-Engines abgebildet sind. Die vorgesehene DrivingEngine sowie das Vehicle-Interface soll diesen manuellen Aufwand künftig vermeiden und die Austauschbarkeit vereinfachen.
 
-Im Folgenden werden zunächst die beiden Simulations-Engines sowie die Hilfsklassen vorgestellt, die den Zugriff auf Fahrzeuginformationen ermöglichen. Anschließend wird ein Ansatz für die Modellierung in BPpy erläutert, die verschiedene B-Threads zur Ausführung abstrakter und konkreter Szenarien nutzt. Darauf folgt eine Beschreibung der Logging- und Visualisierungskomponente. Abschließend wird der Ansatz zum automatisierten Erlernen konkreter Szenarien auf Basis eines abstrakten Szenarios vorgestellt.
+Im Folgenden werden zunächst die beiden Simulations-Engines sowie die Hilfsklassen vorgestellt, die den Zugriff auf Fahrzeuginformationen ermöglichen. Anschließend wird ein Ansatz für die Modellierung in BPpy erläutert, die verschiedene BThreads zur Ausführung abstrakter und konkreter Szenarien nutzt. Darauf folgt eine Beschreibung der Logging- und Visualisierungskomponente. Abschließend wird der Ansatz zum automatisierten Erlernen konkreter Szenarien auf Basis eines abstrakten Szenarios vorgestellt.
 
 \section{Simulationsumgebungen}
 In diesem Abschnitt wird die Nutzung von HighwayEnv und SUMO sowie dessen Steuerungsschnittstelle TraCI beschrieben. Zunächst wird die Konfiguration von HighwayEnv beschrieben sowie zwei Ansätze zur Extraktion von Fahrzeuginformationen aus der Umgebung. Danach wird auf die Sumo-Verwendung innerhalb des Projektes eingegangen.
@@ -63,11 +63,9 @@ Der Konstruktor übernimmt die Initialisierung der Umgebung. Neben der Referenz 
 \end{itemize}
 Zur Verwaltung des Simulationsverlaufs werden Episoden- und Schrittzähler geführt (\texttt{episode}, \texttt{step\_count}, \texttt{max\_steps}).
 
-Zum Starten der Simulation wird in \texttt{start\_simulation} zunächst geprüft, ob die Umgebungsvariable \texttt{SUMO\_HOME} gesetzt ist, um die ausführbare SUMO-Datei korrekt zu lokalisieren. Die Verbindung zu SUMO wird anschließend über TraCI hergestellt. Danach werden Parameter zur Zeitschrittlänge, Kollisionsbehandlung und Startoptionen gesetzt. In der GUI werden zudem Kameraeinstellungen angepasst, um die Simulation bestmöglich visuell nachvollziehen zu können.
+Zum Starten der Simulation wird in \texttt{start\_simulation} zunächst geprüft, ob die Umgebungsvariable \texttt{SUMO\_HOME} gesetzt ist, um die ausführbare Sumo-Datei korrekt zu lokalisieren. Die Verbindung zu SUMO wird anschließend über TraCI hergestellt. Danach werden Parameter zur Zeitschrittlänge, Kollisionsbehandlung und Startoptionen gesetzt. In der GUI werden zudem Kameraeinstellungen angepasst, um die Simulation bestmöglich visuell nachvollziehen zu können.
 
-Das Hinzufügen von Fahrzeugen übernimmt \texttt{build\_vehicle}. Neben einem vordefinierten Vehicle under Test (vut)
-%TODO: Abkürzungen vereinheitlichen!
-werden alle übergebenen steuerbaren Fahrzeuge erzeugt. Mit den individuellen Eigenschaften wie Startzeit, Fahrspur, Geschwindigkeit, Route oder Fahrverhalten können diese weiter angepasst werden. Besonders hervorzuheben ist, dass der Spurwechsel- und Geschwindigkeitsmodus der kontrollierbaren Fahrzeuge so gesetzt wurde, dass möglichst wenige Sicherheitsfeatures von SUMO aktiv sind. Auf diese Weise greifen SUMO-interne Automatikmechanismen, die Fahrmanöver einschränken oder korrigieren, nur minimal ein. 
+Das Hinzufügen von Fahrzeugen übernimmt \texttt{build\_vehicle}. Neben einem vordefinierten VUT werden alle übergebenen steuerbaren Fahrzeuge erzeugt. Mit den individuellen Eigenschaften wie Startzeit, Fahrspur, Geschwindigkeit, Route oder Fahrverhalten können diese weiter angepasst werden. Besonders hervorzuheben ist, dass der Spurwechsel- und Geschwindigkeitsmodus der kontrollierbaren Fahrzeuge so gesetzt wurde, dass möglichst wenige Sicherheitsfeatures von SUMO aktiv sind. Auf diese Weise greifen SUMO-interne Automatikmechanismen, die Fahrmanöver einschränken oder korrigieren, nur minimal ein. 
 
 Ein Neustart der Umgebung erfolgt über \texttt{reset}. Falls bereits eine Simulation aktiv ist, wird diese zunächst beendet (\texttt{close}). Danach erfolgen ein Neustart der SUMO-Instanz sowie die Einbindung der Fahrzeuge. Eine kurze Verzögerung sorgt dafür, dass die Setup-Phase abgeschlossen ist, bevor auf die Fahrzeuge zugegriffen wird, um Fehler bei der Ausführung zu vermeiden.
 
@@ -247,7 +245,7 @@ def two_vehicles_follow_vut():
 \end{figure}
 \clearpage
 
-\section{Visualisierung von ausgeführten konkreten Szeanrien}
+\section{Visualisierung von ausgeführten konkreten Szenarien}
 \label{sec:visualisierung_von_ausgefuehrten_konkreten_szenarien}
 
 In diesem Abschnitt wird das Logging-Format und die Visualisierung mit ihren Funktionen zur Analyseunterstützung vorgestellt. Dabei sind sowohl die Beispiel-Logs als auch die Screenshots aus dem Visualisierungstool zur besseren Lesbarkeit in je zwei Teile unterteilt und die für die Abbildungen visualisierten Logs nur in Teilen eingefügt.
@@ -265,20 +263,20 @@ Die Grundidee der entwickelten Visualisierung ist die Darstellung der Ereignisse
 
 Das Logging folgt grundsätzlich dem Schema, das beispielhaft in den Listings \ref{lst:demo-json-layers} und \ref{lst:demo-json} zu sehen ist.
 
-Dabei kann über das \texttt{layers}-Attribut eine Liste der vorgesehenen Schichten mitgegeben werden, in denen die gelogten Event angezeigt werden sollen. Darüber hinaus kann der Nutzer hier definieren, welche Namen die Schichten tragen und in welchen Farben die Balken der jeweiligen Schicht dargestellt werden. Im Beispiel also von oben nach unten die Schichten \enquote{Scenario Bars}, \enquote{Selected Sensor Bars} und \enquote{All Sensor Bars} wie in Abbildung \ref{fig:analyzer_graph} zu sehen ist.
+Dabei kann über das \texttt{layers}-Attribut eine Liste der vorgesehenen Schichten mitgegeben werden, in denen die geloggten Events angezeigt werden sollen. Darüber hinaus kann der Nutzer hier definieren, welche Namen die Schichten tragen und in welchen Farben die Balken der jeweiligen Schicht dargestellt werden. Im Beispiel also von oben nach unten die Schichten \enquote{Scenario Bars}, \enquote{Selected Sensor Bars} und \enquote{All Sensor Bars} wie in Abbildung \ref{fig:analyzer_graph} zu sehen ist.
 
 \lstinputlisting[language=json, caption={Beispiel-Log Einträge}, label={lst:demo-json}]{contents/code/demo_log.json}
 
-Im darauf folgenden \texttt{bars}-Attribut gibt der Nutzer die anzuzeigenden Events an (siehe Listing \ref{lst:demo-json}). Hierbei wird der jeweilige Zeitpunkt des Events als \texttt{timestamp} und die Identifikation des Balken, dem es zugeordnet wird, als \texttt{bar\_id} mitgegeben. Auf Basis der \texttt{bar\_id} ermitteltet die Visualisierung das erste und letzte Event eines Balken und stellt einen entsprechenden Balken dar. Innerhalb dieses Balkens wird dann zur leichteren Identifikation während der Analyse der als \texttt{display\_name} mitgegebene Name angezeigt (siehe Abbildung \ref{fig:analyzer_graph}).
+Im darauf folgenden \texttt{bars}-Attribut gibt der Nutzer die anzuzeigenden Events an (siehe Listing \ref{lst:demo-json}). Hierbei wird der jeweilige Zeitpunkt des Events als \texttt{timestamp} und die Identifikation des Balkens, dem es zugeordnet wird, als \texttt{bar\_id} mitgegeben. Auf Basis der \texttt{bar\_id} ermitteltet die Visualisierung das erste und letzte Event eines Balkens und stellt einen entsprechenden Balken dar. Innerhalb dieses Balkens wird dann zur leichteren Identifikation während der Analyse der als \texttt{display\_name} mitgegebene Name angezeigt (siehe Abbildung \ref{fig:analyzer_graph}).
 
 Des Weiteren steht in jedem Eintrag ein \texttt{actor}-Attribut, welches einen Akteur benennt, dem der Balken zugeordnet wird. Hier im Beispiel sind die Akteure die beteiligten Fahrzeuge \enquote{Car1} und \enquote{Car2}.
 
-Im Beispiel zuletzt wird zu jedem Eintrag ein \texttt{layer} gelogt, welches die Zuordnung zu den oben erläuterten Schichten herstellt. Werden allerdings keine Schichten als \texttt{layers}-Attribut gelogt, werden die hier in den einzelnen Einträgen benannten Schichten genutzt, um Schichten zu identifizieren, in denen die Balken angezeigt werden. Dabei wird auch eine Hierachie inferiert, die jedoch von den gewünschten Hierachie abweichen kann, weshalb empfahlen wird, die Schichten explizit zu definieren.
+Im Beispiel zuletzt wird zu jedem Eintrag ein \texttt{layer} geloggt, welches die Zuordnung zu den oben erläuterten Schichten herstellt. Werden allerdings keine Schichten als \texttt{layers}-Attribut geloggt, werden die hier in den einzelnen Einträgen benannten Schichten genutzt, um Schichten zu identifizieren, in denen die Balken angezeigt werden. Dabei wird auch eine Hierarchie inferiert, die jedoch von den gewünschten Hierarchie abweichen kann, weshalb empfahlen wird, die Schichten explizit zu definieren.
 
 Die beiden Attribute \texttt{actor} und \texttt{layer} werden aggregiert und in der Visualisierung genutzt, um dem Nutzer eine Filterung nach Schichten und Akteuren zu ermöglichen. Die daraus generierten Filter-Buttons sind im oberen Bereich von Abbildung \ref{fig:analyzer_graph} zu sehen.
 Darüber hinaus ist auch eine Freitextsuche über das Eingabefeld oben rechts möglich. Diese Möglichkeiten können beliebig kombiniert werden, um die Analyse optimal zu unterstützen.
 
-Neben den zwingend notwendigen Attributen der Log-Einträge können frei weitere Informationen gelogt werden. Im Listing \ref{lst:demo-json} ist zu den letzten drei Einträgen (ab Zeile 10) zusätzlich \texttt{distance\_to\_vut} gelogt. Diese Daten werden genutzt, um Diagramme wie in Abbildung \ref{fig:analyzer_diagram_panel} zu erstellen, das im \enquote{Diagram Panel} angezeigt wird. Dabei kann der Nutzer die jeweiligen Attribute beliebig benennen. Zu einem Attribut (hier \texttt{distance\_to\_vut}) werden dann alle gelogten Werte in einem Diagramm nach Akteuren unterteilt eingetragen.
+Neben den zwingend notwendigen Attributen der Log-Einträge können frei weitere Informationen geloggt werden. Im Listing \ref{lst:demo-json} ist zu den letzten drei Einträgen (ab Zeile 10) zusätzlich \texttt{distance\_to\_vut} geloggt. Diese Daten werden genutzt, um Diagramme wie in Abbildung \ref{fig:analyzer_diagram_panel} zu erstellen, das im \enquote{Diagram Panel} angezeigt wird. Dabei kann der Nutzer die jeweiligen Attribute beliebig benennen. Zu einem Attribut (hier \texttt{distance\_to\_vut}) werden dann alle geloggten Werte in einem Diagramm nach Akteuren unterteilt eingetragen.
 
 \begin{figure}[htb]
     \centering
@@ -287,7 +285,7 @@ Neben den zwingend notwendigen Attributen der Log-Einträge können frei weitere
     \label{fig:analyzer_diagram_panel}
 \end{figure}
 
-Ein besonderer Vorteil des entwickelten Analysetools ist, dass es durch die Entwicklung ausschließlich mit HTML, CSS und JavaScript jederzeit auf dem Computer des Entwicklers mit Hilfe eines beliebigen Browsers eingesetzt werden kann. Da es als Teil des Projekts abgelegt wurde, ist es während der Arbeit am Projekt stets verfügbar.
+Ein besonderer Vorteil des entwickelten Analysetools ist, dass es durch die Entwicklung ausschließlich mit HTML, CSS und JavaScript jederzeit auf dem Computer des Entwicklers mithilfe eines beliebigen Browsers eingesetzt werden kann. Da es als Teil des Projekts abgelegt wurde, ist es während der Arbeit am Projekt stets verfügbar. Darüber hinaus können erstellte Analysen über den Export (oben rechts in Abbildung \ref{fig:analyzer_graph}) exportiert und mit anderen geteilt werden.
 
 \section{Reinforcement Learning}
 Hier wird die Struktur und Funktionalität des Projekts, das ein Reinforcement-Learning-Modell (RL) für Überholszenarien trainiert, speichert und nutzt beschrieben. Die Hauptkomponenten des Projekts sind in mehreren Python-Dateien organisiert.

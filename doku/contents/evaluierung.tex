@@ -9,7 +9,7 @@ Dieses Kapitel bewertet das Integrationsprojekt entlang zentraler Kriterien:
 (5) Risiken und Limitationen.
 
 \section{Evaluationsrahmen und Zielbild}
-Als Zielbild wurde eine modulare Gesamtarchitektur mit zwei Simulationn-Engines (HighwayEnv, SUMO), einer BPpy-basierten Szenariosteuerung (abstrakt \& konkret) sowie einer Logging-/Visualisierungskomponente definiert.
+Als Zielbild wurde eine modulare Gesamtarchitektur mit zwei Simulations-Engines (HighwayEnv, SUMO), einer BPpy-basierten Szenariosteuerung (abstrakt \& konkret) sowie einer Logging-/Visualisierungskomponente definiert.
 Eine zukünftige \emph{DrivingEngine} mit \emph{Vehicle-Interface} wurde als Austauschschicht zwischen Umgebungen entworfen (Vision), ist jedoch noch nicht implementiert.
 Der aktuelle Wechsel zwischen SUMO und HighwayEnv erfordert deshalb manuelle Anpassungen.
 Diese Soll/Ist-Abweichung ist zentral für die Bewertung der Integrationsreife.
@@ -31,7 +31,7 @@ Die Architekturziele sind überwiegend erreichbar; der zentrale Integrationshebe
 
 \section{Szenariomodellierung \& Korrektheit}
 \textbf{Abstrakt vs. konkret:}
-Abstrakte Szenarien prüfen Zielbedingungen (z.\,B. ``zwei Fahrzeuge positionieren sich in definierter Zeit hinter dem VUT'') und liefern prüfbare Kriterien; entsprechende BThreads kapseln diese Anforderungen.
+Abstrakte Szenarien prüfen Zielbedingungen (z.\,B. \enquote{zwei Fahrzeuge positionieren sich in definierter Zeit hinter dem VUT}) und liefern prüfbare Kriterien; entsprechende BThreads kapseln diese Anforderungen.
 
 \noindent\textbf{Konkrete Ausführung:}
 Konkrete BThreads realisieren die Manöver (z.\,B. \emph{Follow-Behind}) inklusive Geschwindigkeits-/Spurlogik und paralleler Ausführung, sodass sich Fahrzeuge sequenziell hintereinander einordnen und Abstände halten.
@@ -80,9 +80,9 @@ Die Browser-basierte Visualisierung reduziert Hürden in Betrieb und Analyse.
 
 \section{Gesamtfazit der Evaluierung}
 \begin{itemize}
-  \item \textbf{Integrationsziel überwiegend erreicht:} Szenario-Modellierung (BPpy), Dual-Engine-Betrieb, Logging/Visualisierung und RL-Pipeline sind funktional integriert. Die fehlende DrivingEngine reduziert die Austauschbarkeit, ist aber als nächste Evolutionsstufe klar umrissen.
+  \item \textbf{Integrationsziel überwiegend erreicht:} Szenariomodellierung (BPpy), Dual-Engine-Betrieb, Logging/Visualisierung und RL-Pipeline sind funktional integriert. Die fehlende DrivingEngine reduziert die Austauschbarkeit, ist aber als nächste Evolutionsstufe klar umrissen.
   \item \textbf{Nachvollziehbarkeit/Korrektheit gut:} Abstrakte Prüf-BThreads, Kollisions-/Terminierungslogik und detaillierte Logs stützen die Beurteilung der Zielerfüllung je Szenario.
-  \item \textbf{Analyse \& Reproduzierbarkeit stark:} Clientseitiges Visualization-Tool, such-/filterbare Timeline-Ansichten und Diagramme sowie exportierbare Metadaten erlauben effiziente Auswertung und Wiederholbarkeit.
+  \item \textbf{Analyse \& Reproduzierbarkeit stark:} Clientseitiges Visualisierungstool, such-/filterbare Timeline-Ansichten und Diagramme sowie exportierbare Metadaten erlauben effiziente Auswertung und Wiederholbarkeit.
   \item \textbf{Offene Punkte:} (a) Implementierung der DrivingEngine/Vehicle-Interface; (b) robuste Reward-Funktionen und Engine-übergreifende State-/Action-Konsistenz für RL; (c) bevorzugte Nutzung des Vehicle-Ansatzes statt ObservationWrapper.
 \end{itemize}
 
