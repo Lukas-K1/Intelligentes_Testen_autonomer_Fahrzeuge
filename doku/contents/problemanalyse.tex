@@ -6,13 +6,13 @@ Das Projekt „Intelligentes Testen autonomer Fahrzeuge“ hat das Ziel, verifiz
 
 \section{Herausforderungen}
 
-\begin{description}
-    \item[Szenario-Komplexität und hohe Kombinationenvielfalt] Szenarien bestehen aus vielen Akteuren und parallelen Phasen. Die Anzahl möglicher Ausprägungen (Parameterkombinationen bzw. Reihenfolgen von Aktionen) ist sehr hoch, was eine systematische Abdeckung schwierig macht.(vgl. \cite{EinfuehrungIntegrationsprojekt})
-    \item[Unvorhersehbares Verhalten des Vehicle-Under-Test (VUT).] Selbst bei korrekt spezifizierten Szenarien kann das VUT anders reagieren als erwartet. Dadurch entstehen zwei verschiedene Situationen, die getrennt voneinander betrachtet werden müssen: (a) Das Testziel konnte in einer Ausführung nicht erreicht werden (Szenario ist nicht erfüllbar) oder (b) das VUT verhält sich falsch (Testfehlverhalten). Diese Unterscheidung ist für die Auswertung und Weiterarbeit von zentraler Bedeutung.(vgl. \cite{EinfuehrungIntegrationsprojekt})
-    \item[Semantische Lücken in Szenariensprachen] Viele formale Szenariobeschreibungen (z. B. OSC DSL) sind deklarativ und liefern keine operationale Semantik, sodass unklar ist, wie eine Ausführung Schritt für Schritt erzeugt werden kann. Deshalb sind Mechanismen erforderlich, die aus abstrakten, constraint-basierten Beschreibungen ausführbare Steuerungsbefehle generieren.(vgl. \cite{EinfuehrungIntegrationsprojekt})
-    \item[Notwendigkeit intelligenter Ausführungsstrategien] Naive „Next-Step“-Heuristiken verletzen oft Constraints. Fortgeschrittene Verfahren wie Constraint-Solver, Reinforcement Learning (RL) oder evolutionäre Algorithmen können zwar bessere Ergebnisse liefern, sind aber meist rechenintensiv und benötigen viele Episoden bzw. Iterationen für das Training oder die Suche.(vgl. \cite{EinfuehrungIntegrationsprojekt})
-    \item[Fehlende oder uneinheitliche Observability und Reporting] Für eine aussagekräftige Evaluation sind strukturierte Observation-Schnittstellen (z. B. Helper-Funktionen zum Abruf von Abständen, Spurfreigaben etc.) sowie umfassende Log-/Reporting-Mechanismen erforderlich, um Testziele und VUT-Reaktionen transparent auswerten zu können.(vgl. \cite{EinfuehrungIntegrationsprojekt})
-\end{description}
+\begin{itemize}
+    \item \textbf{Szenario-Komplexität und hohe Kombinationenvielfalt:} Szenarien bestehen aus vielen Akteuren und parallelen Phasen. Die Anzahl möglicher Ausprägungen (Parameterkombinationen bzw. Reihenfolgen von Aktionen) ist sehr hoch, was eine systematische Abdeckung schwierig macht.(vgl. \cite{EinfuehrungIntegrationsprojekt})
+    \item \textbf{Unvorhersehbares Verhalten des Vehicle-Under-Test (VUT):} Selbst bei korrekt spezifizierten Szenarien kann das VUT anders reagieren als erwartet. Dadurch entstehen zwei verschiedene Situationen, die getrennt voneinander betrachtet werden müssen: (a) Das Testziel konnte in einer Ausführung nicht erreicht werden (Szenario ist nicht erfüllbar) oder (b) das VUT verhält sich falsch (Testfehlverhalten). Diese Unterscheidung ist für die Auswertung und Weiterarbeit von zentraler Bedeutung.(vgl. \cite{EinfuehrungIntegrationsprojekt})
+    \item \textbf{Semantische Lücken in Szenariensprachen:} Viele formale Szenariobeschreibungen (z. B. OSC DSL) sind deklarativ und liefern keine operationale Semantik, sodass unklar ist, wie eine Ausführung Schritt für Schritt erzeugt werden kann. Deshalb sind Mechanismen erforderlich, die aus abstrakten, constraint-basierten Beschreibungen ausführbare Steuerungsbefehle generieren.(vgl. \cite{EinfuehrungIntegrationsprojekt})
+    \item \textbf{Notwendigkeit intelligenter Ausführungsstrategien:} Naive „Next-Step“-Heuristiken verletzen oft Constraints. Fortgeschrittene Verfahren wie Constraint-Solver, Reinforcement Learning (RL) oder evolutionäre Algorithmen können zwar bessere Ergebnisse liefern, sind aber meist rechenintensiv und benötigen viele Episoden bzw. Iterationen für das Training oder die Suche.(vgl. \cite{EinfuehrungIntegrationsprojekt})
+    \item \textbf{Fehlende oder uneinheitliche Observability und Reporting:} Für eine aussagekräftige Evaluation sind strukturierte Observation-Schnittstellen (z. B. Helper-Funktionen zum Abruf von Abständen, Spurfreigaben etc.) sowie umfassende Log-/Reporting-Mechanismen erforderlich, um Testziele und VUT-Reaktionen transparent auswerten zu können.(vgl. \cite{EinfuehrungIntegrationsprojekt})
+\end{itemize}
 
 \section{Use Case}
 
@@ -26,11 +26,11 @@ Um aus den identifizierten Problemen und Herausforderungen konkrete Anforderunge
 \end{figure}
 
 
-\begin{description}
-    \item[VUT-Tester] Als Tester eines VUTs möchte ich konkrete Szenarien in der Testumgebung ausführen und anschließend prüfen lassen, ob die definierten Testziele erreicht wurden.
-    \item[ML-Forscher] Als Forscher möchte ich aus einem abstrakten Szenario konkrete Szenarien durch Verfahren wie RL oder evolutionäre KI erzeugen lassen.
-    \item[Analyst] Als Analyst möchte ich vorhandene Logs und Ergebnisse auswerten, Kennzahlen berechnen und einen Report mit Visualisierungen erstellen.
-\end{description}
+\begin{itemize}
+    \item \textbf{VUT-Tester:} Als Tester eines VUTs möchte ich konkrete Szenarien in der Testumgebung ausführen und anschließend prüfen lassen, ob die definierten Testziele erreicht wurden.
+    \item \textbf{ML-Forscher:} Als Forscher möchte ich aus einem abstrakten Szenario konkrete Szenarien durch Verfahren wie RL oder evolutionäre KI erzeugen lassen.
+    \item \textbf{Analyst:} Als Analyst möchte ich vorhandene Logs und Ergebnisse auswerten, Kennzahlen berechnen und einen Report mit Visualisierungen erstellen.
+\end{itemize}
 
 \section{Technische Anforderungen}
 

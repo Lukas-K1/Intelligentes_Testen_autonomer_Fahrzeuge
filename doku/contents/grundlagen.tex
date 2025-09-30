@@ -5,15 +5,15 @@ Um die Sicherheit und Zuverlässigkeit von autonomen Fahrsystemen zu gewährleis
 Dabei werden verschiedene Testumgebungen eingesetzt, um die verschiedenen Anforderungen an die Systeme zu prüfen. 
 
 \begin{itemize}
-    \item Software-in-the-Loop (SIL) \newline
+    \item \textbf{Software-in-the-Loop (SIL):} %\newline
             Die zu prüfende Software wird in einer Simulationsumgebung getestet, wobei die Hardware-Komponenten des Fahrzeugs simuliert werden. 
             Ziel ist es Fehler in der Software durch verschiedene Testszenarien frühzeitig zu identifizieren und zu beheben.
             Auf dieser Ebene ist das wiederholte Testen aufgrund von benötigter Zeit und Rechenleistung am günstigsten, da zum Beispiel schneller als in Echtzeit getestet werden kann. 
             Deshalb wird versucht möglichst viele Tests auf dieser Ebene durchzuführen \cite{EinfuehrungIntegrationsprojekt}.
-    \item Hardware-in-the-Loop (HIL) \newline
+    \item \textbf{Hardware-in-the-Loop (HIL):} %\newline
             Bei HIL-Tests werden reale Zielhardware der Fahrzeuge wie Steuergeräte und Sensoren in die Simulation eingebunden. 
             So kann die Interaktion zwischen Software und Hardware unter kontrollierten Bedingungen relativ realitätsnah getestet werden \cite{EinfuehrungIntegrationsprojekt}.
-    \item Vehicle-in-the-Loop (VIL) \newline
+    \item \textbf{Vehicle-in-the-Loop (VIL):} %\newline
             VIL-Tests testen reale Fahrzeuge durch Fahrzeugtests im Verkehr, auf Teststrecken oder im Teststand. 
             Hier wird das komplette Zusammenspiel aller Software und Hardware-Komponenten im Fahrzeug geprüft.
             Diese Tests sind am aufwändigsten und teuersten, da sie reale Fahrzeuge sowie Testumgebungen benötigen \cite{EinfuehrungIntegrationsprojekt}.
@@ -123,14 +123,12 @@ Dieses ereignisgesteuerte Synchronisationsverfahren stellt sicher, dass sich una
 \subsection{Modularität und Erweiterbarkeit}\label{subsec:modularitat-und-erweiterbarkeit}
 Ein Hauptvorteil von BP ist die \emph{hohe Modularität} der Verhaltensbeschreibung und die einfache Erweiterbarkeit von Systemfunktionalität.
 Neue Anforderungen können als zusätzliche B-Threads implementiert werden, was eine \emph{inkrementelle Entwicklung} ermöglicht, bei der bestehender Code kaum oder gar nicht geändert werden muss \cite{Harel2012}.
-\newline
+
 Das Hinzufügen oder Entfernen von Verhaltensmodulen entspricht dem Ein- oder Ausschalten von Szenarien, ohne unbeabsichtigte Seiteneffekte auf den übrigen Ablauf.
-\newline
-\newline
+
 Alle Module interagieren ausschließlich über das gemeinsame Ereignis-Vokabular und kennen einander nicht direkt \cite{Harel2010}.
 So kann beispielsweise in einem einfachen Wassermisch-System ein zusätzliches Verhalten (Interleave, abwechselndes Heiß- und Kalt-Zapfen) durch einen neuen B-Thread realisiert werden, der abwechselnd auf das eine Ereignis wartet und das andere blockiert, ohne die bestehenden B-Threads zu verändern \cite{Harel2012}.
-\newline
-\newline
+
 BP unterstützt damit auch Konzepte wie die funktionsorientierten Entwicklung (Feature-Oriented Development) und Produktlinien: Unterschiedliche Ausprägungen eines Systems können durch Konfiguration der Menge der aktiven B-Threads erzeugt werden \cite{Harel2012}.
 Im Vergleich zu objektorientierten oder aspektorientierten Ansätzen vermeidet BP die strikte Trennung zwischen Basis- und Erweiterungslogik; stattdessen wirken alle Verhaltensmodule gleichberechtigt zusammen \cite{Harel2012}.
 Darüber hinaus lässt sich BP mit anderen Programmierparadigmen kombinieren.
