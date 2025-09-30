@@ -46,29 +46,29 @@ Kollisions-/Terminierungslogik ist implementiert und begünstigt robuste Testlä
 \section{Simulationsumgebungen: Funktionsumfang \& Eignung}
 \subsection*{HighwayEnv}
 Multi-Agent-Konfiguration (gleichzeitige Aktionen/Beobachtungen) ist umgesetzt.
-Zwei Zugriffswege wurden evaluiert: (i) \emph{ObservationWrapper} (direkt, aber fragil bzgl. Feature-Reihenfolge) versus (ii) \emph{Vehicle}-basierter Ansatz (robuster/flexibler; Methoden wie \texttt{is\_ahead\_of}, \texttt{delta\_pos} etc.).
+Zwei Zugriffswege wurden evaluiert: (i) \emph{ObservationWrapper} (direkt, aber fragil bzgl. Feature-Reihenfolge) versus (ii) \emph{Vehicle}-basierter Ansatz (robuster/flexibler; Methoden wie \texttt{is\_ahead\_of}, \texttt{delta\_pos} etc.). \newline
 \textbf{Bewertung:} Der Vehicle-Ansatz ist vorzugswürdig (geringere Fehleranfälligkeit, weniger Kopplung an Observation-Layouts).
 
 \subsection*{SUMO}
 Eine eigene, Gymnasium-kompatible \emph{SumoEnv} (Beobachtungs-/Aktionsräume, Episodenmanagement) mit TraCI-Anbindung, reduzierten Sicherheitsmodi für kontrollierte Fahrzeuge und reproduzierbarem Start/Reset ist implementiert.
 Aktionen werden explizit abgebildet (\texttt{\_apply\_action}), darunter Spurwechsel und Geschwindigkeitsanpassung.
-Aktuell ist die Belohnungsfunktion ein Platzhalter (konstanter Reward).
+Aktuell ist die Belohnungsfunktion ein Platzhalter (konstanter Reward). \newline
 \textbf{Bewertung:} HighwayEnv eignet sich für schnelles Prototyping, SUMO für realistischere Straßennetze/Netedit-Flows.
 Der RL-Reifegrad in SUMO ist durch den Reward-Platzhalter begrenzt.
 
 \section{Logging, Reporting \& Visualisierung}
 Die Logging-Komponente erzeugt strukturierte, maschinenlesbare Einträge und erfüllt die Anforderungen an Exportierbarkeit \& Analyse.
 Die Visualisierung (Graph Analyzer) arbeitet mit Schichten (\emph{layers}) und Balken-Events (\emph{bars}), unterstützt Filter nach Akteur/Schicht sowie Freitextsuche und zeigt Metrik-Diagramme (z.\,B. \textit{distance\_to\_vut}) je Akteur.
-Die Lösung läuft rein clientseitig (HTML/CSS/JS) und ist dadurch ohne zusätzliches Setup nutzbar.
+Die Lösung läuft rein clientseitig (HTML/CSS/JS) und ist dadurch ohne zusätzliches Setup nutzbar.\newline
 \textbf{Bewertung:} Hohe Zugänglichkeit und gute Analyseunterstützung.
 
 \section{Reinforcement Learning (RL) – Stand \& Tauglichkeit}
-Für HighwayEnv ist eine lauffähige RL-Trainingspipeline (DQN) inkl. \texttt{DummyVecEnv}, Modell-Persistenz und Lade-/Inferenzpfad realisiert.
+Für HighwayEnv ist eine lauffähige RL-Trainingspipeline (DQN) inklusive \texttt{DummyVecEnv}, Modell-Persistenz und Lade-/Inferenzpfad realisiert. \newline
 \textbf{Bewertung:} Trainings-/Inferenzpfad ist praxisfähig und reproduzierbar; der Einsatz in SUMO erfordert eine fachlich sinnvolle Reward-Funktion sowie konsistente State/Action-Definitionen über Engines hinweg.
 
 \section{Reproduzierbarkeit \& Bedienbarkeit}
 Reproduzierbarkeit wird über exportierbare Logs mit Zeitstempel, Seed, Szenario-ID, Simulatorversion etc.\ adressiert; dies erleichtert Vergleich und Archivierung.
-Die Browser-basierte Visualisierung reduziert Hürden in Betrieb und Analyse.
+Die Browser-basierte Visualisierung reduziert Hürden in Betrieb und Analyse.\newline
 \textbf{Bewertung:} Starkes Reproduzierbarkeits- und Usability-Profil.
 \section{Risiken, Limitationen und Gültigkeit}
 \begin{itemize}
