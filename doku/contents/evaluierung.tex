@@ -1,1 +1,98 @@
 \chapter{Evaluierung}
+\label{chap:evaluierung}
+
+Dieses Kapitel bewertet das Integrationsprojekt entlang zentraler Kriterien:
+(1) Architektur- und Integrationsgrad,
+(2) Korrektheit und Nachvollziehbarkeit der Szenarioausführung,
+(3) Abdeckung der Plattform-Anforderungen (Logging/Reporting, RL-Schnittstellen),
+(4) Reproduzierbarkeit und Bedienbarkeit sowie
+(5) Risiken und Limitationen.
+
+\section{Evaluationsrahmen und Zielbild}
+Als Zielbild wurde eine modulare Gesamtarchitektur mit zwei Simulationn-Engines (HighwayEnv, SUMO), einer BPpy-basierten Szenariosteuerung (abstrakt \& konkret) sowie einer Logging-/Visualisierungskomponente definiert.
+Eine zukünftige \emph{DrivingEngine} mit \emph{Vehicle-Interface} wurde als Austauschschicht zwischen Umgebungen entworfen (Vision), ist jedoch noch nicht implementiert.
+Der aktuelle Wechsel zwischen SUMO und HighwayEnv erfordert deshalb manuelle Anpassungen.
+Diese Soll/Ist-Abweichung ist zentral für die Bewertung der Integrationsreife.
+
+\section{Architektur \& Integrationsgrad}
+\textbf{Erreicht:}
+\begin{itemize}
+  \item Beide Simulationsumgebungen sind funktionsfähig integriert; BPpy orchestriert abstrakte und konkrete Szenarien, die Visualisierung konsumiert die Projekt-Logs.
+  \item In HighwayEnv ist das Multi-Agent-Setting korrekt konfiguriert (\texttt{MultiAgentAction}/\texttt{MultiAgentObservation}), sodass mehrere Fahrzeuge parallel steuerbar und beobachtbar sind.
+\end{itemize}
+\clearpage
+\noindent\textbf{Teilweise/Nicht erreicht:}
+\begin{itemize}
+  \item Die \emph{DrivingEngine}/\emph{Vehicle-Interface} ist als Architekturvision vorhanden, aber noch nicht umgesetzt; der Engine-Wechsel erfordert Codeänderungen inkl. Zusatzklassen. Das verringert Austauschbarkeit und erhöht Integrationsaufwand (technische Schuld).
+\end{itemize}
+
+\noindent\textbf{Einschätzung:}
+Die Architekturziele sind überwiegend erreichbar; der zentrale Integrationshebel (DrivingEngine) ist identifiziert und ermöglicht künftig eine stärkere Entkopplung. Aktuell besteht noch Engine-Kopplung auf Implementierungsebene.
+
+\section{Szenariomodellierung \& Korrektheit}
+\textbf{Abstrakt vs. konkret:}
+Abstrakte Szenarien prüfen Zielbedingungen (z.\,B. ``zwei Fahrzeuge positionieren sich in definierter Zeit hinter dem VUT'') und liefern prüfbare Kriterien; entsprechende BThreads kapseln diese Anforderungen.
+
+\noindent\textbf{Konkrete Ausführung:}
+Konkrete BThreads realisieren die Manöver (z.\,B. \emph{Follow-Behind}) inklusive Geschwindigkeits-/Spurlogik und paralleler Ausführung, sodass sich Fahrzeuge sequenziell hintereinander einordnen und Abstände halten.
+
+\noindent\textbf{Simulations-Thread/Kontrolle:}
+Der Simulations-Thread übersetzt BP-Events in Engine-Aktionen, prüft Kollisionen und beendet Szenen deterministisch; die Aktionen werden als Tupel in die \texttt{step}-Methode übergeben. Das erhöht Korrektheit und Nachvollziehbarkeit der Ausführung.
+
+\noindent\textbf{Bewertung:}
+Die Trennung in abstrakte Prüf-BThreads und konkrete Ausführungs-BThreads unterstützt Korrektheit (Explizitheit der Zielerfüllung) und Testbarkeit.
+Kollisions-/Terminierungslogik ist implementiert und begünstigt robuste Testläufe.
+
+\section{Simulationsumgebungen: Funktionsumfang \& Eignung}
+\subsection*{HighwayEnv}
+Multi-Agent-Konfiguration (gleichzeitige Aktionen/Beobachtungen) ist umgesetzt.
+Zwei Zugriffswege wurden evaluiert: (i) \emph{ObservationWrapper} (direkt, aber fragil bzgl. Feature-Reihenfolge) versus (ii) \emph{Vehicle}-basierter Ansatz (robuster/flexibler; Methoden wie \texttt{is\_ahead\_of}, \texttt{delta\_pos} etc.).
+\textbf{Bewertung:} Der Vehicle-Ansatz ist vorzugswürdig (geringere Fehleranfälligkeit, weniger Kopplung an Observation-Layouts).
+
+\subsection*{SUMO}
+Eine eigene, Gymnasium-kompatible \emph{SumoEnv} (Beobachtungs-/Aktionsräume, Episodenmanagement) mit TraCI-Anbindung, reduzierten Sicherheitsmodi für kontrollierte Fahrzeuge und reproduzierbarem Start/Reset ist implementiert.
+Aktionen werden explizit abgebildet (\texttt{\_apply\_action}), darunter Spurwechsel und Geschwindigkeitsanpassung.
+Aktuell ist die Belohnungsfunktion ein Platzhalter (konstanter Reward).
+\textbf{Bewertung:} HighwayEnv eignet sich für schnelles Prototyping, SUMO für realistischere Straßennetze/Netedit-Flows.
+Der RL-Reifegrad in SUMO ist durch den Reward-Platzhalter begrenzt.
+
+\section{Logging, Reporting \& Visualisierung}
+Die Logging-Komponente erzeugt strukturierte, maschinenlesbare Einträge und erfüllt die Anforderungen an Exportierbarkeit \& Analyse.
+Die Visualisierung (Graph Analyzer) arbeitet mit Schichten (\emph{layers}) und Balken-Events (\emph{bars}), unterstützt Filter nach Akteur/Schicht sowie Freitextsuche und zeigt Metrik-Diagramme (z.\,B. \textit{distance\_to\_vut}) je Akteur.
+Die Lösung läuft rein clientseitig (HTML/CSS/JS) und ist dadurch ohne zusätzliches Setup nutzbar.
+\textbf{Bewertung:} Hohe Zugänglichkeit und gute Analyseunterstützung.
+
+\section{Reinforcement Learning (RL) – Stand \& Tauglichkeit}
+Für HighwayEnv ist eine lauffähige RL-Trainingspipeline (DQN) inkl. \texttt{DummyVecEnv}, Modell-Persistenz und Lade-/Inferenzpfad realisiert.
+\textbf{Bewertung:} Trainings-/Inferenzpfad ist praxisfähig und reproduzierbar; der Einsatz in SUMO erfordert eine fachlich sinnvolle Reward-Funktion sowie konsistente State/Action-Definitionen über Engines hinweg.
+
+\section{Reproduzierbarkeit \& Bedienbarkeit}
+Reproduzierbarkeit wird über exportierbare Logs mit Zeitstempel, Seed, Szenario-ID, Simulatorversion etc.\ adressiert; dies erleichtert Vergleich und Archivierung.
+Die Browser-basierte Visualisierung reduziert Hürden in Betrieb und Analyse.
+\textbf{Bewertung:} Starkes Reproduzierbarkeits- und Usability-Profil.
+\section{Risiken, Limitationen und Gültigkeit}
+\begin{itemize}
+  \item \textbf{Kopplung an Engine-Details:} Ohne DrivingEngine/Interface besteht höhere Anpassungslast beim Engine-Wechsel; Risiko doppelter Logik und divergierender Semantik.
+  \item \textbf{Fragilität des ObservationWrapper:} Abhängigkeit von der Feature-Reihenfolge birgt Fehlerpotenzial; der Vehicle-Ansatz ist robuster.
+  \item \textbf{RL in SUMO noch nicht evaluiert:} Konstanter Reward verhindert belastbare Lern-Ergebnisse; für \enquote{lernende} Szenario-Erzeugung ist dies ein offener Punkt.
+  \item \textbf{Semantik-Differenzen:} Engine-Sicherheitslogiken, Physik und Lane-Modelle können Übertragbarkeit beeinträchtigen; in SUMO wurden Sicherheitsfeatures reduziert, um Kontrolle sicherzustellen (Verbesserung der Steuerbarkeit, geringerer Realismus).
+\end{itemize}
+
+\section{Gesamtfazit der Evaluierung}
+\begin{itemize}
+  \item \textbf{Integrationsziel überwiegend erreicht:} Szenario-Modellierung (BPpy), Dual-Engine-Betrieb, Logging/Visualisierung und RL-Pipeline sind funktional integriert. Die fehlende DrivingEngine reduziert die Austauschbarkeit, ist aber als nächste Evolutionsstufe klar umrissen.
+  \item \textbf{Nachvollziehbarkeit/Korrektheit gut:} Abstrakte Prüf-BThreads, Kollisions-/Terminierungslogik und detaillierte Logs stützen die Beurteilung der Zielerfüllung je Szenario.
+  \item \textbf{Analyse \& Reproduzierbarkeit stark:} Clientseitiges Visualization-Tool, such-/filterbare Timeline-Ansichten und Diagramme sowie exportierbare Metadaten erlauben effiziente Auswertung und Wiederholbarkeit.
+  \item \textbf{Offene Punkte:} (a) Implementierung der DrivingEngine/Vehicle-Interface; (b) robuste Reward-Funktionen und Engine-übergreifende State-/Action-Konsistenz für RL; (c) bevorzugte Nutzung des Vehicle-Ansatzes statt ObservationWrapper.
+\end{itemize}
+
+\paragraph{Priorisierte Empfehlungen.}
+\begin{enumerate}
+  \item DrivingEngine + Interface umsetzen (Austauschbarkeit \& Testkosten senken).
+  \item Fachlich valide Rewards für SUMO definieren; RL-Experimente Engine-übergreifend benchmarken.
+  \item Vehicle-basierten Zugriff standardisieren; ObservationWrapper nur mit strikter Validierung der Feature-Reihenfolge einsetzen.
+\end{enumerate}
+
+% Hinweis: Dieser Abschnitt basiert inhaltlich auf den vorangehenden Kapiteln der Arbeit
+% (Architekturvision/Umsetzung, Szenariothreads, Visualisierung, RL-Training, SumoEnv-Spezifika).
+
